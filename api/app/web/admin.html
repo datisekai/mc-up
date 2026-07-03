@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>McUp · Admin — Cỗ máy nội dung</title>
+<style>
+  :root{--base:#FFF8F0;--card:#fff;--sunken:#F6EDE2;--ink:#3B2A4A;--ink2:#7A6E82;--primary:#FF6B5B;--spot:#FFC24B;--success:#3FB984;--hair:#EDE3D6}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif}
+  body{background:#EFE3D4;color:var(--ink);padding:24px;display:flex;justify-content:center}
+  .wrap{width:100%;max-width:820px}
+  h1{font-size:24px;font-weight:800;color:var(--primary);margin-bottom:4px}
+  .sub{color:var(--ink2);margin-bottom:20px;font-size:14px}
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 8px 20px -14px rgba(90,60,30,.5)}
+  label{font-size:12px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+  input,textarea,select{width:100%;border:1px solid var(--hair);border-radius:10px;padding:11px;font-size:14px;margin-bottom:12px;background:#fff}
+  textarea{min-height:120px;resize:vertical}
+  button{background:var(--primary);color:#fff;font-weight:800;border:none;border-radius:999px;padding:12px 18px;font-size:14px;cursor:pointer}
+  button.ghost{background:var(--sunken);color:var(--ink)}
+  button.gold{background:var(--spot);color:#5a3d00}
+  button:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .kicker{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink2);margin:18px 0 8px}
+  .sess{background:var(--sunken);border-radius:12px;padding:12px;margin-bottom:10px}
+  .sess h3{font-size:15px;margin-bottom:8px}
+  .les{background:#fff;border-radius:10px;padding:10px;margin-bottom:6px}
+  .les .t{font-weight:700;font-size:14px}
+  .les .tip{color:var(--ink2);font-size:12px;margin-top:2px}
+  .les .p{font-size:13px;margin-top:4px}
+  .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px}
+  .draft{background:#FFF3DA;color:#9a6b00}.pub{background:#E6F7EF;color:#1f8f63}
+  .pathrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--hair)}
+  .muted{color:var(--ink2);font-size:13px}
+  .err{color:var(--primary);font-weight:700;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>McUp · Admin</h1>
+  <div class="sub">Cỗ máy nội dung — AI chia giáo trình → duyệt → xuất bản</div>
+
+  <div class="card" id="loginCard">
+    <label>Đăng nhập admin</label>
+    <input id="email" placeholder="admin@test.vn" value="admin@test.vn">
+    <input id="pw" type="password" placeholder="Mật khẩu" value="123456">
+    <div class="err" id="loginErr"></div>
+    <button onclick="login()">Đăng nhập</button>
+    <div class="muted" style="margin-top:8px">Demo: admin@test.vn / 123456</div>
+  </div>
+
+  <div id="panel" style="display:none">
+    <div class="card">
+      <label>AI chia giáo trình (dán tài liệu thô)</label>
+      <input id="genre" placeholder="Thể loại (vd: MC đám cưới)" value="MC đám cưới">
+      <textarea id="raw" placeholder="Dán nội dung giáo trình thô ở đây...">Khóa MC tiệc cưới: chào khách, giới thiệu cô dâu chú rể, dẫn nghi thức rót rượu cắt bánh, khuấy động không khí, xử lý sự cố, luyện giọng truyền cảm và ngôn ngữ cơ thể.</textarea>
+      <div class="row">
+        <button id="splitBtn" onclick="split()">🧠 AI chia thành Buổi/Bài</button>
+        <button class="ghost" onclick="loadPaths()">↻ Tải danh sách lộ trình</button>
+        <button class="ghost" onclick="logout()">Đăng xuất</button>
+      </div>
+      <div class="err" id="err" style="margin-top:8px"></div>
+    </div>
+
+    <div id="preview"></div>
+    <div class="kicker">Danh sách lộ trình</div>
+    <div class="card" id="paths"><div class="muted">Chưa tải.</div></div>
+  </div>
+</div>
+
+<script>
+let token=null, curPath=null;
+async function api(path,{method='GET',body}={}){
+  const r=await fetch(path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(d?.detail?.error?.message||d?.error?.message||('HTTP '+r.status));
+  return d;
+}
+async function login(){
+  document.getElementById('loginErr').textContent='';
+  try{
+    const r=await api('/auth/login',{method:'POST',body:{email:email.value.trim(),password:pw.value}});
+    if(r.role!=='admin'){document.getElementById('loginErr').textContent='Tài khoản này không phải admin.';return}
+    token=r.access_token;
+    document.getElementById('loginCard').style.display='none';
+    document.getElementById('panel').style.display='block';
+    loadPaths();
+  }catch(e){document.getElementById('loginErr').textContent=e.message}
+}
+function logout(){token=null;location.reload()}
+
+async function split(){
+  const b=document.getElementById('splitBtn'); b.disabled=true; b.textContent='Đang chia... (AI)';
+  document.getElementById('err').textContent='';
+  try{
+    const tree=await api('/admin/ai-split',{method:'POST',body:{genre:genre.value,raw_text:raw.value}});
+    renderTree(tree, true);
+    loadPaths();
+  }catch(e){document.getElementById('err').textContent=e.message}
+  b.disabled=false; b.textContent='🧠 AI chia thành Buổi/Bài';
+}
+function renderTree(tree, isNew){
+  curPath=tree.id;
+  let h=`<div class="card"><div class="row" style="justify-content:space-between">
+    <div><b>${tree.title}</b> <span class="pill ${tree.status==='published'?'pub':'draft'}">${tree.status}</span>
+    <div class="muted">Thể loại: ${tree.genre}${tree.is_mock?' · (AI giả lập)':' · (AI thật)'}</div></div>
+    ${tree.status!=='published'?`<button class="gold" onclick="publish('${tree.id}')">✓ Duyệt & Xuất bản</button>`:''}
+    </div>`;
+  (tree.levels||[]).forEach(lv=>{
+    h+=`<div class="kicker">${lv.name}</div>`;
+    (lv.sessions||[]).forEach(s=>{
+      h+=`<div class="sess"><h3>${s.title}</h3>`;
+      (s.lessons||[]).forEach(l=>{ h+=`<div class="les"><div class="t">${l.title}</div><div class="tip">💡 ${l.tip}</div><div class="p">🎬 ${l.prompt}</div></div>`; });
+      h+=`</div>`;
+    });
+  });
+  h+=`</div>`;
+  document.getElementById('preview').innerHTML=(isNew?'<div class="kicker">Bản nháp AI vừa tạo (duyệt trước khi xuất bản)</div>':'')+h;
+}
+async function publish(id){
+  try{ await api('/admin/paths/'+id+'/publish',{method:'POST'}); const t=await api('/admin/paths/'+id); renderTree(t,false); loadPaths(); }
+  catch(e){alert(e.message)}
+}
+async function loadPaths(){
+  try{
+    const list=await api('/admin/paths');
+    document.getElementById('paths').innerHTML = list.length? list.map(p=>
+      `<div class="pathrow"><div><b>${p.title}</b> <span class="muted">· ${p.genre}</span></div>
+       <div class="row"><span class="pill ${p.status==='published'?'pub':'draft'}">${p.status}</span>
+       <button class="ghost" onclick="openPath('${p.id}')">Xem</button></div></div>`).join('')
+      : '<div class="muted">Chưa có lộ trình. Dùng "AI chia" ở trên để tạo.</div>';
+  }catch(e){document.getElementById('paths').innerHTML='<div class="err">'+e.message+'</div>'}
+}
+async function openPath(id){ const t=await api('/admin/paths/'+id); renderTree(t,false); window.scrollTo(0,0); }
+</script>
+</body>
+</html>

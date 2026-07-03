@@ -10,7 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .db import SessionLocal
-from .models import BadgeCard, Clip, MCReview, Progress, ReviewRequest, Score, User
+from .models import (BadgeCard, Clip, ContentLesson, ContentSession, Genre, LearningPath, Level,
+                     MCReview, Progress, ReviewRequest, Score, User)
 from .scoring import score_clip
 
 
@@ -100,3 +101,79 @@ async def get_score_history(s: AsyncSession, user: User, limit: int = 20) -> lis
         .order_by(Score.created_at).limit(limit)
     )).all()
     return [{"speed_wpm": r.speed_wpm, "filler_count": r.filler_count, "created_at": r.created_at.isoformat()} for r in rows]
+
+
+# ===== v2 · Cỗ máy nội dung (FR-16/17/18) =====
+
+async def ai_split_and_persist(s: AsyncSession, raw_text: str, genre_name: str, openai_key: str) -> dict:
+    """AI-split (AD-10) rồi LƯU vào cây nội dung dạng DRAFT (AD-12) để duyệt sau."""
+    from adapters.content_split_factory import get_splitter  # type: ignore
+
+    draft = await get_splitter(openai_key).split(raw_text, genre_name)
+    genre = (await s.execute(select(Genre).where(Genre.name == genre_name))).scalar_one_or_none()
+    if not genre:
+        genre = Genre(name=genre_name, status="published")
+        s.add(genre)
+        await s.flush()
+    path = LearningPath(genre_id=genre.id, title=f"Lộ trình: {genre_name}", status="draft")
+    s.add(path)
+    await s.flush()
+    level = Level(path_id=path.id, name="Cơ bản", order_index=0, status="draft")
+    s.add(level)
+    await s.flush()
+    for si, sess in enumerate(draft.get("sessions", [])):
+        cs = ContentSession(level_id=level.id, title=sess.get("title", "Buổi"), order_index=si, status="draft")
+        s.add(cs)
+        await s.flush()
+        for li, les in enumerate(sess.get("lessons", [])):
+            s.add(ContentLesson(session_id=cs.id, title=les.get("title", "Bài"),
+                                tip=les.get("tip", ""), prompt=les.get("prompt", ""),
+                                order_index=li, status="draft"))
+    await s.commit()
+    return {"path_id": path.id, "is_mock": bool(draft.get("is_mock", False))}
+
+
+async def get_path_tree(s: AsyncSession, path_id: str) -> dict | None:
+    path = await s.get(LearningPath, path_id)
+    if not path:
+        return None
+    genre = await s.get(Genre, path.genre_id)
+    levels = (await s.execute(select(Level).where(Level.path_id == path_id).order_by(Level.order_index))).scalars().all()
+    out_levels = []
+    for lv in levels:
+        sessions = (await s.execute(select(ContentSession).where(ContentSession.level_id == lv.id).order_by(ContentSession.order_index))).scalars().all()
+        out_sessions = []
+        for cs in sessions:
+            lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id).order_by(ContentLesson.order_index))).scalars().all()
+            out_sessions.append({"id": cs.id, "title": cs.title,
+                                 "lessons": [{"id": ln.id, "title": ln.title, "tip": ln.tip, "prompt": ln.prompt} for ln in lessons]})
+        out_levels.append({"id": lv.id, "name": lv.name, "sessions": out_sessions})
+    return {"id": path.id, "title": path.title, "genre": genre.name if genre else "", "status": path.status, "levels": out_levels}
+
+
+async def list_paths(s: AsyncSession, status: str | None = None) -> list[dict]:
+    q = select(LearningPath).order_by(LearningPath.created_at.desc())
+    if status:
+        q = q.where(LearningPath.status == status)
+    paths = (await s.execute(q)).scalars().all()
+    out = []
+    for p in paths:
+        g = await s.get(Genre, p.genre_id)
+        out.append({"id": p.id, "title": p.title, "genre": g.name if g else "", "status": p.status})
+    return out
+
+
+async def publish_path(s: AsyncSession, path_id: str) -> bool:
+    """Duyệt & xuất bản: cascade status=published cho cả cây (AD-12)."""
+    path = await s.get(LearningPath, path_id)
+    if not path:
+        return False
+    path.status = "published"
+    for lv in (await s.execute(select(Level).where(Level.path_id == path_id))).scalars().all():
+        lv.status = "published"
+        for cs in (await s.execute(select(ContentSession).where(ContentSession.level_id == lv.id))).scalars().all():
+            cs.status = "published"
+            for ln in (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id))).scalars().all():
+                ln.status = "published"
+    await s.commit()
+    return True

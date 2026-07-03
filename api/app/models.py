@@ -101,6 +101,57 @@ class MCReview(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
+class Genre(Base):
+    """Thể loại (AD-9). vd: kỹ năng nói, MC đám cưới, MC livestream."""
+    __tablename__ = "genre"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String, unique=True)
+    status: Mapped[str] = mapped_column(String, default="published")  # draft|published|archived (AD-12)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class LearningPath(Base):
+    """Lộ trình (AD-9). Thuộc một Genre."""
+    __tablename__ = "learning_path"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    genre_id: Mapped[str] = mapped_column(ForeignKey("genre.id"))
+    title: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String, default="draft")  # AD-12
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Level(Base):
+    """Cấp độ (AD-9): Cơ bản/Trung cấp/Nâng cao."""
+    __tablename__ = "level"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    path_id: Mapped[str] = mapped_column(ForeignKey("learning_path.id"))
+    name: Mapped[str] = mapped_column(String)
+    order_index: Mapped[int] = mapped_column(default=0)
+    status: Mapped[str] = mapped_column(String, default="draft")
+
+
+class ContentSession(Base):
+    """Buổi (AD-9)."""
+    __tablename__ = "content_session"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    level_id: Mapped[str] = mapped_column(ForeignKey("level.id"))
+    title: Mapped[str] = mapped_column(String)
+    order_index: Mapped[int] = mapped_column(default=0)
+    status: Mapped[str] = mapped_column(String, default="draft")
+
+
+class ContentLesson(Base):
+    """Bài (AD-9): mẹo + đề. Đề gộp luôn ở đây cho gọn (1 bài 1 đề)."""
+    __tablename__ = "content_lesson"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    session_id: Mapped[str] = mapped_column(ForeignKey("content_session.id"))
+    title: Mapped[str] = mapped_column(String)
+    tip: Mapped[str] = mapped_column(String, default="")
+    prompt: Mapped[str] = mapped_column(String, default="")
+    order_index: Mapped[int] = mapped_column(default=0)
+    status: Mapped[str] = mapped_column(String, default="draft")
+
+
 class BadgeCard(Base):
     """Thẻ MC bảo chứng — tự sinh sau khi có MCReview (FR-11)."""
     __tablename__ = "badge_card"

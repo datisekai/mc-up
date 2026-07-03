@@ -80,3 +80,9 @@ app.include_router(admin.router)
 async def web_prototype():
     """Prototype web 'Sân khấu ấm' — mở để xem & bấm thử toàn bộ luồng."""
     return FileResponse(Path(__file__).parent / "web" / "index.html")
+
+
+@app.get("/admin-web", include_in_schema=False)
+async def admin_web():
+    """Trang admin — AI chia giáo trình → duyệt → xuất bản (FR-17)."""
+    return FileResponse(Path(__file__).parent / "web" / "admin.html")
