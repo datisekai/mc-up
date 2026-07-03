@@ -97,6 +97,7 @@ class MCReview(Base):
     request_id: Mapped[str] = mapped_column(ForeignKey("review_request.id"), unique=True)
     mc_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
     note: Mapped[str] = mapped_column(String)
+    audio_path: Mapped[str | None] = mapped_column(String, nullable=True)  # giọng MC thật (crown jewel)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
@@ -109,4 +110,5 @@ class BadgeCard(Base):
     mc_name: Mapped[str] = mapped_column(String)
     mc_title: Mapped[str | None] = mapped_column(String, nullable=True)
     note: Mapped[str] = mapped_column(String)
+    audio_path: Mapped[str | None] = mapped_column(String, nullable=True)  # key file giọng MC
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

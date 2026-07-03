@@ -55,3 +55,19 @@ export async function submitAudio(token: string, lesson_id: string, uri: string,
   if (!r.ok) throw new Error(data?.detail?.error?.message || "HTTP " + r.status);
   return data;
 }
+
+// MC gửi nhận xét bằng GIỌNG THẬT (multipart)
+export async function submitMcVoice(token: string, request_id: string, uri: string, note: string) {
+  const fd = new FormData();
+  fd.append("request_id", request_id);
+  fd.append("note", note);
+  fd.append("file", { uri, name: "voice.m4a", type: "audio/m4a" } as any);
+  const r = await fetch(API_BASE + "/mc/review-audio", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token },
+    body: fd,
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(data?.detail?.error?.message || "HTTP " + r.status);
+  return data;
+}

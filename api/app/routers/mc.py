@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
 from ..deps import current_user
+from ..media import media
 from ..models import ReviewRequest, Score, User
 from ..schemas import BadgeOut, MCQueueItemOut, SubmitReviewIn
 from ..services import submit_mc_review
@@ -45,3 +46,22 @@ async def submit_review(body: SubmitReviewIn, user: User = Depends(current_user)
 
     badge = await submit_mc_review(session, user, req, body.note)  # phần Hồn + Thẻ bảo chứng (FR-11)
     return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note)
+
+
+@router.post("/review-audio", response_model=BadgeOut)
+async def submit_review_audio(request_id: str = Form(...), note: str = Form("Nhận xét bằng giọng"),
+                              file: UploadFile = File(...), user: User = Depends(current_user),
+                              session: AsyncSession = Depends(get_session)):
+    """MC gửi nhận xét bằng GIỌNG THẬT (crown jewel) → lưu audio + Thẻ bảo chứng có voice."""
+    _require_mc(user)
+    req = await session.get(ReviewRequest, request_id)
+    if not req or req.status != "pending":
+        raise HTTPException(404, {"error": {"code": "no_request", "message": "Yêu cầu không hợp lệ"}})
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, {"error": {"code": "empty_audio", "message": "Ghi âm rỗng"}})
+    ext = (file.filename or "voice.m4a").split(".")[-1]
+    key = f"review-{req.id}.{ext}"
+    await media.put(key, data, file.content_type or "audio/m4a")  # AD-4
+    badge = await submit_mc_review(session, user, req, note, audio_path=key)
+    return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note, audio_url=f"/media/{key}")

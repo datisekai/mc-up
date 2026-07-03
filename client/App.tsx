@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
 import { C } from "./src/theme";
-import { Api, submitAudio } from "./src/api";
+import { Api, API_BASE, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { Fire, MapIcon, Mic, Star, Ticket, Trophy, User } from "./src/icons";
@@ -101,6 +101,12 @@ export default function App() {
     await Api.mcReview(mcToken, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
     Alert.alert("Đã gửi", "Thẻ bảo chứng đã tạo ✨"); await loadQueue(); await refresh();
   }
+  async function doReviewVoice(reqId: string, uri: string, note: string) {
+    try {
+      await submitMcVoice(mcToken, reqId, uri, note);
+      Alert.alert("Đã gửi", "Giọng nhận xét đã gửi tới học viên ✨"); await loadQueue(); await refresh();
+    } catch (e: any) { Alert.alert("Lỗi", e.message); }
+  }
 
   if (booting) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang khởi động McUp…</Text></View>;
   if (err) return <View style={s.center}><Text style={{ color: C.ink }}>Lỗi: {err}</Text><Text style={{ color: C.ink2, marginTop: 8, textAlign: "center" }}>Backend đã chạy chưa? Kiểm tra API_BASE trong src/api.ts</Text></View>;
@@ -158,7 +164,7 @@ export default function App() {
           </View>
         )}
         {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} />}
-        {tab === "mc" && <MCView queue={queue} onReview={doReview} onReload={loadQueue} />}
+        {tab === "mc" && <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} />}
       </ScrollView>
       )}
     </View>
@@ -213,6 +219,7 @@ function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: numbe
             </View>
           </View>
           <Text style={{ fontStyle: "italic", marginTop: 10, lineHeight: 20 }}>"{r.badge.note}"</Text>
+          {r.badge.audio_url && <PlayButton url={API_BASE + r.badge.audio_url} />}
         </View>
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
@@ -229,24 +236,60 @@ function StatCard({ icon, value, label }: any) {
   );
 }
 
-function MCView({ queue, onReview, onReload }: { queue: any[]; onReview: (id: string, note: string) => void; onReload: () => void }) {
+function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; onReview: (id: string, note: string) => void; onReviewVoice: (id: string, uri: string, note: string) => void; onReload: () => void }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [recId, setRecId] = useState<string | null>(null);
+  const recRef = useRef<Audio.Recording | null>(null);
+  async function startVoice(reqId: string) {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      recRef.current = recording; setRecId(reqId);
+    } catch { Alert.alert("Micro", "Không vào được micro"); }
+  }
+  async function stopVoice(reqId: string) {
+    const r = recRef.current; if (!r) return;
+    await r.stopAndUnloadAsync();
+    const uri = r.getURI(); recRef.current = null; setRecId(null);
+    if (uri) await onReviewVoice(reqId, uri, notes[reqId] ?? "Nhận xét bằng giọng");
+  }
   return (
     <View>
       <Kicker>Hàng đợi nhận xét (MC Hạnh)</Kicker>
-      {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Sang tab Học viên, luyện rồi bấm "Gửi cho MC thật".</Text>}
+      {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Sang tab Lộ trình, luyện rồi bấm "Gửi cho MC thật".</Text>}
       {queue.map((it) => (
         <View key={it.request_id} style={s.card}>
           <Text style={{ fontWeight: "700" }}>{it.hoc_vien_name || "Học viên"}</Text>
           <Text style={{ color: C.ink2, fontSize: 12 }}>Tốc độ {it.speed_wpm} chữ/phút · {it.filler_count} từ đệm</Text>
+          {recId === it.request_id ? (
+            <Btn label="Dừng & gửi giọng" onPress={() => stopVoice(it.request_id)} />
+          ) : (
+            <Btn gold label="Ghi âm nhận xét (giọng thật)" onPress={() => startVoice(it.request_id)} />
+          )}
           <TextInput style={s.input} multiline defaultValue="Giọng em có màu, giữ nhịp tốt!"
             onChangeText={(t) => setNotes((n) => ({ ...n, [it.request_id]: t }))} />
-          <Btn label="Gửi nhận xét" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
+          <Btn ghost label="Hoặc gửi bằng text" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
         </View>
       ))}
-      <Btn ghost label="↻ Tải lại hàng đợi" onPress={onReload} />
+      <Btn ghost label="Tải lại hàng đợi" onPress={onReload} />
     </View>
   );
+}
+
+function PlayButton({ url }: { url: string }) {
+  const [playing, setPlaying] = useState(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
+  async function toggle() {
+    try {
+      if (playing) { await soundRef.current?.stopAsync(); setPlaying(false); return; }
+      const { sound } = await Audio.Sound.createAsync({ uri: url });
+      soundRef.current = sound;
+      sound.setOnPlaybackStatusUpdate((st: any) => { if (st.didJustFinish) setPlaying(false); });
+      await sound.playAsync(); setPlaying(true);
+    } catch (e: any) { Alert.alert("Lỗi", "Không phát được: " + e.message); }
+  }
+  return <Btn gold label={playing ? "Đang phát... (chạm để dừng)" : "Nghe giọng MC"} onPress={toggle} />;
 }
 
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;

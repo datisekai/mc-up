@@ -46,15 +46,16 @@ async def send_golden_ticket(s: AsyncSession, user: User, clip: Clip) -> ReviewR
     return req
 
 
-async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: str) -> BadgeCard:
-    """MC gửi nhận xét (phần Hồn, AD-5) → tự sinh Thẻ bảo chứng (FR-11)."""
+async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: str,
+                           audio_path: str | None = None) -> BadgeCard:
+    """MC gửi nhận xét (phần Hồn, AD-5) → tự sinh Thẻ bảo chứng (FR-11). audio_path = giọng MC."""
     req.mc_id = mc.id
     req.status = "submitted"
-    review = MCReview(request_id=req.id, mc_id=mc.id, note=note)
+    review = MCReview(request_id=req.id, mc_id=mc.id, note=note, audio_path=audio_path)
     s.add(review)
     await s.flush()
     badge = BadgeCard(review_id=review.id, hoc_vien_id=req.hoc_vien_id,
-                      mc_name=mc.display_name or "MC", mc_title=mc.mc_title, note=note)
+                      mc_name=mc.display_name or "MC", mc_title=mc.mc_title, note=note, audio_path=audio_path)
     s.add(badge)
     await s.commit()
     return badge

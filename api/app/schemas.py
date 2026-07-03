@@ -86,6 +86,7 @@ class BadgeOut(BaseModel):
     mc_name: str
     mc_title: str | None = None
     note: str
+    audio_url: str | None = None
 
 
 class ReviewRequestOut(BaseModel):
