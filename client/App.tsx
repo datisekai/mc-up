@@ -7,7 +7,8 @@ import { Audio } from "expo-av";
 import { C } from "./src/theme";
 import { Api, submitAudio } from "./src/api";
 import StageMap from "./src/StageMap";
-import { Fire, MapIcon, Mic, Star, Ticket, User } from "./src/icons";
+import MiniChart from "./src/MiniChart";
+import { Fire, MapIcon, Mic, Star, Ticket, Trophy, User } from "./src/icons";
 
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
@@ -22,6 +23,8 @@ export default function App() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
+  const [achs, setAchs] = useState<any[]>([]);
+  const [scores, setScores] = useState<any[]>([]);
   const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
   const [curLesson, setCur] = useState<Lesson | null>(null);
   const [score, setScore] = useState<Score | null>(null);
@@ -49,6 +52,8 @@ export default function App() {
     setLessons(await Api.lessons(lt));
     setReviews(await Api.myReviews(lt));
     setBoard(await Api.leaderboard(lt));
+    setAchs(await Api.achievements(lt));
+    setScores(await Api.scores(lt));
     setScreen("feed");
   }
 
@@ -152,7 +157,7 @@ export default function App() {
             <Btn ghost label="Tiếp tục lộ trình →" onPress={() => refresh()} />
           </View>
         )}
-        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} />}
+        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} />}
         {tab === "mc" && <MCView queue={queue} onReview={doReview} onReload={loadQueue} />}
       </ScrollView>
       )}
@@ -160,7 +165,7 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews, board }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[]; board: any[] }) {
+function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[]; board: any[]; achs: any[]; scores: any[] }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   return (
@@ -171,6 +176,17 @@ function ProfileView({ prog, reviews, board }: { prog: { xp: number; streak: num
         <StatCard icon={<Star size={22} color={C.primary} />} value={prog.xp} label="XP" />
         <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
       </View>
+      <Kicker>Huy hiệu</Kicker>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {achs.map((a) => (
+          <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.4 }]}>
+            <View style={[s.achIcon, a.earned && { backgroundColor: C.spot }]}><Trophy size={18} color={a.earned ? "#5a3d00" : C.ink2} /></View>
+            <Text style={{ fontSize: 11, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
+          </View>
+        ))}
+      </View>
+      <Kicker>Tiến bộ từ đệm</Kicker>
+      <MiniChart data={scores.map((p: any) => p.filler_count)} label="Số từ đệm mỗi lần luyện (thấp hơn = tốt hơn)" />
       <Kicker>Bảng xếp hạng</Kicker>
       {board.length === 0 && <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có dữ liệu.</Text>}
       {board.map((e) => (
@@ -263,4 +279,6 @@ const s = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
   rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
+  achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
+  achIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center" },
 });

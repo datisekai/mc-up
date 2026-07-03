@@ -57,6 +57,19 @@ class ProgressOut(BaseModel):
     tickets: int
 
 
+class Achievement(BaseModel):
+    code: str
+    title: str
+    desc: str
+    earned: bool
+
+
+class ScorePoint(BaseModel):
+    speed_wpm: float
+    filler_count: int
+    created_at: str
+
+
 class LeaderboardEntry(BaseModel):
     rank: int
     name: str

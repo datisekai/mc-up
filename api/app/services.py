@@ -6,6 +6,7 @@ cần hexagonal thuần: chuyển entity xuống domain + repository.
 """
 from datetime import date, timedelta
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .db import SessionLocal
@@ -57,3 +58,31 @@ async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: 
     s.add(badge)
     await s.commit()
     return badge
+
+
+async def get_achievements(s: AsyncSession, user: User) -> list[dict]:
+    prog = await s.get(Progress, user.id)
+    lessons_done = (await s.execute(
+        select(func.count(func.distinct(Clip.lesson_id)))
+        .join(Score, Score.clip_id == Clip.id).where(Clip.user_id == user.id)
+    )).scalar() or 0
+    badges = (await s.execute(
+        select(func.count(BadgeCard.id)).where(BadgeCard.hoc_vien_id == user.id)
+    )).scalar() or 0
+    defs = [
+        ("first_step", "Bước đầu tiên", "Hoàn thành bài học đầu tiên", lessons_done >= 1),
+        ("five_lessons", "MC tương lai", "Hoàn thành 5 bài học", lessons_done >= 5),
+        ("streak7", "Chuỗi 7 ngày", "Giữ streak 7 ngày liên tục", prog.streak >= 7),
+        ("xp50", "Chăm chỉ", "Đạt 50 XP", prog.xp >= 50),
+        ("first_badge", "Được MC công nhận", "Nhận nhận xét đầu tiên từ MC thật", badges >= 1),
+    ]
+    return [{"code": c, "title": t, "desc": d, "earned": e} for c, t, d, e in defs]
+
+
+async def get_score_history(s: AsyncSession, user: User, limit: int = 20) -> list[dict]:
+    rows = (await s.execute(
+        select(Score.speed_wpm, Score.filler_count, Score.created_at)
+        .join(Clip, Clip.id == Score.clip_id).where(Clip.user_id == user.id)
+        .order_by(Score.created_at).limit(limit)
+    )).all()
+    return [{"speed_wpm": r.speed_wpm, "filler_count": r.filler_count, "created_at": r.created_at.isoformat()} for r in rows]
