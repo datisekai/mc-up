@@ -1,7 +1,8 @@
 """Chọn adapter ASR theo cấu hình (AD-2) — đa nhà cung cấp.
 
 provider:
-  auto    → whisper nếu có openai_key, không thì mock
+  auto    → ưu tiên GIỮ-FILLER cho tiếng Việt (FR-12): viettel > google > whisper,
+            không có key nào thì mock. Thêm key Viettel/Google là tự nâng cấp.
   mock    → luôn giả lập
   whisper → OpenAI Whisper (cần openai_key)
   google  → Google Cloud STT vi-VN (cần google_key)
@@ -16,8 +17,15 @@ def get_asr(provider: str = "auto", *, openai_key: str = "",
             google_key: str = "", viettel_token: str = ""):
     provider = (provider or "auto").lower()
 
-    if provider == "auto":
-        provider = "whisper" if openai_key else "mock"
+    if provider == "auto":  # xếp theo độ giữ tiếng đệm tiếng Việt (FR-12)
+        if viettel_token:
+            provider = "viettel"
+        elif google_key:
+            provider = "google"
+        elif openai_key:
+            provider = "whisper"
+        else:
+            provider = "mock"
 
     if provider == "whisper" and openai_key:
         from .asr_whisper import WhisperAsr

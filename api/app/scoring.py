@@ -12,12 +12,22 @@ import array
 import logging
 import math
 import os
+import re
 import subprocess
 
 from .config import settings
 
 log = logging.getLogger("mcup.scoring")
-FILLERS = {"ừm", "à", "ờ", "ơ", "ừ"}
+
+# Từ đệm/ngập ngừng tiếng Việt (FR-12). Whisper hay BỎ chúng → (1) adapter bias
+# prompt để giữ lại, (2) ở đây chuẩn hóa co giãn "ừmmm"→"ừm" và bỏ dấu câu bám
+# quanh token trước khi khớp, nên "À," / "ừmmm" / "Ờ." đều đếm đúng.
+FILLERS = {"ừm", "à", "ờ", "ơ", "ừ", "ừa", "hử", "hửm", "ậm", "ầy"}
+
+
+def _norm_word(w: str) -> str:
+    w = w.lower().strip().strip(".,!?;:…“”\"'`()[]-–—")
+    return re.sub(r"(.)\1{2,}", r"\1", w)  # co giãn ký tự lặp ≥3: ừmmm→ừm, àaaa→à
 
 
 def _volume_label(seed: str) -> str:
@@ -83,7 +93,7 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
 
     words = result.words
     wpm = _wpm(words, duration_seconds)  # FR-14: theo thời gian nói thực
-    filler = sum(1 for w in words if w["word"].lower().strip() in FILLERS)
+    filler = sum(1 for w in words if _norm_word(w["word"]) in FILLERS)  # FR-12: bền với co giãn/dấu câu
     real_vol = _rms_volume(path) if (path and os.path.exists(path)) else None  # FR-13: RMS thật
 
     tips = rb["tips"]  # gợi ý theo thể loại (FR-15)
