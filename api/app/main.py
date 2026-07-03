@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from .config import settings
 from .db import init_db
 from .routers import admin, auth, content, leaderboard, lessons, mc, media, practice, stats, vevang
-from .seed import seed_admin, seed_lessons, seed_mc
+from .seed import seed_admin, seed_genres, seed_lessons, seed_mc
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("mcup")
@@ -28,6 +28,7 @@ log = logging.getLogger("mcup")
 async def lifespan(_: FastAPI):
     await init_db()
     await seed_lessons()
+    await seed_genres()  # Pha C: thể loại đám cưới/sự kiện/livestream
     await seed_mc()
     await seed_admin()
     log.info("McUp API sẵn sàng (DB=%s) — mở http://localhost:8000/app",

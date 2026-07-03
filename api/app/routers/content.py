@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
 from ..deps import current_user
+from ..genres_meta import meta_for
 from ..models import User
 from ..services import get_content_lessons_for_user, list_paths
 
@@ -11,8 +12,11 @@ router = APIRouter(tags=["content"])
 
 @router.get("/content/paths")
 async def content_paths(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
-    """Lộ trình ĐÃ PUBLISHED cho học viên chọn (FR-19)."""
-    return await list_paths(session, "published")
+    """Lộ trình ĐÃ PUBLISHED cho học viên chọn (FR-19) + màu/tagline theo thể loại (Pha C)."""
+    paths = await list_paths(session, "published")
+    for p in paths:
+        p.update(meta_for(p.get("genre")))
+    return paths
 
 
 @router.get("/content/paths/{path_id}/lessons")

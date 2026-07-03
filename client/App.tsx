@@ -215,10 +215,13 @@ export default function App() {
       {tab === "hv" && screen === "feed" ? (
         <View style={{ flex: 1 }}>
           {paths.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
-              <PathPill active={!selPath} label="Kỹ năng nói" onPress={() => pickPath(null)} />
-              {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} onPress={() => pickPath(p.id)} />)}
-            </ScrollView>
+            <View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
+                <PathPill active={!selPath} label="Kỹ năng nói" color={C.primary} onPress={() => pickPath(null)} />
+                {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
+              </ScrollView>
+              {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : "Nền tảng nói tự tin"; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
+            </View>
           )}
           {prog.practiced_today === false && (
             <View style={s.reminder}>
@@ -395,7 +398,7 @@ function PlayButton({ url }: { url: string }) {
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
-const PathPill = ({ active, label, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && s.pathPillOn]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
+const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
 const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontWeight: "800" }}>{label}</Text></TouchableOpacity>;
 const Row = ({ k, v, ok }: any) => <View style={s.row}><Text>{k}</Text><View style={[s.pill, ok ? s.pillOk : s.pillMid]}><Text style={{ fontWeight: "800", fontSize: 12, color: ok ? "#1f8f63" : "#9a6b00" }}>{v}</Text></View></View>;
 
@@ -426,5 +429,5 @@ const s = StyleSheet.create({
   reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF3DA", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  pathPillOn: { backgroundColor: C.primary },
+  pathTagline: { paddingHorizontal: 18, paddingBottom: 4, color: C.ink2, fontSize: 12, fontWeight: "600" },
 });
