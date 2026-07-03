@@ -4,21 +4,31 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { C } from "./src/theme";
 import { Api, API_BASE, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { Fire, MapIcon, Mic, Star, Ticket, Trophy, User } from "./src/icons";
+import { Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
 
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
 
 export default function App() {
   const [booting, setBooting] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-  const [learnerToken, setLT] = useState("");
-  const [mcToken, setMT] = useState("");
-  const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
+  const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<string>("hoc_vien");
+
+  // form đăng nhập / đăng ký
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [name, setName] = useState("");
+  const [regRole, setRegRole] = useState<"hoc_vien" | "mc">("hoc_vien");
+  const [authErr, setAuthErr] = useState<string | null>(null);
+  const [authBusy, setAuthBusy] = useState(false);
+
+  const [tab, setTab] = useState<"hv" | "hs">("hv");
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -34,26 +44,46 @@ export default function App() {
   const [recStart, setRecStart] = useState(0);
   const [queue, setQueue] = useState<any[]>([]);
 
-  useEffect(() => { boot(); }, []);
+  useEffect(() => { restore(); }, []);
 
-  async function boot() {
+  async function restore() {
     try {
-      let lt: string;
-      try { lt = (await Api.login("linh@demo.vn", "123456")).access_token; }
-      catch { lt = (await Api.register("linh@demo.vn", "123456", "Linh")).access_token; }
-      const mt = (await Api.login("mc@test.vn", "123456")).access_token;
-      setLT(lt); setMT(mt);
-      await refresh(lt);
-    } catch (e: any) { setErr(e.message); }
+      const t = await AsyncStorage.getItem("token");
+      const r = (await AsyncStorage.getItem("role")) || "hoc_vien";
+      if (t) { setToken(t); setRole(r); await loadFor(t, r); }
+    } catch { await AsyncStorage.multiRemove(["token", "role"]); setToken(null); }
     setBooting(false);
   }
-  async function refresh(lt = learnerToken) {
-    setProg(await Api.progress(lt));
-    setLessons(await Api.lessons(lt));
-    setReviews(await Api.myReviews(lt));
-    setBoard(await Api.leaderboard(lt));
-    setAchs(await Api.achievements(lt));
-    setScores(await Api.scores(lt));
+  async function loadFor(t: string, r: string) {
+    if (r === "mc") setQueue(await Api.mcQueue(t));
+    else await refresh(t);
+  }
+  async function doAuth() {
+    setAuthBusy(true); setAuthErr(null);
+    try {
+      const res = authMode === "login"
+        ? await Api.login(email.trim().toLowerCase(), pw)
+        : await Api.register(email.trim().toLowerCase(), pw, name.trim() || "Học viên", regRole);
+      await AsyncStorage.setItem("token", res.access_token);
+      await AsyncStorage.setItem("role", res.role);
+      setToken(res.access_token); setRole(res.role); setTab("hv"); setScreen("feed");
+      await loadFor(res.access_token, res.role);
+    } catch (e: any) { setAuthErr(e.message); }
+    setAuthBusy(false);
+  }
+  async function logout() {
+    await AsyncStorage.multiRemove(["token", "role"]);
+    setToken(null); setRole("hoc_vien"); setTab("hv"); setScreen("feed");
+    setEmail(""); setPw(""); setName("");
+  }
+
+  async function refresh(t = token!) {
+    setProg(await Api.progress(t));
+    setLessons(await Api.lessons(t));
+    setReviews(await Api.myReviews(t));
+    setBoard(await Api.leaderboard(t));
+    setAchs(await Api.achievements(t));
+    setScores(await Api.scores(t));
     setScreen("feed");
   }
 
@@ -72,45 +102,92 @@ export default function App() {
     const uri = recording.getURI(); const dur = Math.max(1, Math.round((Date.now() - recStart) / 1000));
     setRecording(null);
     try {
-      const clip = await submitAudio(learnerToken, curLesson.id, uri!, dur);
+      const clip = await submitAudio(token!, curLesson.id, uri!, dur);
       await pollScore(clip.id);
     } catch (e: any) { Alert.alert("Lỗi", e.message); setBusy(false); }
   }
   async function doSubmitMock() {
     if (!curLesson) return;
     setBusy(true);
-    const clip = await Api.submitMock(learnerToken, curLesson.id, 30);
+    const clip = await Api.submitMock(token!, curLesson.id, 30);
     await pollScore(clip.id);
   }
   async function pollScore(clipId: string) {
     let s: any = null;
     for (let i = 0; i < 15; i++) {
-      const c = await Api.clip(learnerToken, clipId);
+      const c = await Api.clip(token!, clipId);
       if (c.status === "done") { s = c; break; }
       await new Promise((r) => setTimeout(r, 400));
     }
-    setLastClip(clipId); setScore(s.score); setProg(await Api.progress(learnerToken));
+    setLastClip(clipId); setScore(s.score); setProg(await Api.progress(token!));
     setBusy(false); setScreen("score");
   }
   async function sendVeVang() {
-    try { await Api.sendTicket(learnerToken, lastClip!); Alert.alert("Đã gửi", "Chờ MC nhận xét 🎤"); await refresh(); }
+    try { await Api.sendTicket(token!, lastClip!); Alert.alert("Đã gửi", "Chờ MC nhận xét"); await refresh(); }
     catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
-  async function loadQueue() { setQueue(await Api.mcQueue(mcToken)); }
+  async function loadQueue() { setQueue(await Api.mcQueue(token!)); }
   async function doReview(reqId: string, note: string) {
-    await Api.mcReview(mcToken, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
-    Alert.alert("Đã gửi", "Thẻ bảo chứng đã tạo ✨"); await loadQueue(); await refresh();
+    await Api.mcReview(token!, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
+    Alert.alert("Đã gửi", "Thẻ bảo chứng đã tạo"); await loadQueue();
   }
   async function doReviewVoice(reqId: string, uri: string, note: string) {
     try {
-      await submitMcVoice(mcToken, reqId, uri, note);
-      Alert.alert("Đã gửi", "Giọng nhận xét đã gửi tới học viên ✨"); await loadQueue(); await refresh();
+      await submitMcVoice(token!, reqId, uri, note);
+      Alert.alert("Đã gửi", "Giọng nhận xét đã gửi tới học viên"); await loadQueue();
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
 
-  if (booting) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang khởi động McUp…</Text></View>;
-  if (err) return <View style={s.center}><Text style={{ color: C.ink }}>Lỗi: {err}</Text><Text style={{ color: C.ink2, marginTop: 8, textAlign: "center" }}>Backend đã chạy chưa? Kiểm tra API_BASE trong src/api.ts</Text></View>;
+  if (booting) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
 
+  // ---- Chưa đăng nhập → màn Auth ----
+  if (!token) {
+    return (
+      <View style={s.center}>
+        <Text style={{ fontSize: 34, fontWeight: "800", color: C.primary, letterSpacing: -0.5 }}>McUp</Text>
+        <Text style={{ color: C.ink2, marginTop: 4, marginBottom: 26 }}>Luyện MC mỗi ngày</Text>
+        <View style={{ width: "100%", maxWidth: 340 }}>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+            <Tab on={authMode === "login"} label="Đăng nhập" onPress={() => { setAuthMode("login"); setAuthErr(null); }} />
+            <Tab on={authMode === "register"} label="Đăng ký" onPress={() => { setAuthMode("register"); setAuthErr(null); }} />
+          </View>
+          {authMode === "register" && (
+            <TextInput style={s.field} placeholder="Tên hiển thị" placeholderTextColor="#BFB4C4" value={name} onChangeText={setName} />
+          )}
+          <TextInput style={s.field} placeholder="Email" placeholderTextColor="#BFB4C4" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+          <TextInput style={s.field} placeholder="Mật khẩu" placeholderTextColor="#BFB4C4" secureTextEntry value={pw} onChangeText={setPw} />
+          {authMode === "register" && (
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
+              <Tab on={regRole === "hoc_vien"} label="Là học viên" onPress={() => setRegRole("hoc_vien")} />
+              <Tab on={regRole === "mc"} label="Là MC" onPress={() => setRegRole("mc")} />
+            </View>
+          )}
+          {authErr && <Text style={{ color: C.primary, marginBottom: 8, fontWeight: "600" }}>{authErr}</Text>}
+          {authBusy ? <ActivityIndicator color={C.primary} style={{ marginTop: 8 }} />
+            : <Btn label={authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"} onPress={doAuth} />}
+          <Text style={{ color: C.ink2, fontSize: 12, textAlign: "center", marginTop: 16 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // ---- Đăng nhập với vai MC → màn nhận xét ----
+  if (role === "mc") {
+    return (
+      <View style={s.app}>
+        <StatusBar style="dark" />
+        <View style={s.header}>
+          <Text style={s.brand}>McUp · MC</Text>
+          <TouchableOpacity onPress={logout}><Text style={{ color: C.primary, fontWeight: "800" }}>Đăng xuất</Text></TouchableOpacity>
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} />
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ---- Học viên ----
   return (
     <View style={s.app}>
       <StatusBar style="dark" />
@@ -125,7 +202,6 @@ export default function App() {
       <View style={s.tabs}>
         <Tab on={tab === "hv"} icon={<MapIcon size={16} color={tab === "hv" ? "#fff" : C.ink2} />} label="Lộ trình" onPress={() => setTab("hv")} />
         <Tab on={tab === "hs"} icon={<User size={16} color={tab === "hs" ? "#fff" : C.ink2} />} label="Hồ sơ" onPress={() => setTab("hs")} />
-        <Tab on={tab === "mc"} icon={<Mic size={16} color={tab === "mc" ? "#fff" : C.ink2} />} label="MC" onPress={() => { setTab("mc"); loadQueue(); }} />
       </View>
 
       {tab === "hv" && screen === "feed" ? (
@@ -144,8 +220,8 @@ export default function App() {
           <View>
             <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
             <View style={s.card}>
-              <View style={s.tip}><Text>💡 {curLesson.tip}</Text></View>
-              <Text style={{ fontWeight: "700", marginVertical: 12 }}>🎬 Đề: {curLesson.prompt}</Text>
+              <View style={s.tip}><Text>{curLesson.tip}</Text></View>
+              <Text style={{ fontWeight: "700", marginVertical: 12 }}>Đề: {curLesson.prompt}</Text>
               {busy ? <ActivityIndicator color={C.primary} /> : recording ? (
                 <Btn label="Dừng & nộp" onPress={stopRec} />
               ) : (
@@ -154,7 +230,7 @@ export default function App() {
                   <Btn ghost label="Bỏ qua — nộp giả lập" onPress={doSubmitMock} />
                 </>
               )}
-              <Btn ghost label="← Quay lại lộ trình" onPress={() => refresh()} />
+              <Btn ghost label="Quay lại lộ trình" onPress={() => refresh()} />
             </View>
           </View>
         )}
@@ -165,21 +241,20 @@ export default function App() {
               <Row k="Âm lượng" v={score.volume_label} ok={score.volume_label === "tốt"} />
               <Row k="Tốc độ" v={`${score.speed_wpm} chữ/phút`} />
               <Row k="Từ đệm 'ừm/à'" v={`${score.filler_count} lần`} />
-              <View style={[s.tip, { marginTop: 10 }]}><Text>💡 {score.tip}</Text></View>
+              <View style={[s.tip, { marginTop: 10 }]}><Text>{score.tip}</Text></View>
             </View>
             <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
-            <Btn ghost label="Tiếp tục lộ trình →" onPress={() => refresh()} />
+            <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
           </View>
         )}
-        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} />}
-        {tab === "mc" && <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} />}
+        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} onLogout={logout} />}
       </ScrollView>
       )}
     </View>
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[] }) {
+function ProfileView({ prog, reviews, board, achs, scores, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   return (
@@ -232,6 +307,8 @@ function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: numbe
         </View>
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
+      <Btn ghost label="Đăng xuất" onPress={onLogout} />
+      <View style={{ height: 20 }} />
     </View>
   );
 }
@@ -265,8 +342,8 @@ function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; on
   }
   return (
     <View>
-      <Kicker>Hàng đợi nhận xét (MC Hạnh)</Kicker>
-      {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Sang tab Lộ trình, luyện rồi bấm "Gửi cho MC thật".</Text>}
+      <Kicker>Hàng đợi nhận xét</Kicker>
+      {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Học viên luyện rồi bấm "Gửi cho MC thật" là clip vào đây.</Text>}
       {queue.map((it) => (
         <View key={it.request_id} style={s.card}>
           <Text style={{ fontWeight: "700" }}>{it.hoc_vien_name || "Học viên"}</Text>
@@ -316,11 +393,9 @@ const s = StyleSheet.create({
   tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
   tabOn: { backgroundColor: C.primary },
+  field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontWeight: "800", marginVertical: 10 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
-  lesson: { flexDirection: "row", alignItems: "center", gap: 12 },
-  bub: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  bubNow: { backgroundColor: C.primary }, bubDone: { backgroundColor: "#E6F7EF" }, bubLock: { backgroundColor: C.sunken },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
   tip: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
