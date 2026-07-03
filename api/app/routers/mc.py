@@ -4,8 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
 from ..deps import current_user
-from ..models import BadgeCard, Clip, MCReview, Progress, ReviewRequest, Score, User
+from ..models import ReviewRequest, Score, User
 from ..schemas import BadgeOut, MCQueueItemOut, SubmitReviewIn
+from ..services import submit_mc_review
 
 router = APIRouter(prefix="/mc", tags=["mc-mode"])
 
@@ -42,14 +43,5 @@ async def submit_review(body: SubmitReviewIn, user: User = Depends(current_user)
     if not req or req.status != "pending":
         raise HTTPException(404, {"error": {"code": "no_request", "message": "Yêu cầu không hợp lệ"}})
 
-    req.mc_id = user.id
-    req.status = "submitted"
-    review = MCReview(request_id=req.id, mc_id=user.id, note=body.note)
-    session.add(review)
-    await session.flush()
-    # tự sinh Thẻ bảo chứng (FR-11)
-    badge = BadgeCard(review_id=review.id, hoc_vien_id=req.hoc_vien_id,
-                      mc_name=user.display_name or "MC", mc_title=user.mc_title, note=body.note)
-    session.add(badge)
-    await session.commit()
+    badge = await submit_mc_review(session, user, req, body.note)  # phần Hồn + Thẻ bảo chứng (FR-11)
     return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note)

@@ -9,12 +9,8 @@ Tốc độ:  words / duration * 60 (công thức thật).
 Từ đệm:  đếm 'ừm/à/ờ' trên transcript — Whisper hay BỎ fillers → cần POC 3.1.
 """
 import logging
-import sys
-from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[3] / "mcup"))
-
-from .config import settings  # noqa: E402
+from .config import settings
 
 log = logging.getLogger("mcup.scoring")
 FILLERS = {"ừm", "à", "ờ", "ơ", "ừ"}

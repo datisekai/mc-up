@@ -6,6 +6,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import BadgeCard, Clip, MCReview, Progress, ReviewRequest, User
 from ..schemas import BadgeOut, ReviewRequestOut, SendTicketIn
+from ..services import send_golden_ticket
 
 router = APIRouter(tags=["ve-vang"])
 
@@ -20,10 +21,7 @@ async def send_ticket(body: SendTicketIn, user: User = Depends(current_user),
     if not clip or clip.user_id != user.id:
         raise HTTPException(404, {"error": {"code": "no_clip", "message": "Không tìm thấy clip"}})
 
-    prog.tickets -= 1  # tiêu vé (AD-6)
-    req = ReviewRequest(clip_id=clip.id, hoc_vien_id=user.id, status="pending")
-    session.add(req)
-    await session.commit()
+    req = await send_golden_ticket(session, user, clip)  # tiêu vé + tạo yêu cầu review (AD-6)
     return ReviewRequestOut(id=req.id, clip_id=clip.id, status=req.status, badge=None)
 
 

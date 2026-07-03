@@ -1,50 +1,18 @@
-import sys
-from datetime import date, timedelta
-from pathlib import Path
-
+from adapters.media_local import LocalMediaStore
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
-from ..db import SessionLocal, get_session
+from ..db import get_session
 from ..deps import current_user
 from ..models import Clip, Lesson, Progress, Score, User
 from ..schemas import ClipOut, ProgressOut, ScoreOut, SubmitClipIn
-from ..scoring import score_clip
-
-sys.path.append(str(Path(__file__).resolve().parents[4] / "mcup"))
-from adapters.media_local import LocalMediaStore  # type: ignore  # noqa: E402
+from ..services import run_scoring
 
 _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi deploy
 
 router = APIRouter(tags=["practice"])
-
-
-async def _run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: int):
-    """Pipeline chấm bất đồng bộ (AD-1): queued -> processing -> done."""
-    async with SessionLocal() as s:
-        clip = await s.get(Clip, clip_id)
-        clip.status = "processing"
-        await s.commit()
-
-        result = await score_clip(clip_id, duration, audio_path=clip.audio_path)
-        s.add(Score(clip_id=clip_id, **result))
-
-        # Cập nhật streak/XP (server sở hữu — AD-3)
-        prog = await s.get(Progress, user_id)
-        today = date.today()
-        if prog.last_day != today:  # idempotent theo ngày (AD-3)
-            if prog.last_day == today - timedelta(days=1):
-                prog.streak += 1
-            else:
-                prog.streak = 1
-            prog.last_day = today
-        prog.xp += lesson_xp
-        prog.tickets += 1  # [DEMO] tặng 1 Vé Vàng mỗi lần hoàn thành để dễ xem; thật = theo mốc XP
-
-        clip.status = "done"
-        await s.commit()
 
 
 @router.post("/practice/submit", response_model=ClipOut)
@@ -58,7 +26,7 @@ async def submit(body: SubmitClipIn, bg: BackgroundTasks,
     session.add(clip)
     await session.commit()
 
-    bg.add_task(_run_scoring, clip.id, user.id, body.duration_seconds, lesson.xp)
+    bg.add_task(run_scoring, clip.id, user.id, body.duration_seconds, lesson.xp)
     return ClipOut(id=clip.id, lesson_id=lesson.id, status=clip.status, score=None)
 
 
@@ -83,7 +51,7 @@ async def submit_audio(bg: BackgroundTasks, lesson_id: str = Form(...),
     clip.audio_path = await _media.put(f"{clip.id}.{ext}", data, file.content_type or "audio/m4a")  # AD-4
     await session.commit()
 
-    bg.add_task(_run_scoring, clip.id, user.id, duration_seconds, lesson.xp)
+    bg.add_task(run_scoring, clip.id, user.id, duration_seconds, lesson.xp)
     return ClipOut(id=clip.id, lesson_id=lesson.id, status=clip.status, score=None)
 
 

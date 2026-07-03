@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r api/requirements.txt
 # Copy toàn bộ mã (api + domain + adapters + db)
 COPY . .
 
-WORKDIR /app/mcup/api
+# Chạy từ root mcup/ để api/ adapters/ domain/ import sạch (không sys.path hack)
+WORKDIR /app/mcup
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
