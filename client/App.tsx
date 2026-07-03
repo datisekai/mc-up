@@ -7,7 +7,7 @@ import { Audio } from "expo-av";
 import { C } from "./src/theme";
 import { Api, submitAudio } from "./src/api";
 import StageMap from "./src/StageMap";
-import { Fire, MapIcon, Mic, Star, Ticket } from "./src/icons";
+import { Fire, MapIcon, Mic, Star, Ticket, User } from "./src/icons";
 
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
@@ -17,7 +17,7 @@ export default function App() {
   const [err, setErr] = useState<string | null>(null);
   const [learnerToken, setLT] = useState("");
   const [mcToken, setMT] = useState("");
-  const [tab, setTab] = useState<"hv" | "mc">("hv");
+  const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
   const [prog, setProg] = useState({ xp: 0, streak: 0, tickets: 0 });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -110,8 +110,9 @@ export default function App() {
         </View>
       </View>
       <View style={s.tabs}>
-        <Tab on={tab === "hv"} icon={<MapIcon size={17} color={tab === "hv" ? "#fff" : C.ink2} />} label="Học viên" onPress={() => setTab("hv")} />
-        <Tab on={tab === "mc"} icon={<Mic size={17} color={tab === "mc" ? "#fff" : C.ink2} />} label="Chế độ MC" onPress={() => { setTab("mc"); loadQueue(); }} />
+        <Tab on={tab === "hv"} icon={<MapIcon size={16} color={tab === "hv" ? "#fff" : C.ink2} />} label="Lộ trình" onPress={() => setTab("hv")} />
+        <Tab on={tab === "hs"} icon={<User size={16} color={tab === "hs" ? "#fff" : C.ink2} />} label="Hồ sơ" onPress={() => setTab("hs")} />
+        <Tab on={tab === "mc"} icon={<Mic size={16} color={tab === "mc" ? "#fff" : C.ink2} />} label="MC" onPress={() => { setTab("mc"); loadQueue(); }} />
       </View>
 
       {tab === "hv" && screen === "feed" ? (
@@ -125,10 +126,10 @@ export default function App() {
               <View style={s.tip}><Text>💡 {curLesson.tip}</Text></View>
               <Text style={{ fontWeight: "700", marginVertical: 12 }}>🎬 Đề: {curLesson.prompt}</Text>
               {busy ? <ActivityIndicator color={C.primary} /> : recording ? (
-                <Btn label="⏹ Dừng & nộp" onPress={stopRec} />
+                <Btn label="Dừng & nộp" onPress={stopRec} />
               ) : (
                 <>
-                  <Btn label="🔴 Bắt đầu quay (nói vào mic)" onPress={startRec} />
+                  <Btn label="Bắt đầu quay (nói vào mic)" onPress={startRec} />
                   <Btn ghost label="Bỏ qua — nộp giả lập" onPress={doSubmitMock} />
                 </>
               )}
@@ -138,17 +139,18 @@ export default function App() {
         )}
         {tab === "hv" && screen === "score" && score && (
           <View>
-            <Kicker>Kết quả · phần Xác {score.is_mock ? "(giả lập)" : "(ASR thật ✅)"}</Kicker>
+            <Kicker>Kết quả · phần Xác {score.is_mock ? "(giả lập)" : "(ASR thật)"}</Kicker>
             <View style={s.card}>
               <Row k="Âm lượng" v={score.volume_label} ok={score.volume_label === "tốt"} />
               <Row k="Tốc độ" v={`${score.speed_wpm} chữ/phút`} />
               <Row k="Từ đệm 'ừm/à'" v={`${score.filler_count} lần`} />
               <View style={[s.tip, { marginTop: 10 }]}><Text>💡 {score.tip}</Text></View>
             </View>
-            <Btn gold label="🎟️ Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
+            <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
             <Btn ghost label="Tiếp tục lộ trình →" onPress={() => refresh()} />
           </View>
         )}
+        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} />}
         {tab === "mc" && <MCView queue={queue} onReview={doReview} onReload={loadQueue} />}
       </ScrollView>
       )}
@@ -156,30 +158,43 @@ export default function App() {
   );
 }
 
-function Feed({ lessons, reviews, onPick }: { lessons: Lesson[]; reviews: any[]; onPick: (l: Lesson) => void }) {
+function ProfileView({ prog, reviews }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[] }) {
+  const badges = reviews.filter((r) => r.badge);
+  const waiting = reviews.some((r) => !r.badge);
   return (
     <View>
-      <Kicker>Lộ trình của bạn</Kicker>
-      {lessons.map((l) => (
-        <TouchableOpacity key={l.id} disabled={!l.unlocked || l.done} onPress={() => onPick(l)}
-          style={[s.card, s.lesson, (!l.unlocked || l.done) && { opacity: 0.55 }]}>
-          <View style={[s.bub, l.done ? s.bubDone : l.unlocked ? s.bubNow : s.bubLock]}>
-            <Text style={{ color: l.unlocked && !l.done ? "#fff" : l.done ? C.success : C.ink2, fontWeight: "800" }}>{l.done ? "✓" : l.unlocked ? "🎤" : "🔒"}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: "700", fontSize: 15 }}>Buổi {l.buoi} · {l.title}</Text>
-            <Text style={{ color: C.ink2, fontSize: 12 }}>{l.done ? "Hoàn thành ✓" : l.unlocked ? "Chạm để luyện" : "Hoàn thành bài trước để mở"}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-      {reviews.length > 0 && <Kicker>Vé Vàng đã gửi</Kicker>}
-      {reviews.map((r) => r.badge ? (
+      <Kicker>Tiến bộ của bạn</Kicker>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <StatCard icon={<Fire size={22} color="#F5A623" />} value={prog.streak} label="Ngày streak" />
+        <StatCard icon={<Star size={22} color={C.primary} />} value={prog.xp} label="XP" />
+        <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
+      </View>
+      <Kicker>Thẻ MC bảo chứng</Kicker>
+      {badges.length === 0 && !waiting && (
+        <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
+      )}
+      {badges.map((r) => (
         <View key={r.id} style={[s.card, { borderWidth: 1, borderColor: "#F3E4CE" }]}>
-          <Text style={{ fontWeight: "800", fontSize: 15 }}>{r.badge.mc_name}</Text>
-          <Text style={{ color: C.ink2, fontSize: 12 }}>{r.badge.mc_title}</Text>
-          <Text style={{ fontStyle: "italic", marginTop: 8 }}>"{r.badge.note}"</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View style={s.avatar}><Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>{(r.badge.mc_name || "M").replace(/^MC /, "")[0]}</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontWeight: "800", fontSize: 15 }}>{r.badge.mc_name}</Text>
+              <Text style={{ color: C.ink2, fontSize: 12 }}>{r.badge.mc_title}</Text>
+            </View>
+          </View>
+          <Text style={{ fontStyle: "italic", marginTop: 10, lineHeight: 20 }}>"{r.badge.note}"</Text>
         </View>
-      ) : <View key={r.id} style={s.card}><Text style={{ color: C.ink2 }}>⏳ Đang chờ MC nghe bạn dẫn…</Text></View>)}
+      ))}
+      {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
+    </View>
+  );
+}
+function StatCard({ icon, value, label }: any) {
+  return (
+    <View style={[s.card, { flex: 1, alignItems: "center", marginBottom: 0 }]}>
+      {icon}
+      <Text style={{ fontWeight: "900", fontSize: 22, color: C.ink, marginTop: 4 }}>{value}</Text>
+      <Text style={{ color: C.ink2, fontSize: 11, fontWeight: "700" }}>{label}</Text>
     </View>
   );
 }
@@ -192,11 +207,11 @@ function MCView({ queue, onReview, onReload }: { queue: any[]; onReview: (id: st
       {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Sang tab Học viên, luyện rồi bấm "Gửi cho MC thật".</Text>}
       {queue.map((it) => (
         <View key={it.request_id} style={s.card}>
-          <Text style={{ fontWeight: "700" }}>🎧 {it.hoc_vien_name || "Học viên"}</Text>
+          <Text style={{ fontWeight: "700" }}>{it.hoc_vien_name || "Học viên"}</Text>
           <Text style={{ color: C.ink2, fontSize: 12 }}>Tốc độ {it.speed_wpm} chữ/phút · {it.filler_count} từ đệm</Text>
           <TextInput style={s.input} multiline defaultValue="Giọng em có màu, giữ nhịp tốt!"
             onChangeText={(t) => setNotes((n) => ({ ...n, [it.request_id]: t }))} />
-          <Btn label="Gửi nhận xét 🎤" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
+          <Btn label="Gửi nhận xét" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
         </View>
       ))}
       <Btn ghost label="↻ Tải lại hàng đợi" onPress={onReload} />
@@ -231,4 +246,5 @@ const s = StyleSheet.create({
   pill: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999 },
   pillOk: { backgroundColor: "#E6F7EF" }, pillMid: { backgroundColor: "#FFF3DA" },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
 });

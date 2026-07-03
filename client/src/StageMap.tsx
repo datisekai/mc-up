@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { C } from "./theme";
 import { Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
@@ -18,6 +18,12 @@ const STAGE_H = 172;   // chiều cao sân khấu (đỉnh)
 const GROUND_H = 116;  // chiều cao mặt đất (đáy)
 const AMP = 52;        // biên độ zig-zag (rộng hơn để nhãn 2 node cạnh nhau tách ra)
 
+// địa danh theo buổi (chất "phiêu lưu nghề MC" — concept C) cho mốc Vé Vàng
+const LANDMARK: Record<number, string> = {
+  1: "Lớp học nhỏ", 2: "Góc luyện thanh", 3: "Quán cafe", 4: "Câu lạc bộ",
+  5: "Tiệc sinh nhật", 6: "Toạ đàm", 7: "Phỏng vấn", 8: "Tiệc cưới", 9: "Gala", 10: "Hội trường lớn",
+};
+
 function buildItems(lessons: Lesson[]): Item[] {
   const firstOpenIdx = lessons.findIndex((l) => l.unlocked && !l.done);
   const ordered: Item[] = [];
@@ -34,6 +40,19 @@ export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPic
   const { width, height } = useWindowDimensions();
   const cx = width / 2;
   const scroll = useRef<ScrollView>(null);
+
+  // spotlight "thở" cho node đang mở
+  const pulse = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const anim = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 1200, useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0, duration: 1200, useNativeDriver: true }),
+    ]));
+    anim.start();
+    return () => anim.stop();
+  }, [pulse]);
+  const glowScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1.14] });
+  const glowOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.8] });
 
   const ordered = buildItems(lessons);
   const display = [...ordered].reverse(); // đỉnh (bài cuối) ở trên, đáy (bài đầu) ở dưới
@@ -86,7 +105,7 @@ export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPic
           return (
             <View key={i}>
               {/* spotlight cho node đang mở */}
-              {open && <View style={[st.glow, { left: p.x - 120, top: p.y - 120 }]} pointerEvents="none" />}
+              {open && <Animated.View style={[st.glow, { left: p.x - 120, top: p.y - 120, opacity: glowOpacity, transform: [{ scale: glowScale }] }]} pointerEvents="none" />}
               {open && (
                 <View style={[st.cta, { left: p.x - 60, top: p.y - R - 34 }]}>
                   <Text style={st.ctaT}>TỚI LƯỢT BẠN</Text>
@@ -117,7 +136,7 @@ export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPic
                 </Text>
                 <Text style={[st.ls, open && st.hot]}>
                   {it.kind === "reward"
-                    ? it.earned ? "Đã nhận · Sân khấu nhỏ" : `Sân khấu nhỏ · Buổi ${it.buoi}`
+                    ? it.earned ? `Đã nhận · ${LANDMARK[it.buoi] ?? "Sân khấu nhỏ"}` : `${LANDMARK[it.buoi] ?? "Sân khấu nhỏ"} · Buổi ${it.buoi}`
                     : it.state === "done" ? `Buổi ${it.lesson.buoi} · Hoàn thành`
                     : it.state === "open" ? `Buổi ${it.lesson.buoi} · Bắt đầu`
                     : `Buổi ${it.lesson.buoi} · Đang khoá`}
