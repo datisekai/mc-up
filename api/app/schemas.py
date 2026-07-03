@@ -32,7 +32,8 @@ class LessonOut(BaseModel):
 
 
 class SubmitClipIn(BaseModel):
-    lesson_id: str
+    lesson_id: str | None = None
+    content_lesson_id: str | None = None
     duration_seconds: float = 60.0
 
 

@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from .config import settings
 from .db import init_db
-from .routers import admin, auth, leaderboard, lessons, mc, media, practice, stats, vevang
+from .routers import admin, auth, content, leaderboard, lessons, mc, media, practice, stats, vevang
 from .seed import seed_admin, seed_lessons, seed_mc
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -74,6 +74,7 @@ app.include_router(leaderboard.router)
 app.include_router(stats.router)
 app.include_router(media.router)
 app.include_router(admin.router)
+app.include_router(content.router)
 
 
 @app.get("/app", include_in_schema=False)

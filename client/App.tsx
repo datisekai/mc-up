@@ -35,6 +35,8 @@ export default function App() {
   const [board, setBoard] = useState<any[]>([]);
   const [achs, setAchs] = useState<any[]>([]);
   const [scores, setScores] = useState<any[]>([]);
+  const [paths, setPaths] = useState<any[]>([]);
+  const [selPath, setSelPath] = useState<string | null>(null);
   const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
   const [curLesson, setCur] = useState<Lesson | null>(null);
   const [score, setScore] = useState<Score | null>(null);
@@ -79,11 +81,17 @@ export default function App() {
 
   async function refresh(t = token!) {
     setProg(await Api.progress(t));
-    setLessons(await Api.lessons(t));
+    setPaths(await Api.contentPaths(t));
+    setLessons(selPath ? await Api.contentLessons(t, selPath) : await Api.lessons(t));
     setReviews(await Api.myReviews(t));
     setBoard(await Api.leaderboard(t));
     setAchs(await Api.achievements(t));
     setScores(await Api.scores(t));
+    setScreen("feed");
+  }
+  async function pickPath(pid: string | null) {
+    setSelPath(pid);
+    setLessons(pid ? await Api.contentLessons(token!, pid) : await Api.lessons(token!));
     setScreen("feed");
   }
 
@@ -102,14 +110,14 @@ export default function App() {
     const uri = recording.getURI(); const dur = Math.max(1, Math.round((Date.now() - recStart) / 1000));
     setRecording(null);
     try {
-      const clip = await submitAudio(token!, curLesson.id, uri!, dur);
+      const clip = await submitAudio(token!, curLesson.id, uri!, dur, selPath ? curLesson.id : undefined);
       await pollScore(clip.id);
     } catch (e: any) { Alert.alert("Lỗi", e.message); setBusy(false); }
   }
   async function doSubmitMock() {
     if (!curLesson) return;
     setBusy(true);
-    const clip = await Api.submitMock(token!, curLesson.id, 30);
+    const clip = selPath ? await Api.submitMockContent(token!, curLesson.id, 30) : await Api.submitMock(token!, curLesson.id, 30);
     await pollScore(clip.id);
   }
   async function pollScore(clipId: string) {
@@ -206,6 +214,12 @@ export default function App() {
 
       {tab === "hv" && screen === "feed" ? (
         <View style={{ flex: 1 }}>
+          {paths.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
+              <PathPill active={!selPath} label="Kỹ năng nói" onPress={() => pickPath(null)} />
+              {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} onPress={() => pickPath(p.id)} />)}
+            </ScrollView>
+          )}
           {prog.practiced_today === false && (
             <View style={s.reminder}>
               <Fire size={18} color="#F5A623" />
@@ -381,6 +395,7 @@ function PlayButton({ url }: { url: string }) {
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
+const PathPill = ({ active, label, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && s.pathPillOn]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
 const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontWeight: "800" }}>{label}</Text></TouchableOpacity>;
 const Row = ({ k, v, ok }: any) => <View style={s.row}><Text>{k}</Text><View style={[s.pill, ok ? s.pillOk : s.pillMid]}><Text style={{ fontWeight: "800", fontSize: 12, color: ok ? "#1f8f63" : "#9a6b00" }}>{v}</Text></View></View>;
 
@@ -410,4 +425,6 @@ const s = StyleSheet.create({
   achIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center" },
   reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF3DA", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
+  pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
+  pathPillOn: { backgroundColor: C.primary },
 });

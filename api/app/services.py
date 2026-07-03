@@ -177,3 +177,30 @@ async def publish_path(s: AsyncSession, path_id: str) -> bool:
                 ln.status = "published"
     await s.commit()
     return True
+
+
+async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: str) -> list[dict]:
+    """Bài PUBLISHED của một lộ trình, phẳng + unlocked/done theo user (FR-19)."""
+    levels = (await s.execute(select(Level).where(Level.path_id == path_id, Level.status == "published").order_by(Level.order_index))).scalars().all()
+    flat = []
+    for lv in levels:
+        sessions = (await s.execute(select(ContentSession).where(ContentSession.level_id == lv.id, ContentSession.status == "published").order_by(ContentSession.order_index))).scalars().all()
+        for cs in sessions:
+            lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id, ContentLesson.status == "published").order_by(ContentLesson.order_index))).scalars().all()
+            for ln in lessons:
+                flat.append((ln, cs.order_index + 1))
+    ids = [ln.id for ln, _ in flat]
+    done: set = set()
+    if ids:
+        rows = (await s.execute(
+            select(Clip.content_lesson_id).join(Score, Score.clip_id == Clip.id)
+            .where(Clip.user_id == user_id, Clip.content_lesson_id.in_(ids))
+        )).scalars().all()
+        done = set(rows)
+    out, prev_done = [], True
+    for i, (ln, buoi) in enumerate(flat):
+        is_done = ln.id in done
+        out.append({"id": ln.id, "buoi": buoi, "order_index": i, "title": ln.title,
+                    "tip": ln.tip, "prompt": ln.prompt, "unlocked": prev_done, "done": is_done})
+        prev_done = is_done
+    return out

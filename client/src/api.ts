@@ -28,6 +28,10 @@ export const Api = {
   progress: (token: string) => req("/me/progress", { token }),
   submitMock: (token: string, lesson_id: string, duration_seconds = 30) =>
     req("/practice/submit", { method: "POST", token, body: { lesson_id, duration_seconds } }),
+  submitMockContent: (token: string, content_lesson_id: string, duration_seconds = 30) =>
+    req("/practice/submit", { method: "POST", token, body: { content_lesson_id, duration_seconds } }),
+  contentPaths: (token: string) => req("/content/paths", { token }),
+  contentLessons: (token: string, pathId: string) => req("/content/paths/" + pathId + "/lessons", { token }),
   clip: (token: string, id: string) => req("/clips/" + id, { token }),
   sendTicket: (token: string, clip_id: string) =>
     req("/vevang/send", { method: "POST", token, body: { clip_id } }),
@@ -41,9 +45,10 @@ export const Api = {
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ
-export async function submitAudio(token: string, lesson_id: string, uri: string, duration: number) {
+export async function submitAudio(token: string, lesson_id: string, uri: string, duration: number, content_lesson_id?: string) {
   const fd = new FormData();
-  fd.append("lesson_id", lesson_id);
+  if (content_lesson_id) fd.append("content_lesson_id", content_lesson_id);
+  else fd.append("lesson_id", lesson_id);
   fd.append("duration_seconds", String(duration));
   fd.append("file", { uri, name: "clip.m4a", type: "audio/m4a" } as any);
   const r = await fetch(API_BASE + "/practice/submit-audio", {

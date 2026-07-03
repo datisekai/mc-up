@@ -43,7 +43,8 @@ class Clip(Base):
     __tablename__ = "clip"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
     user_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
-    lesson_id: Mapped[str] = mapped_column(ForeignKey("lesson.id"))
+    lesson_id: Mapped[str | None] = mapped_column(ForeignKey("lesson.id"), nullable=True)
+    content_lesson_id: Mapped[str | None] = mapped_column(ForeignKey("content_lesson.id"), nullable=True)  # v2 (FR-19)
     duration_seconds: Mapped[float] = mapped_column()
     audio_path: Mapped[str | None] = mapped_column(String, nullable=True)  # đường dẫn clip trong MediaStore (AD-4)
     status: Mapped[str] = mapped_column(String, default="queued")  # queued|processing|done|failed (AD-1)

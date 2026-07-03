@@ -1,0 +1,20 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..db import get_session
+from ..deps import current_user
+from ..models import User
+from ..services import get_content_lessons_for_user, list_paths
+
+router = APIRouter(tags=["content"])
+
+
+@router.get("/content/paths")
+async def content_paths(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Lộ trình ĐÃ PUBLISHED cho học viên chọn (FR-19)."""
+    return await list_paths(session, "published")
+
+
+@router.get("/content/paths/{path_id}/lessons")
+async def content_lessons(path_id: str, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    return await get_content_lessons_for_user(session, path_id, user.id)
