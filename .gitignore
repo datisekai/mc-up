@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+
+# Env & secrets
+.env
+
+# OS
+.DS_Store
+
+# Clip upload demo
+uploads/
+*.db

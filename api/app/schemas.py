@@ -1,0 +1,86 @@
+from pydantic import BaseModel, EmailStr
+
+
+class RegisterIn(BaseModel):
+    email: EmailStr
+    password: str
+    display_name: str | None = None
+    role: str = "hoc_vien"
+
+
+class LoginIn(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    role: str
+
+
+class LessonOut(BaseModel):
+    id: str
+    buoi: int
+    order_index: int
+    title: str
+    tip: str
+    prompt: str
+    xp: int
+    unlocked: bool
+    done: bool
+
+
+class SubmitClipIn(BaseModel):
+    lesson_id: str
+    duration_seconds: float = 60.0
+
+
+class ScoreOut(BaseModel):
+    volume_label: str
+    speed_wpm: float
+    filler_count: int
+    tip: str
+    is_mock: bool
+
+
+class ClipOut(BaseModel):
+    id: str
+    lesson_id: str
+    status: str
+    score: ScoreOut | None = None
+
+
+class ProgressOut(BaseModel):
+    xp: int
+    streak: int
+    tickets: int
+
+
+class SendTicketIn(BaseModel):
+    clip_id: str
+
+
+class BadgeOut(BaseModel):
+    mc_name: str
+    mc_title: str | None = None
+    note: str
+
+
+class ReviewRequestOut(BaseModel):
+    id: str
+    clip_id: str
+    status: str
+    badge: BadgeOut | None = None
+
+
+class MCQueueItemOut(BaseModel):
+    request_id: str
+    hoc_vien_name: str | None = None
+    speed_wpm: float | None = None
+    filler_count: int | None = None
+
+
+class SubmitReviewIn(BaseModel):
+    request_id: str
+    note: str

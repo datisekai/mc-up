@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>McUp — Prototype</title>
+<style>
+  :root{--base:#FFF8F0;--raised:#fff;--sunken:#F6EDE2;--ink:#3B2A4A;--ink2:#7A6E82;
+    --primary:#FF6B5B;--spot:#FFC24B;--success:#3FB984;--hair:#EDE3D6}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI Rounded",Roboto,system-ui,sans-serif}
+  body{background:radial-gradient(900px 320px at 50% -40px,#FFE7CF,transparent 60%),#EFE3D4;color:var(--ink);padding:16px;display:flex;justify-content:center}
+  .phone{width:390px;max-width:100%;background:var(--base);border-radius:32px;box-shadow:0 20px 50px -18px rgba(90,60,30,.5);overflow:hidden;min-height:760px;display:flex;flex-direction:column}
+  header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+  .brand{font-size:24px;font-weight:800;color:var(--primary);letter-spacing:-.5px}
+  .stats{display:flex;gap:8px}
+  .chip{background:var(--spot);color:#5a3d00;font-weight:800;font-size:13px;padding:5px 10px;border-radius:999px}
+  .tabs{display:flex;gap:8px;padding:0 16px 10px}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:999px;background:var(--sunken);color:var(--ink2);font-weight:700;font-size:14px;cursor:pointer;border:none}
+  .tab.on{background:var(--primary);color:#fff}
+  main{flex:1;overflow-y:auto;padding:4px 16px 20px}
+  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink2);font-weight:800;margin:14px 2px 8px}
+  .card{background:var(--raised);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 6px 16px -12px rgba(90,60,30,.5)}
+  .lesson{display:flex;align-items:center;gap:12px;cursor:pointer}
+  .lesson.locked{opacity:.5;cursor:not-allowed}
+  .bub{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;flex:none;background:var(--sunken);color:var(--ink2)}
+  .bub.now{background:var(--primary);color:#fff}.bub.done{background:#E6F7EF;color:var(--success)}
+  .lt{font-weight:700;font-size:15px}.ls{font-size:12px;color:var(--ink2)}
+  .btn{background:var(--primary);color:#fff;font-weight:800;border:none;border-radius:999px;padding:13px;width:100%;font-size:15px;cursor:pointer}
+  .btn.ghost{background:var(--sunken);color:var(--ink)}
+  .btn.gold{background:var(--spot);color:#5a3d00}
+  .btn:disabled{opacity:.5;cursor:default}
+  .score-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--hair);font-size:14px}
+  .score-row:last-child{border:0}
+  .badge-pill{font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px}
+  .ok{background:#E6F7EF;color:#1f8f63}.mid{background:#FFF3DA;color:#9a6b00}
+  .tip{background:var(--sunken);border-radius:12px;padding:11px;font-size:13px;margin-top:10px;line-height:1.5}
+  .badgecard{background:linear-gradient(160deg,#fff,#FFF3E6);border:1px solid #F3E4CE;border-radius:20px;padding:16px}
+  .mc{display:flex;align-items:center;gap:12px}
+  .avatar{width:46px;height:46px;border-radius:999px;background:linear-gradient(135deg,#FF6B5B,#FFC24B);display:grid;place-items:center;color:#fff;font-weight:800;flex:none}
+  .quote{font-style:italic;margin-top:10px;font-size:14px;line-height:1.5}
+  textarea{width:100%;border:1px solid var(--hair);border-radius:12px;padding:10px;font-size:14px;resize:vertical;min-height:64px}
+  .muted{color:var(--ink2);font-size:13px;text-align:center;padding:20px}
+  .toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;transition:.3s;z-index:9}
+  .toast.show{opacity:1}
+  .reward{position:fixed;inset:0;background:radial-gradient(360px 360px at 50% 40%,#FFE29A,#FFC24B 55%,#F09B2E);display:none;flex-direction:column;align-items:center;justify-content:center;color:#5a3d00;text-align:center;z-index:8;padding:30px}
+  .reward.show{display:flex}
+  .reward h2{font-size:26px;font-weight:800;margin:14px 0 6px}
+  .halo{width:96px;height:96px;border-radius:999px;background:#fff;display:grid;place-items:center;font-size:44px;box-shadow:0 0 0 12px rgba(255,255,255,.35)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="reward" id="reward"><div class="halo">🎟️</div><h2 id="rewardText"></h2><button class="btn" style="margin-top:20px;max-width:220px;background:#5a3d00" onclick="hideReward()">Tuyệt!</button></div>
+
+<div class="phone">
+  <header>
+    <span class="brand">McUp</span>
+    <div class="stats">
+      <span class="chip" id="streak">🔥 0</span>
+      <span class="chip" id="xp">⭐ 0</span>
+      <span class="chip" id="tickets">🎟️ 0</span>
+    </div>
+  </header>
+  <div class="tabs">
+    <button class="tab on" id="tabHV" onclick="showTab('hv')">Học viên</button>
+    <button class="tab" id="tabMC" onclick="showTab('mc')">Chế độ MC</button>
+  </div>
+  <main id="viewHV"></main>
+  <main id="viewMC" style="display:none"></main>
+</div>
+
+<script>
+const API=''; let learnerToken=null, mcToken=null, lastClip=null;
+
+async function api(path,{method='GET',token,body}={}){
+  const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});
+  const data=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(data?.detail?.error?.message||data?.error?.message||('HTTP '+r.status));
+  return data;
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function showReward(m){document.getElementById('rewardText').textContent=m;document.getElementById('reward').classList.add('show')}
+function hideReward(){document.getElementById('reward').classList.remove('show')}
+function showTab(t){document.getElementById('tabHV').classList.toggle('on',t==='hv');document.getElementById('tabMC').classList.toggle('on',t==='mc');document.getElementById('viewHV').style.display=t==='hv'?'block':'none';document.getElementById('viewMC').style.display=t==='mc'?'block':'none';if(t==='mc')loadQueue()}
+
+async function boot(){
+  // học viên: đăng nhập hoặc đăng ký
+  try{learnerToken=(await api('/auth/login',{method:'POST',body:{email:'linh@demo.vn',password:'123456'}})).access_token}
+  catch{learnerToken=(await api('/auth/register',{method:'POST',body:{email:'linh@demo.vn',password:'123456',display_name:'Linh'}})).access_token}
+  // MC mẫu (đã seed)
+  mcToken=(await api('/auth/login',{method:'POST',body:{email:'mc@test.vn',password:'123456'}})).access_token;
+  await refresh();
+}
+async function refresh(){await loadProgress();await loadLearner()}
+async function loadProgress(){const p=await api('/me/progress',{token:learnerToken});
+  document.getElementById('streak').textContent='🔥 '+p.streak;
+  document.getElementById('xp').textContent='⭐ '+p.xp;
+  document.getElementById('tickets').textContent='🎟️ '+p.tickets}
+
+async function loadLearner(){
+  const lessons=await api('/lessons',{token:learnerToken});
+  const reviews=await api('/me/reviews',{token:learnerToken});
+  const v=document.getElementById('viewHV'); v.innerHTML='';
+  v.insertAdjacentHTML('beforeend','<div class="kicker">Lộ trình của bạn</div>');
+  lessons.forEach(l=>{
+    const cls=l.done?'done':(l.unlocked?'now':'locked');
+    const icon=l.done?'✓':(l.unlocked?'🎤':'🔒');
+    const el=document.createElement('div');el.className='card';
+    el.innerHTML=`<div class="lesson ${l.unlocked&&!l.done?'':(l.unlocked?'':'locked')}">
+      <div class="bub ${cls}">${icon}</div>
+      <div><div class="lt">Buổi ${l.buoi} · ${l.title}</div><div class="ls">${l.done?'Hoàn thành ✓':(l.unlocked?'Chạm để luyện':'Hoàn thành bài trước để mở')}</div></div></div>`;
+    if(l.unlocked&&!l.done) el.querySelector('.lesson').onclick=()=>openPractice(l);
+    v.appendChild(el);
+  });
+  // Vé Vàng đã gửi / thẻ bảo chứng
+  if(reviews.length){
+    v.insertAdjacentHTML('beforeend','<div class="kicker">Vé Vàng đã gửi</div>');
+    reviews.forEach(r=>{
+      if(r.badge){
+        v.insertAdjacentHTML('beforeend',`<div class="card badgecard">
+          <div class="mc"><div class="avatar">${r.badge.mc_name[3]||'M'}</div>
+          <div><div class="lt">${r.badge.mc_name}</div><div class="ls">${r.badge.mc_title||''}</div></div></div>
+          <div class="quote">“${r.badge.note}”</div>
+          <button class="btn gold" style="margin-top:12px" onclick="toast('Đã chia sẻ Thẻ bảo chứng! (demo)')">Chia sẻ khoe 🎉</button></div>`);
+      }else{
+        v.insertAdjacentHTML('beforeend',`<div class="card"><div class="ls">⏳ Đang chờ MC nghe bạn dẫn…</div></div>`);
+      }
+    });
+  }
+}
+
+let curLesson=null, mediaRec=null, chunks=[], recStart=0, recTimer=null;
+function openPractice(l){curLesson=l;
+  const v=document.getElementById('viewHV');
+  v.innerHTML=`<div class="kicker">Buổi ${l.buoi} · ${l.title}</div>
+   <div class="card"><div class="tip">💡 ${l.tip}</div>
+   <p style="margin:12px 2px;font-weight:700">🎬 Đề: ${l.prompt}</p>
+   <button class="btn" id="rec" onclick="toggleRec()">🔴 Bắt đầu quay (nói vào mic)</button>
+   <button class="btn ghost" id="mock" style="margin-top:8px" onclick="doSubmit(null,30)">Bỏ qua — nộp giả lập</button>
+   <button class="btn ghost" style="margin-top:8px" onclick="refresh()">← Quay lại lộ trình</button></div>`;
+}
+async function toggleRec(){
+  const btn=document.getElementById('rec');
+  if(mediaRec && mediaRec.state==='recording'){ mediaRec.stop(); return; }
+  let stream;
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ toast('Không vào được micro — nộp giả lập'); return doSubmit(null,30); }
+  chunks=[]; mediaRec=new MediaRecorder(stream);
+  mediaRec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  mediaRec.onstop=async()=>{ clearInterval(recTimer); stream.getTracks().forEach(t=>t.stop());
+    const dur=Math.max(1,Math.round((Date.now()-recStart)/1000));
+    await doSubmit(new Blob(chunks,{type:'audio/webm'}),dur); };
+  mediaRec.start(); recStart=Date.now();
+  const m=document.getElementById('mock'); if(m)m.style.display='none';
+  recTimer=setInterval(()=>{const s=Math.round((Date.now()-recStart)/1000);btn.textContent=`⏹ Dừng & nộp (0:${String(s).padStart(2,'0')})`;},300);
+  btn.textContent='⏹ Dừng & nộp (0:00)';
+}
+async function doSubmit(blob,dur){
+  const btn=document.getElementById('rec'); if(btn){btn.disabled=true;btn.textContent='Đang nghe bạn dẫn…';}
+  let clip;
+  if(blob){ const fd=new FormData(); fd.append('lesson_id',curLesson.id); fd.append('duration_seconds',dur); fd.append('file',blob,'clip.webm');
+    clip=await (await fetch('/practice/submit-audio',{method:'POST',headers:{Authorization:'Bearer '+learnerToken},body:fd})).json(); }
+  else { clip=await api('/practice/submit',{method:'POST',token:learnerToken,body:{lesson_id:curLesson.id,duration_seconds:dur}}); }
+  let s=null;for(let i=0;i<15;i++){const c=await api('/clips/'+clip.id,{token:learnerToken});if(c.status==='done'){s=c;break}await new Promise(r=>setTimeout(r,400))}
+  lastClip=clip.id; await loadProgress();
+  const sc=s.score;
+  document.getElementById('viewHV').innerHTML=`<div class="kicker">Kết quả · phần Xác ${sc.is_mock?'(giả lập)':'(ASR thật ✅)'}</div>
+   <div class="card">
+     <div class="score-row"><span>Âm lượng</span><span class="badge-pill ${sc.volume_label==='tốt'?'ok':'mid'}">${sc.volume_label}</span></div>
+     <div class="score-row"><span>Tốc độ</span><span class="badge-pill mid">${sc.speed_wpm} chữ/phút</span></div>
+     <div class="score-row"><span>Từ đệm "ừm/à"</span><span class="badge-pill mid">${sc.filler_count} lần</span></div>
+     <div class="tip">💡 ${sc.tip}</div>
+   </div>
+   <button class="btn gold" onclick="sendVeVang()">🎟️ Gửi cho MC thật (Vé Vàng)</button>
+   <button class="btn ghost" style="margin-top:8px" onclick="refresh()">Tiếp tục lộ trình →</button>`;
+  showReward('+10 XP · +1 🎟️ Vé Vàng!');
+}
+async function sendVeVang(){
+  try{await api('/vevang/send',{method:'POST',token:learnerToken,body:{clip_id:lastClip}});
+    toast('Đã gửi! Chờ MC nhận xét 🎤');await refresh();showTab('hv')}
+  catch(e){toast(e.message)}
+}
+
+// ---- Chế độ MC ----
+async function loadQueue(){
+  const v=document.getElementById('viewMC');v.innerHTML='<div class="kicker">Hàng đợi nhận xét (MC Hạnh)</div>';
+  const q=await api('/mc/queue',{token:mcToken});
+  if(!q.length){v.insertAdjacentHTML('beforeend','<div class="muted">Chưa có clip nào chờ. Sang tab Học viên, luyện rồi bấm “Gửi cho MC thật”.</div>');return}
+  q.forEach((it,i)=>{
+    v.insertAdjacentHTML('beforeend',`<div class="card">
+      <div class="lt">🎧 ${it.hoc_vien_name||'Học viên'}</div>
+      <div class="ls">Tốc độ ${it.speed_wpm||'?'} chữ/phút · ${it.filler_count??'?'} từ đệm</div>
+      <textarea id="note${i}" placeholder="Nhận xét cho học viên (thật sẽ là ghi âm giọng MC)…">Giọng em có màu, giữ nhịp tốt. Mở đầu chậm lại chút là cuốn ngay!</textarea>
+      <button class="btn" style="margin-top:8px" onclick="review('${it.request_id}',${i})">Gửi nhận xét 🎤</button></div>`);
+  });
+}
+async function review(reqId,i){
+  const note=document.getElementById('note'+i).value.trim();
+  if(!note)return toast('Nhập nhận xét đã nhé');
+  await api('/mc/review',{method:'POST',token:mcToken,body:{request_id:reqId,note}});
+  toast('Đã gửi nhận xét! Thẻ bảo chứng đã tạo ✨');
+  await loadQueue();await loadLearner();
+}
+
+boot().catch(e=>document.getElementById('viewHV').innerHTML='<div class="muted">Lỗi: '+e.message+'<br>Backend đã chạy ở :8000 chưa?</div>');
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "McUp",
+    "slug": "mcup",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "splash": { "backgroundColor": "#FFF8F0" }
+  }
+}
