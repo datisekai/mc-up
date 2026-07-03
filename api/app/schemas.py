@@ -55,6 +55,8 @@ class ProgressOut(BaseModel):
     xp: int
     streak: int
     tickets: int
+    tier: str = "Đồng"
+    practiced_today: bool = False
 
 
 class Achievement(BaseModel):
@@ -75,6 +77,7 @@ class LeaderboardEntry(BaseModel):
     name: str
     xp: int
     streak: int
+    tier: str
     is_me: bool
 
 

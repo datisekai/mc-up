@@ -61,6 +61,19 @@ async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: 
     return badge
 
 
+def tier_of(xp: int) -> str:
+    """Hạng giải đấu theo XP (giống division Duolingo)."""
+    if xp >= 300:
+        return "Kim cương"
+    if xp >= 150:
+        return "Bạch kim"
+    if xp >= 80:
+        return "Vàng"
+    if xp >= 30:
+        return "Bạc"
+    return "Đồng"
+
+
 async def get_achievements(s: AsyncSession, user: User) -> list[dict]:
     prog = await s.get(Progress, user.id)
     lessons_done = (await s.execute(

@@ -6,6 +6,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import Progress, User
 from ..schemas import LeaderboardEntry
+from ..services import tier_of
 
 router = APIRouter(tags=["leaderboard"])
 
@@ -22,6 +23,6 @@ async def leaderboard(user: User = Depends(current_user), session: AsyncSession 
     )).all()
     return [
         LeaderboardEntry(rank=i + 1, name=r.display_name or "Học viên",
-                         xp=r.xp, streak=r.streak, is_me=(r.id == user.id))
+                         xp=r.xp, streak=r.streak, tier=tier_of(r.xp), is_me=(r.id == user.id))
         for i, r in enumerate(rows)
     ]

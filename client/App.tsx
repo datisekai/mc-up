@@ -19,7 +19,7 @@ export default function App() {
   const [learnerToken, setLT] = useState("");
   const [mcToken, setMT] = useState("");
   const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
-  const [prog, setProg] = useState({ xp: 0, streak: 0, tickets: 0 });
+  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
@@ -129,7 +129,15 @@ export default function App() {
       </View>
 
       {tab === "hv" && screen === "feed" ? (
-        <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+        <View style={{ flex: 1 }}>
+          {prog.practiced_today === false && (
+            <View style={s.reminder}>
+              <Fire size={18} color="#F5A623" />
+              <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>Hôm nay chưa luyện — giữ chuỗi {prog.streak} ngày nào!</Text>
+            </View>
+          )}
+          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+        </View>
       ) : (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {tab === "hv" && screen === "practice" && curLesson && (
@@ -171,7 +179,7 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[]; board: any[]; achs: any[]; scores: any[] }) {
+function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[] }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   return (
@@ -182,6 +190,7 @@ function ProfileView({ prog, reviews, board, achs, scores }: { prog: { xp: numbe
         <StatCard icon={<Star size={22} color={C.primary} />} value={prog.xp} label="XP" />
         <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
       </View>
+      {prog.tier && <View style={s.tierBadge}><Trophy size={14} color="#5a3d00" /><Text style={{ fontWeight: "800", color: "#5a3d00", fontSize: 13 }}>Hạng {prog.tier}</Text></View>}
       <Kicker>Huy hiệu</Kicker>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {achs.map((a) => (
@@ -324,4 +333,6 @@ const s = StyleSheet.create({
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
   achIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center" },
+  reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF3DA", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
+  tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
 });
