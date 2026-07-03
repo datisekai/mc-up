@@ -21,6 +21,7 @@ export default function App() {
   const [prog, setProg] = useState({ xp: 0, streak: 0, tickets: 0 });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [board, setBoard] = useState<any[]>([]);
   const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
   const [curLesson, setCur] = useState<Lesson | null>(null);
   const [score, setScore] = useState<Score | null>(null);
@@ -47,6 +48,7 @@ export default function App() {
     setProg(await Api.progress(lt));
     setLessons(await Api.lessons(lt));
     setReviews(await Api.myReviews(lt));
+    setBoard(await Api.leaderboard(lt));
     setScreen("feed");
   }
 
@@ -150,7 +152,7 @@ export default function App() {
             <Btn ghost label="Tiếp tục lộ trình →" onPress={() => refresh()} />
           </View>
         )}
-        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} />}
+        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} />}
         {tab === "mc" && <MCView queue={queue} onReview={doReview} onReload={loadQueue} />}
       </ScrollView>
       )}
@@ -158,7 +160,7 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[] }) {
+function ProfileView({ prog, reviews, board }: { prog: { xp: number; streak: number; tickets: number }; reviews: any[]; board: any[] }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   return (
@@ -169,6 +171,18 @@ function ProfileView({ prog, reviews }: { prog: { xp: number; streak: number; ti
         <StatCard icon={<Star size={22} color={C.primary} />} value={prog.xp} label="XP" />
         <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
       </View>
+      <Kicker>Bảng xếp hạng</Kicker>
+      {board.length === 0 && <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có dữ liệu.</Text>}
+      {board.map((e) => (
+        <View key={e.rank} style={[s.rankRow, e.is_me && { borderColor: C.spot, borderWidth: 1.5 }]}>
+          <Text style={[s.rankNum, e.rank <= 3 && { color: C.primary }]}>{e.rank}</Text>
+          <Text style={{ flex: 1, fontWeight: e.is_me ? "800" : "600", color: C.ink }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+            <Fire size={12} color="#F5A623" /><Text style={{ color: C.ink2, fontSize: 12, marginRight: 8 }}>{e.streak}</Text>
+            <Star size={13} color={C.primary} /><Text style={{ fontWeight: "800", fontSize: 13 }}>{e.xp}</Text>
+          </View>
+        </View>
+      ))}
       <Kicker>Thẻ MC bảo chứng</Kicker>
       {badges.length === 0 && !waiting && (
         <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
@@ -247,4 +261,6 @@ const s = StyleSheet.create({
   pillOk: { backgroundColor: "#E6F7EF" }, pillMid: { backgroundColor: "#FFF3DA" },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
+  rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
+  rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
 });

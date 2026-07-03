@@ -35,6 +35,7 @@ export const Api = {
   mcQueue: (token: string) => req("/mc/queue", { token }),
   mcReview: (token: string, request_id: string, note: string) =>
     req("/mc/review", { method: "POST", token, body: { request_id, note } }),
+  leaderboard: (token: string) => req("/leaderboard", { token }),
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ

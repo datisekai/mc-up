@@ -57,6 +57,14 @@ class ProgressOut(BaseModel):
     tickets: int
 
 
+class LeaderboardEntry(BaseModel):
+    rank: int
+    name: str
+    xp: int
+    streak: int
+    is_me: bool
+
+
 class SendTicketIn(BaseModel):
     clip_id: str
 
