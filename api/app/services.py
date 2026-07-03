@@ -12,7 +12,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .db import SessionLocal
 from .models import (BadgeCard, Clip, ContentLesson, ContentSession, Genre, LearningPath, Level,
                      MCReview, Progress, ReviewRequest, Score, User)
+from .rubrics import get_rubric
 from .scoring import score_clip
+
+
+async def _rubric_for_clip(s: AsyncSession, clip: Clip) -> dict:
+    """Lần theo cây nội dung Bài→Buổi→Cấp→Lộ trình→Thể loại để lấy rubric (FR-15)."""
+    if not clip.content_lesson_id:
+        return get_rubric(None)  # bài v1 (không thuộc thể loại) → rubric lõi
+    cl = await s.get(ContentLesson, clip.content_lesson_id)
+    cs = await s.get(ContentSession, cl.session_id) if cl else None
+    lv = await s.get(Level, cs.level_id) if cs else None
+    path = await s.get(LearningPath, lv.path_id) if lv else None
+    genre = await s.get(Genre, path.genre_id) if path else None
+    return get_rubric(genre.name if genre else None)
 
 
 async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: int) -> None:
@@ -22,7 +35,8 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
         clip.status = "processing"
         await s.commit()
 
-        result = await score_clip(clip_id, duration, audio_path=clip.audio_path)
+        rubric = await _rubric_for_clip(s, clip)  # FR-15: rubric theo thể loại
+        result = await score_clip(clip_id, duration, audio_path=clip.audio_path, rubric=rubric)
         s.add(Score(clip_id=clip_id, **result))  # phần Xác, tách khỏi MCReview (AD-5)
 
         prog = await s.get(Progress, user_id)

@@ -58,9 +58,13 @@ def _wpm(words: list, duration_seconds: float) -> float:
     return round(len(words) / max(duration_seconds, 1) * 60, 1)
 
 
-async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | None = None):
+async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | None = None,
+                     rubric: dict | None = None):
     from adapters.asr_factory import get_asr  # type: ignore
     from adapters.asr_mock import MockAsr  # type: ignore
+
+    from .rubrics import CORE
+    rb = rubric or CORE  # FR-15: rubric lõi + module theo thể loại
 
     asr = get_asr(
         settings.asr_provider,
@@ -82,12 +86,15 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
     filler = sum(1 for w in words if w["word"].lower().strip() in FILLERS)
     real_vol = _rms_volume(path) if (path and os.path.exists(path)) else None  # FR-13: RMS thật
 
-    if wpm > 160:
-        tip = "Thử chậm lại một nhịp ở câu mở đầu nhé 👏"
+    tips = rb["tips"]  # gợi ý theo thể loại (FR-15)
+    if wpm > rb["wpm_max"]:
+        tip = tips["fast"]
+    elif wpm < rb["wpm_min"]:
+        tip = tips["slow"]
     elif filler >= 2:
-        tip = "Bạn đang tiến bộ — để ý bớt từ đệm 'ừm/à' một chút nha!"
+        tip = tips["filler"]
     else:
-        tip = "Giữ nhịp tốt lắm, tiếp tục nào!"
+        tip = tips["good"]
 
     return {
         "volume_label": real_vol or _volume_label(clip_id),  # thật nếu đo được, không thì giả lập
