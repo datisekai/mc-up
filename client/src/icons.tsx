@@ -1,0 +1,82 @@
+// Bộ icon tuyến tự thiết kế (SVG) — không dùng emoji làm icon UI (DESIGN.md).
+import Svg, { Circle, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
+
+type P = { size?: number; color?: string; fill?: boolean };
+const S = (size = 24) => ({ width: size, height: size, viewBox: "0 0 24 24" });
+const stroke = (c: string) => ({ stroke: c, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" });
+
+export const Mic = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="9" y="3" width="6" height="11" rx="3" {...stroke(color)} />
+    <Path d="M6 11a6 6 0 0 0 12 0" {...stroke(color)} />
+    <Line x1="12" y1="17" x2="12" y2="21" {...stroke(color)} />
+    <Line x1="8" y1="21" x2="16" y2="21" {...stroke(color)} />
+  </Svg>
+);
+export const Lock = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="5" y="10.5" width="14" height="9.5" rx="2.2" {...stroke(color)} />
+    <Path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" {...stroke(color)} />
+  </Svg>
+);
+export const Check = ({ size, color = "#fff" }: P) => (
+  <Svg {...S(size)}>
+    <Polyline points="5 12.5 10 17.5 19 6.5" {...stroke(color)} strokeWidth={2.6} />
+  </Svg>
+);
+export const Fire = ({ size, color = "#FFC24B" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M12.2 2.6c.7 2.5-.8 3.7-2 4.9C8.8 8.9 8 10.3 8 12.5a4 4 0 0 0 8 0c0-1.5-.5-2.5-1.2-3.4.9.3 1.5 1 1.8 1.9C17.2 8.6 15.4 5 12.2 2.6Z" fill={color} />
+  </Svg>
+);
+export const Ticket = ({ size, color = "#E0A62F" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M4 8.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V10a2 2 0 0 0 0 4v1.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V14a2 2 0 0 0 0-4Z" {...stroke(color)} />
+    <Line x1="12.5" y1="7" x2="12.5" y2="17" {...stroke(color)} strokeDasharray="1.6 2.2" />
+  </Svg>
+);
+export const Star = ({ size, color = "#FF6B5B", fill }: P) => (
+  <Svg {...S(size)}>
+    <Polygon points="12 3.2 14.5 9 20.7 9.6 16 13.9 17.5 20 12 16.8 6.5 20 8 13.9 3.3 9.6 9.5 9" {...(fill ? { fill: color } : stroke(color))} />
+  </Svg>
+);
+export const Cap = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M2 9.2 12 5l10 4.2-10 4.2Z" {...stroke(color)} />
+    <Path d="M6 11v4.8c0 1.6 2.7 3 6 3s6-1.4 6-3V11" {...stroke(color)} />
+    <Line x1="22" y1="9.2" x2="22" y2="14.5" {...stroke(color)} />
+  </Svg>
+);
+export const Flag = ({ size, color = "#C7A86F" }: P) => (
+  <Svg {...S(size)}>
+    <Line x1="6" y1="21" x2="6" y2="4" {...stroke(color)} />
+    <Path d="M6 4h11l-2.5 3.5L17 11H6Z" {...stroke(color)} />
+  </Svg>
+);
+export const Chart = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M4 17l5-5 3 3 7.5-8" {...stroke(color)} />
+    <Path d="M20 7v4h-4" {...stroke(color)} />
+  </Svg>
+);
+export const Trophy = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" {...stroke(color)} />
+    <Path d="M7 6H4a2 2 0 0 0 2 4M17 6h3a2 2 0 0 1-2 4" {...stroke(color)} />
+    <Line x1="12" y1="13" x2="12" y2="17" {...stroke(color)} />
+    <Path d="M8 20h8M9.5 20v-3h5v3" {...stroke(color)} />
+  </Svg>
+);
+export const User = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Circle cx="12" cy="8" r="3.5" {...stroke(color)} />
+    <Path d="M5.5 20a6.5 6.5 0 0 1 13 0" {...stroke(color)} />
+  </Svg>
+);
+export const MapIcon = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4Z" {...stroke(color)} />
+    <Line x1="9" y1="4" x2="9" y2="17" {...stroke(color)} />
+    <Line x1="15" y1="6.5" x2="15" y2="19.5" {...stroke(color)} />
+  </Svg>
+);

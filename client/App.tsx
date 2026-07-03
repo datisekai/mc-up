@@ -6,6 +6,8 @@ import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
 import { C } from "./src/theme";
 import { Api, submitAudio } from "./src/api";
+import StageMap from "./src/StageMap";
+import { Fire, MapIcon, Mic, Star, Ticket } from "./src/icons";
 
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
@@ -102,16 +104,20 @@ export default function App() {
       <View style={s.header}>
         <Text style={s.brand}>McUp</Text>
         <View style={{ flexDirection: "row", gap: 6 }}>
-          <Chip>🔥 {prog.streak}</Chip><Chip>⭐ {prog.xp}</Chip><Chip>🎟️ {prog.tickets}</Chip>
+          <Chip icon={<Fire size={15} color="#F5A623" />}>{prog.streak}</Chip>
+          <Chip icon={<Star size={14} color={C.primary} />}>{prog.xp}</Chip>
+          <Chip icon={<Ticket size={15} color="#E0A62F" />}>{prog.tickets}</Chip>
         </View>
       </View>
       <View style={s.tabs}>
-        <Tab on={tab === "hv"} label="Học viên" onPress={() => setTab("hv")} />
-        <Tab on={tab === "mc"} label="Chế độ MC" onPress={() => { setTab("mc"); loadQueue(); }} />
+        <Tab on={tab === "hv"} icon={<MapIcon size={17} color={tab === "hv" ? "#fff" : C.ink2} />} label="Học viên" onPress={() => setTab("hv")} />
+        <Tab on={tab === "mc"} icon={<Mic size={17} color={tab === "mc" ? "#fff" : C.ink2} />} label="Chế độ MC" onPress={() => { setTab("mc"); loadQueue(); }} />
       </View>
 
+      {tab === "hv" && screen === "feed" ? (
+        <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+      ) : (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {tab === "hv" && screen === "feed" && <Feed lessons={lessons} reviews={reviews} onPick={(l) => { setCur(l); setScreen("practice"); }} />}
         {tab === "hv" && screen === "practice" && curLesson && (
           <View>
             <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
@@ -145,6 +151,7 @@ export default function App() {
         )}
         {tab === "mc" && <MCView queue={queue} onReview={doReview} onReload={loadQueue} />}
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -197,9 +204,9 @@ function MCView({ queue, onReview, onReload }: { queue: any[]; onReview: (id: st
   );
 }
 
-const Chip = ({ children }: any) => <View style={s.chip}><Text style={{ color: "#5a3d00", fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
+const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
-const Tab = ({ on, label, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
+const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontWeight: "800" }}>{label}</Text></TouchableOpacity>;
 const Row = ({ k, v, ok }: any) => <View style={s.row}><Text>{k}</Text><View style={[s.pill, ok ? s.pillOk : s.pillMid]}><Text style={{ fontWeight: "800", fontSize: 12, color: ok ? "#1f8f63" : "#9a6b00" }}>{v}</Text></View></View>;
 
@@ -208,7 +215,7 @@ const s = StyleSheet.create({
   center: { flex: 1, backgroundColor: C.base, alignItems: "center", justifyContent: "center", padding: 24 },
   header: { paddingTop: 54, paddingHorizontal: 18, paddingBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   brand: { fontSize: 24, fontWeight: "800", color: C.primary, letterSpacing: -0.5 },
-  chip: { backgroundColor: C.spot, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: C.sunken, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
   tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
   tabOn: { backgroundColor: C.primary },
