@@ -81,6 +81,11 @@ class LeaderboardEntry(BaseModel):
     is_me: bool
 
 
+class AiSplitIn(BaseModel):
+    raw_text: str
+    genre: str = "kỹ năng nói"
+
+
 class SendTicketIn(BaseModel):
     clip_id: str
 

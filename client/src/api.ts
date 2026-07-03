@@ -3,7 +3,7 @@
 //  - iOS simulator:      http://localhost:8000
 //  - Android emulator:   http://10.0.2.2:8000
 //  - Thiết bị thật (Expo Go): http://<IP-máy-bạn>:8000  (vd http://192.168.1.10:8000)
-export const API_BASE = "http://192.168.1.17:8000"; // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
+export const API_BASE = "http://192.168.1.215:8000"; // IP LAN máy Mac // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
 
 async function req(path: string, opts: { method?: string; token?: string; body?: any } = {}) {
   const r = await fetch(API_BASE + path, {

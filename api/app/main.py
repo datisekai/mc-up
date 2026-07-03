@@ -17,8 +17,8 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from .config import settings
 from .db import init_db
-from .routers import auth, leaderboard, lessons, mc, media, practice, stats, vevang
-from .seed import seed_lessons, seed_mc
+from .routers import admin, auth, leaderboard, lessons, mc, media, practice, stats, vevang
+from .seed import seed_admin, seed_lessons, seed_mc
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("mcup")
@@ -29,6 +29,7 @@ async def lifespan(_: FastAPI):
     await init_db()
     await seed_lessons()
     await seed_mc()
+    await seed_admin()
     log.info("McUp API sẵn sàng (DB=%s) — mở http://localhost:8000/app",
              settings.database_url.split("://")[0])
     yield
@@ -72,6 +73,7 @@ app.include_router(mc.router)
 app.include_router(leaderboard.router)
 app.include_router(stats.router)
 app.include_router(media.router)
+app.include_router(admin.router)
 
 
 @app.get("/app", include_in_schema=False)

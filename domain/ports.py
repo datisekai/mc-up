@@ -30,6 +30,12 @@ class BillingPort(Protocol):
     async def verify_purchase(self, user_id: str, receipt: str) -> bool: ...
 
 
+class ContentSplitPort(Protocol):
+    """AI-split (AD-10): tài liệu thô → cây Buổi/Bài/Đề nháp (draft).
+    Đổi LLM = viết adapter khác; output LUÔN là draft, phải qua người duyệt."""
+    async def split(self, raw_text: str, genre: str = "kỹ năng nói") -> dict: ...
+
+
 class AsrResult(Protocol):
     text: str
     words: list  # [{"word": str, "start": float, "end": float}]

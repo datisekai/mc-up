@@ -46,3 +46,19 @@ async def seed_mc() -> None:
         await s.flush()
         s.add(Progress(user_id=mc.id))
         await s.commit()
+
+
+async def seed_admin() -> None:
+    """Một admin mẫu để thử AI-split (admin@test.vn / 123456)."""
+    async with SessionLocal() as s:
+        from sqlalchemy import select
+
+        exists = (await s.execute(select(User).where(User.email == "admin@test.vn"))).scalar_one_or_none()
+        if exists:
+            return
+        admin = User(email="admin@test.vn", password_hash=hash_password("123456"),
+                     role="admin", display_name="Admin")
+        s.add(admin)
+        await s.flush()
+        s.add(Progress(user_id=admin.id))
+        await s.commit()
