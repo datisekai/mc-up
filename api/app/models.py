@@ -66,6 +66,8 @@ class Score(Base):
     is_mock: Mapped[bool] = mapped_column(default=True)   # đánh dấu chấm giả lập
     # "Xem lại lời bạn nói": transcript ASR THẬT (mock = None — không bao giờ hiện text giả)
     transcript: Mapped[str | None] = mapped_column(String, nullable=True)
+    # "Đủ ý chưa": đối chiếu lời nói với dàn ý đề bài. {"steps":[...],"covered":[bool...]} — None nếu bỏ qua
+    coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     clip: Mapped["Clip"] = relationship(back_populates="score")

@@ -7,10 +7,12 @@ import { C, F } from "./theme";
 import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
+export type Coverage = { steps: string[]; covered: boolean[] };
 export type ScoreData = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
   unclear?: boolean;           // ASR thật nhưng không nghe được → trạng thái riêng, không hiện số
+  coverage?: Coverage | null;  // "đủ ý chưa" — đối chiếu dàn ý đề bài
 };
 export type PrevPoint = { speed_wpm: number; filler_count: number } | null;
 
@@ -118,14 +120,38 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
           </RowIn>
         )}
 
-        <RowIn delay={720} reduced={reduced}>
+        {/* "Đủ ý chưa" — đối chiếu lời nói với dàn ý đề bài (✓ đạt / ○ thiếu, KHÔNG đỏ) */}
+        {score.coverage && score.coverage.steps.length > 0 ? (() => {
+          const cov = score.coverage!;
+          const done = cov.covered.filter(Boolean).length;
+          const all = done === cov.steps.length;
+          return (
+            <RowIn delay={720} reduced={reduced}>
+              <View style={st.covBox}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <Text style={st.covLabel}>ĐỦ Ý CHƯA</Text>
+                  <Text style={[st.covCount, all && { color: "#1f8f63" }]}>{done}/{cov.steps.length} ý</Text>
+                </View>
+                {cov.steps.map((stp, i) => (
+                  <View key={i} style={st.covRow}>
+                    <Text style={[st.covMark, cov.covered[i] ? st.covOk : st.covMiss]}>{cov.covered[i] ? "✓" : "○"}</Text>
+                    <Text style={[st.covText, !cov.covered[i] && { color: C.ink2 }]}>{stp}</Text>
+                  </View>
+                ))}
+                <Text style={st.covHint}>{all ? "Đủ ý rồi, xịn! 👏" : "Còn thiếu vài ý — không sao, lần sau thêm vào nhé."}</Text>
+              </View>
+            </RowIn>
+          );
+        })() : null}
+
+        <RowIn delay={score.coverage ? 860 : 720} reduced={reduced}>
           <View style={st.tip}><Text style={st.tipT}>{tip}</Text></View>
         </RowIn>
 
         {/* "Xem lại lời bạn nói" — bằng chứng cho số từ đệm. Gấp mặc định (không phán xét),
             tô vàng ấm (không đỏ), chỉ có khi ASR thật (mock = null → ẩn hẳn). */}
         {score.transcript ? (
-          <RowIn delay={860} reduced={reduced}>
+          <RowIn delay={score.coverage ? 1000 : 860} reduced={reduced}>
             {showTranscript ? (
               <View style={st.transcriptBox}>
                 <Text style={st.transcriptLabel}>LỜI BẠN NÓI · từ đệm được đánh dấu</Text>
@@ -178,6 +204,15 @@ const st = StyleSheet.create({
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
+  covBox: { backgroundColor: C.raised, borderRadius: 12, padding: 12, marginTop: 10, borderWidth: 1, borderColor: C.hair },
+  covLabel: { fontFamily: F.title, fontSize: 10, color: C.ink2, letterSpacing: 0.6 },
+  covCount: { fontFamily: F.display, fontSize: 13, color: C.ink2 },
+  covRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 3 },
+  covMark: { fontSize: 14, fontFamily: F.title, width: 16, textAlign: "center", lineHeight: 20 },
+  covOk: { color: "#3FB984" },
+  covMiss: { color: "#C9B79E" },
+  covText: { flex: 1, fontSize: 13.5, color: C.ink, lineHeight: 20 },
+  covHint: { fontSize: 12, color: C.ink2, fontFamily: F.med, marginTop: 6 },
   unclearWrap: { alignItems: "center", paddingVertical: 18 },
   unclearIcon: { fontSize: 40 },
   unclearTitle: { fontFamily: F.display, fontSize: 18, color: C.ink, marginTop: 10 },

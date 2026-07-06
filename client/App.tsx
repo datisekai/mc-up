@@ -28,6 +28,7 @@ type Lesson = { id: string; buoi: number; order_index: number; title: string; ti
 type Score = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null; unclear?: boolean;
+  coverage?: { steps: string[]; covered: boolean[] } | null;
 };
 
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
