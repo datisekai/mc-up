@@ -24,6 +24,9 @@ export const Api = {
     req("/auth/register", { method: "POST", body: { email, password, display_name, role } }),
   login: (email: string, password: string) =>
     req("/auth/login", { method: "POST", body: { email, password } }),
+  guest: () => req("/auth/guest", { method: "POST" }),
+  upgrade: (token: string, email: string, password: string, display_name?: string) =>
+    req("/auth/upgrade", { method: "POST", token, body: { email, password, display_name } }),
   lessons: (token: string) => req("/lessons", { token }),
   progress: (token: string) => req("/me/progress", { token }),
   submitMock: (token: string, lesson_id: string, duration_seconds = 30) =>

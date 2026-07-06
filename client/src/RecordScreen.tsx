@@ -32,6 +32,7 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
 }) {
   const [mode, setMode] = useState<"ready" | "count" | "rec">("ready");
   const [showEx, setShowEx] = useState(false);
+  const [showFull, setShowFull] = useState(false); // giảm nhiễu: mặc định chỉ Đề + Dàn ý
   const [count, setCount] = useState(3);
   const [sec, setSec] = useState(0);
   const [teleIdx, setTeleIdx] = useState(0);
@@ -194,12 +195,20 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
         {lesson.tip ? <View style={st.tipBox}><Text style={st.tipT}>{lesson.tip}</Text></View> : null}
         <Text style={st.taskLabel}>Đề bài</Text>
         <Text style={st.taskPrompt}>{lesson.prompt}</Text>
-        {lesson.brief?.objective ? (<><Text style={st.taskLabel}>Mục tiêu</Text><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
-        {lesson.brief?.context ? (<><Text style={st.taskLabel}>Tình huống</Text><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
         {steps.length ? (<><Text style={st.taskLabel}>Gợi ý dàn ý</Text>{steps.map((s, i) => <Text key={i} style={st.taskBullet}>{i + 1}.  {s}</Text>)}</>) : null}
-        {lesson.criteria?.length ? (<><Text style={st.taskLabel}>Tiêu chí đạt</Text>{lesson.criteria.map((c, i) => (
-          <View key={i} style={st.critRow}><View style={st.critDot} /><Text style={st.taskText}>{c}</Text></View>
-        ))}</>) : null}
+        {showFull ? (
+          <>
+            {lesson.brief?.objective ? (<><Text style={st.taskLabel}>Mục tiêu</Text><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
+            {lesson.brief?.context ? (<><Text style={st.taskLabel}>Tình huống</Text><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
+            {lesson.criteria?.length ? (<><Text style={st.taskLabel}>Tiêu chí đạt</Text>{lesson.criteria.map((c, i) => (
+              <View key={i} style={st.critRow}><View style={st.critDot} /><Text style={st.taskText}>{c}</Text></View>
+            ))}</>) : null}
+          </>
+        ) : (lesson.brief?.objective || lesson.criteria?.length) ? (
+          <TouchableOpacity onPress={() => setShowFull(true)} accessibilityLabel="Xem đủ đề bài">
+            <Text style={st.moreLink}>Xem đủ đề bài (mục tiêu · tình huống · tiêu chí)</Text>
+          </TouchableOpacity>
+        ) : null}
         {lesson.brief?.example ? (showEx ? (
           <View style={st.exampleBox}>
             <Text style={st.exampleLabel}>VÍ DỤ MẪU · tham khảo cách làm, đừng đọc nguyên văn</Text>
@@ -266,6 +275,7 @@ const st = StyleSheet.create({
   exampleText: { color: C.ink, fontSize: 14, lineHeight: 21, fontStyle: "italic" },
   ghostBtn: { backgroundColor: C.sunken, borderRadius: 999, padding: 13, alignItems: "center", marginTop: 10 },
   ghostT: { color: C.ink, fontWeight: "800" },
+  moreLink: { color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", marginTop: 12 },
 
   breathRing: { position: "absolute", width: 92, height: 92, borderRadius: 46, backgroundColor: C.primary },
   micBtn: {

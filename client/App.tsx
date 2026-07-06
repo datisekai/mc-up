@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Alert, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
@@ -19,6 +19,7 @@ import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
 import Celebration, { CelebKind } from "./src/Celebration";
 import BadgeCardView from "./src/BadgeCardView";
+import ReelsPager, { ReelsLesson } from "./src/ReelsPager";
 import { STREAK_GREET, fill, pick } from "./src/variety";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -57,7 +58,8 @@ export default function App() {
   const [scores, setScores] = useState<any[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
   const [selPath, setSelPath] = useState<string | null>(null);
-  const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
+  const [screen, setScreen] = useState<"feed" | "practice" | "score" | "reels">("feed");
+  const [isGuest, setIsGuest] = useState(false);
   const [curLesson, setCur] = useState<Lesson | null>(null);
   const [score, setScore] = useState<Score | null>(null);
   const [lastClip, setLastClip] = useState<string | null>(null);
@@ -75,6 +77,15 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }
 
+  // cử chỉ: vuốt ngang đổi tab (accelerator — tab vẫn chạm được, Accessibility Floor)
+  const tabSwipe = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 28 && Math.abs(g.dx) > Math.abs(g.dy) * 2.2,
+    onPanResponderRelease: (_, g) => {
+      if (g.dx < -50) setTab("hs");
+      else if (g.dx > 50) setTab("hv");
+    },
+  })).current;
+
   // câu chào streak lấy từ pool — đổi theo ngày, không lặp mỗi render (P0 §3.7)
   const streakGreet = useMemo(
     () => fill(pick(STREAK_GREET, "greet"), { n: prog.streak }),
@@ -90,6 +101,7 @@ export default function App() {
       setGoalPref(g);
       const t = await AsyncStorage.getItem("token");
       const r = (await AsyncStorage.getItem("role")) || "hoc_vien";
+      setIsGuest((await AsyncStorage.getItem("guest")) === "true");
       if (t) { setToken(t); setRole(r); setOnboarded(true); await loadFor(t, r, g); }
       else setOnboarded(ob === "true");
     } catch { await AsyncStorage.multiRemove(["token", "role"]); setToken(null); }
@@ -120,9 +132,32 @@ export default function App() {
     setAuthBusy(false);
   }
   async function logout() {
-    await AsyncStorage.multiRemove(["token", "role"]);
-    setToken(null); setRole("hoc_vien"); setTab("hv"); setScreen("feed");
+    await AsyncStorage.multiRemove(["token", "role", "guest"]);
+    setToken(null); setRole("hoc_vien"); setTab("hv"); setScreen("feed"); setIsGuest(false);
     setEmail(""); setPw(""); setName("");
+  }
+  // Khách trước, đăng ký sau — giá trị trước cam kết (phân tích Mary)
+  async function doGuest() {
+    setAuthBusy(true); setAuthErr(null);
+    try {
+      const res = await Api.guest();
+      await AsyncStorage.setItem("token", res.access_token);
+      await AsyncStorage.setItem("role", res.role);
+      await AsyncStorage.setItem("guest", "true");
+      setToken(res.access_token); setRole(res.role); setIsGuest(true); setTab("hv"); setScreen("feed");
+      await loadFor(res.access_token, res.role);
+    } catch (e: any) { setAuthErr(e.message); }
+    setAuthBusy(false);
+  }
+  // Nâng cấp khách → tài khoản thật: GIỮ NGUYÊN streak/XP/clip (server giữ user_id)
+  async function doUpgrade(em: string, p: string, nm: string) {
+    try {
+      const res = await Api.upgrade(token!, em.trim().toLowerCase(), p, nm.trim() || undefined);
+      await AsyncStorage.setItem("token", res.access_token);
+      await AsyncStorage.removeItem("guest");
+      setToken(res.access_token); setIsGuest(false);
+      showToast("Xong! Tiến độ của bạn đã được giữ an toàn 🎉");
+    } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
 
   async function refresh(t = token!, goal = "") {
@@ -162,7 +197,8 @@ export default function App() {
     const clip = selPath ? await Api.submitMockContent(token!, curLesson.id, 30) : await Api.submitMock(token!, curLesson.id, 30);
     await pollScore(clip.id);
   }
-  async function pollScore(clipId: string) {
+  // Chờ chấm xong + cập nhật tiến độ + bắn khoảnh khắc thưởng. Trả score (null = chậm).
+  async function settleScore(clipId: string): Promise<Score | null> {
     let s: any = null;
     for (let i = 0; i < 25; i++) {  // ~12.5s — ASR thật có lúc chậm hơn 6s
       const c = await Api.clip(token!, clipId);
@@ -171,19 +207,36 @@ export default function App() {
     }
     const prev = prog;
     const np = await Api.progress(token!);
-    setProg(np); setBusy(false);
-    if (!s || !s.score) {
-      // mạng/chấm chậm — không vỡ, không mất bài (EXPERIENCE.md State Patterns)
-      showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
-      setScreen("feed");
-      return;
-    }
-    setLastClip(clipId); setScore(s.score); setScreen("score");
+    setProg(np);
     // Khoảnh khắc thưởng — chỉ ở MỐC, giữ vàng đèn "đắt" (P0 §1.1)
     if (np.tier && prev.tier && np.tier !== prev.tier) setCeleb({ kind: "tier", value: np.tier });
     else if (np.streak !== prev.streak && STREAK_MILESTONES.includes(np.streak)) setCeleb({ kind: "streak", value: np.streak });
     else if (Math.floor(np.xp / 50) > Math.floor(prev.xp / 50)) setCeleb({ kind: "xp", value: Math.floor(np.xp / 50) * 50 });
     else if (prev.tickets === 0 && np.tickets > 0) setCeleb({ kind: "ticket" });
+    return s?.score ?? null;
+  }
+  async function pollScore(clipId: string) {
+    const sc = await settleScore(clipId);
+    setBusy(false);
+    if (!sc) {
+      // mạng/chấm chậm — không vỡ, không mất bài (EXPERIENCE.md State Patterns)
+      showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
+      setScreen("feed");
+      return;
+    }
+    setLastClip(clipId); setScore(sc); setScreen("score");
+  }
+  // Practice Reels: nộp + chờ chấm, trả score cho trang kết quả inline (P2-practice-reels-spec)
+  async function runReelsLesson(lesson: ReelsLesson, audio: { uri: string; dur: number } | null): Promise<Score | null> {
+    try {
+      const clip = audio
+        ? await submitAudio(token!, lesson.id, audio.uri, audio.dur, selPath ? lesson.id : undefined)
+        : selPath ? await Api.submitMockContent(token!, lesson.id, 30) : await Api.submitMock(token!, lesson.id, 30);
+      const sc = await settleScore(clip.id);
+      if (!sc) showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
+      setLastClip(clip.id);
+      return sc;
+    } catch (e: any) { showToast("Lỗi: " + e.message); return null; }
   }
   async function sendVeVang() {
     try {
@@ -235,7 +288,12 @@ export default function App() {
           )}
           {authErr && <Text style={{ color: C.primary, marginBottom: 8, fontWeight: "600" }}>{authErr}</Text>}
           {authBusy ? <ActivityIndicator color={C.primary} style={{ marginTop: 8 }} />
-            : <Btn label={authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"} onPress={doAuth} />}
+            : (
+              <>
+                <Btn label={authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"} onPress={doAuth} />
+                <Btn ghost label="Thử ngay — không cần tài khoản" onPress={doGuest} />
+              </>
+            )}
           <Text style={{ color: C.ink2, fontSize: 12, textAlign: "center", marginTop: 16 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
         </View>
       </View>
@@ -276,7 +334,15 @@ export default function App() {
         <Tab on={tab === "hs"} icon={<User size={16} color={tab === "hs" ? "#fff" : C.ink2} />} label="Hồ sơ" onPress={() => setTab("hs")} />
       </View>
 
-      {tab === "hv" && screen === "feed" ? (
+      {tab === "hv" && screen === "reels" ? (
+        <ReelsPager
+          lessons={lessons as ReelsLesson[]}
+          startIndex={Math.max(0, lessons.findIndex((l) => l.unlocked && !l.done))}
+          streak={prog.streak}
+          onRun={runReelsLesson}
+          onExit={() => refresh()}
+        />
+      ) : tab === "hv" && screen === "feed" ? (
         <View style={{ flex: 1 }}>
           {paths.length > 0 && (
             <View>
@@ -284,19 +350,32 @@ export default function App() {
                 <PathPill active={!selPath} label="Kỹ năng nói" color={C.primary} onPress={() => pickPath(null)} />
                 {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
               </ScrollView>
-              {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : "Nền tảng nói tự tin"; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
+              {/* giảm nhiễu: tagline chỉ hiện khi đã chọn thể loại */}
+              {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : ""; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
             </View>
           )}
-          {prog.practiced_today === false && (
+          {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
+          {prog.practiced_today === false && new Date().getHours() >= 17 && (
             <View style={s.reminder}>
               <Fire size={18} color="#F5A623" />
               <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
             </View>
           )}
           <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+          {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
+          <TouchableOpacity style={s.reelsFab} onPress={() => setScreen("reels")} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
+            <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <View style={{ flex: 1 }} {...tabSwipe.panHandlers}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16 }}
+        onScrollEndDrag={(e) => {
+          // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
+          if (screen === "score" && e.nativeEvent.contentOffset.y < -70) refresh();
+        }}
+      >
         {tab === "hv" && screen === "practice" && curLesson && (
           <View>
             <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
@@ -317,8 +396,9 @@ export default function App() {
             <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
           </View>
         )}
-        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} onLogout={logout} />}
+        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onLogout={logout} />}
       </ScrollView>
+      </View>
       )}
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
@@ -327,11 +407,26 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; onLogout: () => void }) {
+function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
+  const [upEmail, setUpEmail] = useState("");
+  const [upPw, setUpPw] = useState("");
+  const [upName, setUpName] = useState("");
   return (
     <View>
+      {isGuest && (
+        <View style={[s.card, { borderWidth: 1.5, borderColor: C.spot }]}>
+          <Text style={{ fontFamily: F.title, fontSize: 15, color: C.ink }}>Bạn đang luyện với tư cách Khách</Text>
+          <Text style={{ color: C.ink2, fontSize: 12.5, marginTop: 4, lineHeight: 18 }}>
+            Tạo tài khoản 10 giây để giữ streak {prog.streak} ngày và {prog.xp} XP — đổi máy không mất.
+          </Text>
+          <TextInput style={s.field2} placeholder="Email" placeholderTextColor="#BFB4C4" autoCapitalize="none" keyboardType="email-address" value={upEmail} onChangeText={setUpEmail} />
+          <TextInput style={s.field2} placeholder="Mật khẩu" placeholderTextColor="#BFB4C4" secureTextEntry value={upPw} onChangeText={setUpPw} />
+          <TextInput style={s.field2} placeholder="Tên hiển thị (tuỳ chọn)" placeholderTextColor="#BFB4C4" value={upName} onChangeText={setUpName} />
+          <Btn gold label="Giữ tiến độ của tôi" onPress={() => onUpgrade(upEmail, upPw, upName)} />
+        </View>
+      )}
       <Kicker>Tiến bộ của bạn</Kicker>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <StatCard icon={<Fire size={22} color="#F5A623" />} value={prog.streak} label="Ngày streak" />
@@ -442,6 +537,13 @@ const s = StyleSheet.create({
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
   tabOn: { backgroundColor: C.primary },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
+  field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
+  reelsFab: {
+    position: "absolute", bottom: 22, alignSelf: "center", backgroundColor: C.primary,
+    paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999,
+    shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
+  },
+  reelsFabT: { color: "#fff", fontFamily: F.title, fontSize: 13.5 },
   kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", marginTop: 8 },

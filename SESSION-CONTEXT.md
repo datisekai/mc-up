@@ -123,6 +123,30 @@ Bộ spec: `_bmad-output/planning-artifacts/ux-designs/ux-mc-training-2026-07-03
 - **Còn hoãn:** "Xem bản chữ" (cần transcript giọng MC — chờ ASR trên voice review);
   nhắc giờ luyện từ prefs onboarding (cần `expo-notifications` + dev build, Expo Go SDK 54 không hỗ trợ).
 
+### Đợt 3 phiên 2 — Khách + onboarding thịt + giảm nhiễu/cử chỉ + Practice Reels
+**Quyết định Finn 06/07: CHƯA đăng ký Apple Developer** → milestone dev build
+(`_bmad-output/planning-artifacts/dev-build-milestone-2026-07-06.md`, status: parked) gồm
+Apple/Google Sign-In native, widget iOS streak, notifications — đóng băng chờ kích hoạt.
+Đợt này làm toàn bộ phần chạy được trong Expo Go:
+- **Chế độ Khách (P0 conversion):** backend `POST /auth/guest` (user ẩn danh, email
+  `khach-*@guest.mcup`, password_hash rỗng) + `POST /auth/upgrade` (nâng cấp GIỮ user_id →
+  streak/XP/clip không mất; chặn upgrade 2 lần). Client: nút "Thử ngay — không cần tài khoản"
+  ở màn auth; Hồ sơ hiện thẻ "Giữ tiến độ của tôi" khi là khách (AsyncStorage `guest`).
+- **Onboarding lớp thịt:** minh hoạ SVG sân khấu + spotlight, hàng avatar social proof,
+  chuyển bước trượt (spring, tôn trọng reduced-motion), B2 thành 3 value card có icon nền màu,
+  chip mục tiêu MÀU THEO GENRE + preview card + CTA/dots đổi màu theo mục tiêu đã chọn.
+- **Giảm nhiễu + cử chỉ (accelerator, nút vẫn còn):** Thẻ nhiệm vụ mặc định chỉ Đề + Dàn ý
+  (mục tiêu/tình huống/tiêu chí sau "Xem đủ đề bài"); nhắc streak chỉ hiện SAU 17h; tagline chỉ
+  hiện khi chọn thể loại; vuốt ngang đổi tab (PanResponder, chỉ ở màn không phải feed để không
+  đụng StageMap/pill); kéo xuống ở màn điểm → về bản đồ.
+- **Practice Reels (`src/ReelsPager.tsx`):** pill "▲ Luyện liên tục" nổi trên bản đồ →
+  pager dọc pagingEnabled: trang bài (compact) / breather mẹo MC thật mỗi 3 bài / trang khoá /
+  trang kết thúc (điểm dừng thật, không auto-loop). Thu âm giữ ở cấp pager (1 bài/lúc),
+  ĐANG THU → pager khoá; kết quả ScoreReveal inline + "Luyện lại"; unlock cục bộ trong phiên
+  (xong bài trước → bài sau mở không cần refetch). Reduced-motion → 2 nút Bài trước/kế.
+  App: refactor `pollScore` → `settleScore` (dùng chung, celebration giữ nguyên) + `runReelsLesson`.
+- Verify đợt 3: tsc sạch · bundle 969 modules · smoke guest→upgrade→login + chặn upgrade lần 2 ✓.
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)
