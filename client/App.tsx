@@ -20,6 +20,7 @@ import ScoreReveal from "./src/ScoreReveal";
 import Celebration, { CelebKind } from "./src/Celebration";
 import BadgeCardView from "./src/BadgeCardView";
 import ReelsPager, { ReelsLesson } from "./src/ReelsPager";
+import Mentors from "./src/Mentors";
 import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./src/sound";
 import { STREAK_GREET, fill, pick } from "./src/variety";
 
@@ -55,14 +56,16 @@ export default function App() {
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
 
-  const [tab, setTab] = useState<"hv" | "hs">("hv");
-  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
+  const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
+  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; ai_scores_left?: number; is_pro?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
   const [achs, setAchs] = useState<any[]>([]);
   const [scores, setScores] = useState<any[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
+  const [mentors, setMentors] = useState<any[]>([]);
+  const [newBadge, setNewBadge] = useState(false);  // chấm đỏ trên tab Hồ sơ khi MC vừa nhận xét (#3)
   const [selPath, setSelPath] = useState<string | null>(null);
   const [screen, setScreen] = useState<"feed" | "practice" | "score" | "reels">("feed");
   const [isGuest, setIsGuest] = useState(false);
@@ -222,11 +225,19 @@ export default function App() {
       const kn = ps.find((p: any) => (p.genre || "").toLowerCase().includes("kỹ năng nói")) || ps[0];
       if (kn) { pid = kn.id; setSelPath(kn.id); }
     }
-    const [lessR, rv, bd, ac, sc] = await Promise.all([
+    const [lessR, rv, bd, ac, sc, mt] = await Promise.all([
       pid ? Api.contentLessons(t, pid) : Api.lessons(t),
-      Api.myReviews(t), Api.leaderboard(t), Api.achievements(t), Api.scores(t),
+      Api.myReviews(t), Api.leaderboard(t), Api.achievements(t), Api.scores(t), Api.mentors(t),
     ]);
-    setLessons(lessR); setReviews(rv); setBoard(bd); setAchs(ac); setScores(sc);
+    setLessons(lessR); setReviews(rv); setBoard(bd); setAchs(ac); setScores(sc); setMentors(mt);
+    // Thông báo trong app (#3): MC vừa nhận xét → chấm đỏ tab Hồ sơ + toast
+    const badgeCount = rv.filter((r: any) => r.badge).length;
+    const seen = parseInt((await AsyncStorage.getItem("seen_badges")) || "0", 10);
+    if (badgeCount > seen) {
+      setNewBadge(true);
+      if (seen > 0 || badgeCount > 0) showToast("MC đã nhận xét bạn rồi 🎤 — mở Hồ sơ xem nhé!");
+      await AsyncStorage.setItem("seen_badges", String(badgeCount));
+    }
     setLoadError(false); setScreen("feed");
   }
   // Kéo-để-tải-lại + nút "Thử lại" dùng chung: an toàn, không ném lỗi ra ngoài
@@ -244,6 +255,12 @@ export default function App() {
 
   async function submitReal(uri: string, dur: number) {
     if (!curLesson) return;
+    // Hết lượt chấm AI (feedback #7): KHÔNG upload/Whisper (tiết kiệm chi phí) → nộp tự luyện (mock, free)
+    if ((prog.ai_scores_left ?? -1) === 0 && !prog.is_pro) {
+      showToast("Hết lượt chấm AI hôm nay — nộp chế độ tự luyện. Nâng cấp Pro để chấm không giới hạn ✨");
+      await doSubmitMock();
+      return;
+    }
     setBusy(true);
     try {
       const clip = await submitAudio(token!, curLesson.id, uri, dur, selPath ? curLesson.id : undefined);
@@ -287,9 +304,12 @@ export default function App() {
   }
   // Practice Reels: nộp + chờ chấm, trả score cho trang kết quả inline (P2-practice-reels-spec)
   async function runReelsLesson(lesson: ReelsLesson, audio: { uri: string; dur: number } | null): Promise<Score | null> {
+    // hết lượt chấm AI → tự luyện (mock, free), không tốn Whisper
+    const useAI = audio && !((prog.ai_scores_left ?? -1) === 0 && !prog.is_pro);
+    if (audio && !useAI) showToast("Hết lượt chấm AI hôm nay — nộp chế độ tự luyện.");
     try {
-      const clip = audio
-        ? await submitAudio(token!, lesson.id, audio.uri, audio.dur, selPath ? lesson.id : undefined)
+      const clip = useAI
+        ? await submitAudio(token!, lesson.id, audio!.uri, audio!.dur, selPath ? lesson.id : undefined)
         : selPath ? await Api.submitMockContent(token!, lesson.id, 30) : await Api.submitMock(token!, lesson.id, 30);
       const sc = await settleScore(clip.id);
       if (!sc) showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
@@ -304,18 +324,28 @@ export default function App() {
       await refresh();
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
-  async function loadQueue() { setQueue(await Api.mcQueue(token!)); }
+  async function loadQueue() { try { setQueue(await Api.mcQueue(token!)); } catch (e) { await handleApiError(e); } }
+  // MC nhận/nhả vé (feedback #4) — không giành trùng
+  async function doClaim(reqId: string) {
+    try { await Api.mcClaim(token!, reqId); await loadQueue(); }
+    catch (e: any) { showToast(e.message); await loadQueue(); }
+  }
+  async function doRelease(reqId: string) {
+    try { await Api.mcRelease(token!, reqId); await loadQueue(); } catch { /* ignore */ }
+  }
   async function doReview(reqId: string, note: string) {
-    await Api.mcReview(token!, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
-    showToast("Đã gửi — Thẻ bảo chứng đã tạo cho học viên.");
-    await loadQueue();
+    try {
+      await Api.mcReview(token!, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
+      showToast("Đã gửi — Thẻ bảo chứng đã tạo cho học viên.");
+      await loadQueue();
+    } catch (e: any) { showToast(e.message); await loadQueue(); }
   }
   async function doReviewVoice(reqId: string, uri: string, note: string) {
     try {
       await submitMcVoice(token!, reqId, uri, note);
       showToast("Giọng nhận xét đã gửi tới học viên.");
       await loadQueue();
-    } catch (e: any) { Alert.alert("Lỗi", e.message); }
+    } catch (e: any) { Alert.alert("Lỗi", e.message); await loadQueue(); }
   }
 
   if (booting || !fontsLoaded) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
@@ -368,8 +398,9 @@ export default function App() {
           <Text style={s.brand}>McUp · MC</Text>
           <TouchableOpacity onPress={logout}><Text style={{ color: C.primary, fontWeight: "800" }}>Đăng xuất</Text></TouchableOpacity>
         </View>
-        <ScrollView contentContainerStyle={{ padding: 16 }}>
-          <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} />
+        <ScrollView contentContainerStyle={{ padding: 16 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadQueue(); setRefreshing(false); }} tintColor={C.primary} colors={[C.primary]} />}>
+          <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} onClaim={doClaim} onRelease={doRelease} />
         </ScrollView>
         {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
       </View>
@@ -380,13 +411,15 @@ export default function App() {
   // Minimal UI: header 1 dòng (logo + 1 cụm chip) · KHÔNG tab trên đầu ·
   // tab bar icon ở ĐÁY (chuẩn native, EXPERIENCE.md IA) · vuốt ngang đổi tab từ mọi màn
   // (trừ đang luyện/Reels để không vuốt nhầm).
-  const swipeEnabled = screen === "feed" || screen === "score" || tab === "hs";
+  const swipeEnabled = (screen === "feed" || screen === "score" || tab === "hs" || tab === "mc");
+  const aiLeft = prog.ai_scores_left ?? -1;  // -1 = không giới hạn (Pro / mock)
   return (
     <View style={s.app}>
       <StatusBar style="dark" />
       <View style={s.header}>
         <Text style={s.brand}>McUp</Text>
         <View style={s.chipCluster}>
+          {aiLeft >= 0 && !prog.is_pro && (<><Text style={[s.chipT, { color: aiLeft === 0 ? C.primary : C.ink }]}>⚡{aiLeft}</Text><View style={s.chipDiv} /></>)}
           <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
           <View style={s.chipDiv} />
           <Star size={13} color={C.primary} /><Text style={s.chipT}>{prog.xp}</Text>
@@ -395,7 +428,10 @@ export default function App() {
         </View>
       </View>
 
-      {tab === "hv" && screen === "reels" ? (
+      {tab === "mc" ? (
+        <Mentors mentors={mentors}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
+      ) : tab === "hv" && screen === "reels" ? (
         <ReelsPager
           lessons={lessons as ReelsLesson[]}
           startIndex={Math.max(0, lessons.findIndex((l) => l.unlocked && !l.done))}
@@ -486,7 +522,7 @@ export default function App() {
       </View>
       )}
 
-      {/* tab bar đáy — icon, chuẩn native */}
+      {/* tab bar đáy — icon, chuẩn native (3 tab: Lộ trình · MC · Hồ sơ) */}
       {screen !== "reels" && (
         <View style={s.bottomBar}>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
@@ -494,8 +530,15 @@ export default function App() {
             <MapIcon size={22} color={tab === "hv" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hs"); }} accessibilityLabel="Tab Hồ sơ">
-            <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("mc"); }} accessibilityLabel="Tab MC">
+            <Trophy size={22} color={tab === "mc" ? C.primary : C.ink2} />
+            <Text style={[s.bTabT, tab === "mc" && { color: C.primary }]}>MC</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hs"); setNewBadge(false); }} accessibilityLabel="Tab Hồ sơ">
+            <View>
+              <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
+              {newBadge && <View style={s.tabDot} />}
+            </View>
             <Text style={[s.bTabT, tab === "hs" && { color: C.primary }]}>Hồ sơ</Text>
           </TouchableOpacity>
         </View>
@@ -507,7 +550,7 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
+function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   const [upEmail, setUpEmail] = useState("");
@@ -525,6 +568,16 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
           <TextInput style={s.field2} placeholder="Mật khẩu" placeholderTextColor="#BFB4C4" secureTextEntry value={upPw} onChangeText={setUpPw} />
           <TextInput style={s.field2} placeholder="Tên hiển thị (tuỳ chọn)" placeholderTextColor="#BFB4C4" value={upName} onChangeText={setUpName} />
           <Btn gold label="Giữ tiến độ của tôi" onPress={() => onUpgrade(upEmail, upPw, upName)} />
+        </View>
+      )}
+      {/* McUp Pro (feedback #7) — hiển thị giá trị; nút mua nối RevenueCat khi có dev build */}
+      {!prog.is_pro && (
+        <View style={s.proCard}>
+          <Text style={s.proTitle}>McUp Pro ✨</Text>
+          <Text style={s.proLine}>• Chấm AI không giới hạn (bạn còn {prog.ai_scores_left ?? "–"} lượt free hôm nay)</Text>
+          <Text style={s.proLine}>• Mở toàn bộ khoá nâng cao + thêm Vé Vàng mỗi tháng</Text>
+          <Text style={s.proLine}>• Mở khoá skin thẻ khoe (Đèn đêm, San hô)</Text>
+          <Btn gold label="Nâng cấp Pro · sắp có" onPress={() => {}} />
         </View>
       )}
       <Kicker>Tiến bộ của bạn</Kicker>
@@ -620,7 +673,7 @@ function StatCard({ icon, value, label }: any) {
   );
 }
 
-function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; onReview: (id: string, note: string) => void; onReviewVoice: (id: string, uri: string, note: string) => void; onReload: () => void }) {
+function MCView({ queue, onReview, onReviewVoice, onReload, onClaim, onRelease }: { queue: any[]; onReview: (id: string, note: string) => void; onReviewVoice: (id: string, uri: string, note: string) => void; onReload: () => void; onClaim: (id: string) => void; onRelease: (id: string) => void }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [recId, setRecId] = useState<string | null>(null);
   const recRef = useRef<Audio.Recording | null>(null);
@@ -638,24 +691,44 @@ function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; on
     const uri = r.getURI(); recRef.current = null; setRecId(null);
     if (uri) await onReviewVoice(reqId, uri, notes[reqId] ?? "Nhận xét bằng giọng");
   }
+  const waiting = queue.filter((it) => it.state !== "taken").length;
   return (
     <View>
-      <Kicker>Hàng đợi nhận xét</Kicker>
+      <Kicker>Hàng đợi nhận xét{waiting ? ` · ${waiting} chờ bạn` : ""}</Kicker>
       {queue.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có clip chờ. Học viên luyện rồi bấm "Gửi cho MC thật" là clip vào đây.</Text>}
-      {queue.map((it) => (
-        <View key={it.request_id} style={s.card}>
-          <Text style={{ fontWeight: "700" }}>{it.hoc_vien_name || "Học viên"}</Text>
-          <Text style={{ color: C.ink2, fontSize: 12 }}>Tốc độ {it.speed_wpm} chữ/phút · {it.filler_count} từ đệm</Text>
-          {recId === it.request_id ? (
-            <Btn label="Dừng & gửi giọng" onPress={() => stopVoice(it.request_id)} />
-          ) : (
-            <Btn gold label="Ghi âm nhận xét (giọng thật)" onPress={() => startVoice(it.request_id)} />
-          )}
-          <TextInput style={s.input} multiline defaultValue="Giọng em có màu, giữ nhịp tốt!"
-            onChangeText={(t) => setNotes((n) => ({ ...n, [it.request_id]: t }))} />
-          <Btn ghost label="Hoặc gửi bằng text" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
-        </View>
-      ))}
+      {queue.map((it) => {
+        const taken = it.state === "taken";   // MC khác đang giữ
+        const mine = it.state === "mine";      // mình đang giữ
+        return (
+          <View key={it.request_id} style={[s.card, taken && { opacity: 0.5 }, mine && { borderWidth: 1.5, borderColor: C.spot }]}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontFamily: F.title, color: C.ink }}>{it.hoc_vien_name || "Học viên"}</Text>
+              {taken && <View style={s.stateChip}><Text style={s.stateChipT}>{it.claimer_name || "MC khác"} đang xét</Text></View>}
+              {mine && <View style={[s.stateChip, { backgroundColor: C.spot }]}><Text style={[s.stateChipT, { color: "#5a3d00" }]}>Bạn đang xét</Text></View>}
+            </View>
+            <Text style={{ color: C.ink2, fontSize: 12, marginTop: 2 }}>Tốc độ {it.speed_wpm ?? "?"} chữ/phút · {it.filler_count ?? "?"} từ đệm</Text>
+
+            {taken ? (
+              <Text style={{ color: C.ink2, fontSize: 12, marginTop: 8, fontStyle: "italic" }}>Vé này đang có MC khác nhận xét.</Text>
+            ) : !mine ? (
+              // chưa nhận → phải nhận vé trước khi xét (chống 2 MC làm trùng)
+              <Btn label="Nhận vé này để xét" onPress={() => onClaim(it.request_id)} />
+            ) : (
+              <>
+                {recId === it.request_id ? (
+                  <Btn label="Dừng & gửi giọng" onPress={() => stopVoice(it.request_id)} />
+                ) : (
+                  <Btn gold label="Ghi âm nhận xét (giọng thật)" onPress={() => startVoice(it.request_id)} />
+                )}
+                <TextInput style={s.input} multiline defaultValue="Giọng em có màu, giữ nhịp tốt!"
+                  onChangeText={(t) => setNotes((n) => ({ ...n, [it.request_id]: t }))} />
+                <Btn ghost label="Hoặc gửi bằng text" onPress={() => onReview(it.request_id, notes[it.request_id] ?? "Giọng em có màu, giữ nhịp tốt!")} />
+                <Btn ghost label="Nhả vé (để MC khác xét)" onPress={() => onRelease(it.request_id)} />
+              </>
+            )}
+          </View>
+        );
+      })}
       <Btn ghost label="Tải lại hàng đợi" onPress={onReload} />
     </View>
   );
@@ -691,6 +764,12 @@ const s = StyleSheet.create({
   },
   bTab: { flex: 1, alignItems: "center", gap: 2 },
   bTabT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  tabDot: { position: "absolute", top: -2, right: -4, width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary, borderWidth: 1.5, borderColor: C.raised },
+  stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
+  stateChipT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  proCard: { backgroundColor: "#2E2239", borderRadius: 16, padding: 16, marginBottom: 4 },
+  proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
+  proLine: { fontSize: 12.5, color: "#E9DFF2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
   pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 11.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },

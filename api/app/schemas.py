@@ -65,6 +65,8 @@ class ProgressOut(BaseModel):
     tickets: int
     tier: str = "Đồng"
     practiced_today: bool = False
+    ai_scores_left: int = -1  # lượt chấm AI còn lại hôm nay (-1 = không giới hạn / Pro) — feedback #7
+    is_pro: bool = False
 
 
 class Achievement(BaseModel):
@@ -121,6 +123,8 @@ class MCQueueItemOut(BaseModel):
     hoc_vien_name: str | None = None
     speed_wpm: float | None = None
     filler_count: int | None = None
+    state: str = "free"                 # free | mine | taken (feedback #4)
+    claimer_name: str | None = None     # tên MC đang giữ (khi taken)
 
 
 class SubmitReviewIn(BaseModel):

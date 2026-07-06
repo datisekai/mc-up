@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     # CORS: dev để "*"; prod đặt ALLOWED_ORIGINS="https://app.mcup.vn" (phẩy nếu nhiều)
     allowed_origins: str = "*"
     # Quota chấm điểm — mỗi lần chấm = 1 call Whisper trả tiền. 0 = không giới hạn.
-    daily_clip_limit: int = 30       # lượt nộp bài / user / ngày
+    daily_clip_limit: int = 30       # lượt nộp bài / user / ngày (trần chống lạm dụng)
+    daily_ai_score_free: int = 5     # lượt CHẤM AI free / ngày (feedback #7); hết → tự luyện. Pro = ∞
+    mc_claim_timeout_min: int = 30   # MC nhận vé mà không xét trong X phút → tự nhả cho MC khác
     guest_per_ip_daily: int = 5      # tài khoản khách mới / IP / ngày
     guest_daily_total: int = 300     # tổng khách mới / ngày (van tổng chống farm)
 

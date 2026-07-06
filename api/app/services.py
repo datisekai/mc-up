@@ -23,6 +23,21 @@ from .security import hash_password
 
 log = logging.getLogger("mcup.services")
 
+# Mốc streak được tặng Vé Vàng (khớp STREAK_MILESTONES bên client cho Celebration)
+TICKET_STREAK_MILESTONES = {3, 7, 14, 30, 60, 100}
+
+
+async def ai_scores_left_today(s: AsyncSession, user: "User") -> int:
+    """Số lượt CHẤM AI còn lại hôm nay (feedback #7). Pro = không giới hạn (-1).
+    Đếm score THẬT (is_mock=False) hôm nay — mock không tốn tiền nên không tính."""
+    if getattr(user, "is_pro", False) or settings.daily_ai_score_free <= 0:
+        return -1
+    used = (await s.execute(
+        select(func.count(Score.id)).join(Clip, Clip.id == Score.clip_id)
+        .where(Clip.user_id == user.id, Score.is_mock == False,  # noqa: E712
+               func.date(Score.created_at) == date.today().isoformat()))).scalar() or 0
+    return max(0, settings.daily_ai_score_free - used)
+
 
 async def _lesson_steps(s: AsyncSession, clip: Clip) -> list[str]:
     """Dàn ý (brief.steps) của bài học clip thuộc về — nguồn để chấm 'đủ ý chưa'."""
@@ -174,7 +189,14 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
                 prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
                 prog.last_day = today
             prog.xp += lesson_xp
-            prog.tickets += 1  # [DEMO] tặng 1 Vé Vàng mỗi lần hoàn thành; thật = theo mốc XP
+            # Vé Vàng HIẾM (feedback #7): lần luyện ĐẦU (trải nghiệm MC 1 lần) + mỗi MỐC streak.
+            # Bỏ "tặng mỗi lần" — vé = premium, không rải free.
+            await s.flush()
+            scored = (await s.execute(
+                select(func.count(Score.id)).join(Clip, Clip.id == Score.clip_id)
+                .where(Clip.user_id == user_id))).scalar() or 0
+            if scored <= 1 or prog.streak in TICKET_STREAK_MILESTONES:
+                prog.tickets += 1
 
         clip.status = "done"
         await s.commit()
@@ -204,6 +226,67 @@ async def _badge_stats(s: AsyncSession, req: ReviewRequest) -> dict | None:
         "before": {"speed_wpm": first.speed_wpm, "filler_count": first.filler_count},
         "after": {"speed_wpm": after.speed_wpm, "filler_count": after.filler_count},
     }
+
+
+def _claim_cutoff() -> datetime:
+    return datetime.now(timezone.utc) - timedelta(minutes=settings.mc_claim_timeout_min)
+
+
+def _claim_state(req: ReviewRequest, mc_id: str) -> str:
+    """free (nhận được) · mine (mình đang xét) · taken (MC khác đang xét, chưa hết hạn)."""
+    if not req.claimed_by:
+        return "free"
+    ca = req.claimed_at
+    if ca and ca.tzinfo is None:
+        ca = ca.replace(tzinfo=timezone.utc)
+    if ca and ca < _claim_cutoff():
+        return "free"  # quá hạn → tự nhả
+    return "mine" if req.claimed_by == mc_id else "taken"
+
+
+async def mc_queue(s: AsyncSession, mc: User) -> list[dict]:
+    """Hàng đợi cho MC (feedback #4): kèm trạng thái nhận vé để không xét trùng."""
+    reqs = (await s.execute(
+        select(ReviewRequest).where(ReviewRequest.status == "pending")
+        .order_by(ReviewRequest.created_at))).scalars().all()
+    out = []
+    for r in reqs:
+        hv = await s.get(User, r.hoc_vien_id)
+        score = (await s.execute(select(Score).where(Score.clip_id == r.clip_id))).scalar_one_or_none()
+        claimer = await s.get(User, r.claimed_by) if r.claimed_by else None
+        state = _claim_state(r, mc.id)
+        out.append({
+            "request_id": r.id, "hoc_vien_name": hv.display_name if hv else None,
+            "speed_wpm": score.speed_wpm if score else None,
+            "filler_count": score.filler_count if score else None,
+            "state": state,
+            "claimer_name": (claimer.display_name or "MC") if (claimer and state == "taken") else None,
+        })
+    return out
+
+
+async def mc_claim(s: AsyncSession, mc: User, request_id: str) -> str:
+    """MC nhận vé → khoá cho mình. 'ok' | 'taken' (MC khác đang giữ) | 'gone' (không còn)."""
+    r = await s.get(ReviewRequest, request_id)
+    if not r or r.status != "pending":
+        return "gone"
+    if _claim_state(r, mc.id) == "taken":
+        return "taken"
+    r.claimed_by = mc.id
+    r.claimed_at = datetime.now(timezone.utc)
+    await s.commit()
+    return "ok"
+
+
+async def mc_release(s: AsyncSession, mc: User, request_id: str) -> bool:
+    """Nhả vé (đổi ý / không xét nữa) — chỉ nhả được vé mình đang giữ."""
+    r = await s.get(ReviewRequest, request_id)
+    if not r or r.claimed_by != mc.id:
+        return False
+    r.claimed_by = None
+    r.claimed_at = None
+    await s.commit()
+    return True
 
 
 async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: str,
@@ -628,10 +711,36 @@ async def admin_patch_user(s: AsyncSession, user_id: str, fields: dict) -> bool:
         u.display_name = fields["display_name"]
     if "mc_title" in fields:
         u.mc_title = fields["mc_title"] or None
+    if "mc_bio" in fields:               # hồ sơ MC cho danh sách (feedback #5)
+        u.mc_bio = fields["mc_bio"] or None
+    if "mc_specialties" in fields:
+        u.mc_specialties = fields["mc_specialties"] or None
+    if isinstance(fields.get("mc_featured"), bool):
+        u.mc_featured = fields["mc_featured"]
+    if isinstance(fields.get("is_pro"), bool):
+        u.is_pro = fields["is_pro"]
     if isinstance(fields.get("password"), str) and fields["password"]:
         u.password_hash = hash_password(fields["password"])
     await s.commit()
     return True
+
+
+async def mc_directory(s: AsyncSession) -> list[dict]:
+    """Danh sách MC hợp tác cho học viên xem (feedback #5) — nổi bật lên đầu.
+    Kèm số nhận xét đã gửi (uy tín). Nền của Marketplace (kiếm tiền — feedback #7)."""
+    mcs = (await s.execute(select(User).where(User.role == "mc")
+                           .order_by(User.mc_featured.desc(), User.created_at))).scalars().all()
+    out = []
+    for m in mcs:
+        reviews = (await s.execute(
+            select(func.count(BadgeCard.id)).where(BadgeCard.mc_name == (m.display_name or "MC")))).scalar() or 0
+        out.append({
+            "id": m.id, "name": m.display_name or "MC", "title": m.mc_title,
+            "bio": m.mc_bio, "featured": m.mc_featured,
+            "specialties": [x.strip() for x in (m.mc_specialties or "").split(",") if x.strip()],
+            "reviews": reviews,
+        })
+    return out
 
 
 async def admin_grant(s: AsyncSession, user_id: str, tickets_delta: int = 0,

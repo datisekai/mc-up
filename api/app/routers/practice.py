@@ -10,7 +10,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import Clip, ContentLesson, Lesson, Progress, Score, User
 from ..schemas import ClipOut, ProgressOut, ScoreOut, SubmitClipIn
-from ..services import run_scoring, summarize_score, tier_of
+from ..services import ai_scores_left_today, run_scoring, summarize_score, tier_of
 
 _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi deploy
 
@@ -113,4 +113,5 @@ async def get_clip(clip_id: str, user: User = Depends(current_user),
 async def my_progress(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
     prog = await session.get(Progress, user.id)
     return ProgressOut(xp=prog.xp, streak=prog.streak, tickets=prog.tickets,
-                       tier=tier_of(prog.xp), practiced_today=(prog.last_day == date.today()))
+                       tier=tier_of(prog.xp), practiced_today=(prog.last_day == date.today()),
+                       ai_scores_left=await ai_scores_left_today(session, user), is_pro=user.is_pro)

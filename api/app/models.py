@@ -20,9 +20,14 @@ class User(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
     email: Mapped[str] = mapped_column(String, unique=True)
     password_hash: Mapped[str] = mapped_column(String)
-    role: Mapped[str] = mapped_column(String, default="hoc_vien")  # hoc_vien | mc (AD-7)
+    role: Mapped[str] = mapped_column(String, default="hoc_vien")  # hoc_vien | mc | admin (AD-7)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     mc_title: Mapped[str | None] = mapped_column(String, nullable=True)  # chức danh (chỉ với MC)
+    # Hồ sơ MC cho danh sách MC hợp tác (feedback #5)
+    mc_bio: Mapped[str | None] = mapped_column(String, nullable=True)
+    mc_specialties: Mapped[str | None] = mapped_column(String, nullable=True)  # phẩy: "đám cưới, sự kiện"
+    mc_featured: Mapped[bool] = mapped_column(default=False)  # nổi bật trong danh sách (chỗ quảng cáo)
+    is_pro: Mapped[bool] = mapped_column(default=False)  # McUp Pro (feedback #7) — admin bật để mô phỏng
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     progress: Mapped["Progress"] = relationship(back_populates="user", uselist=False)
@@ -93,6 +98,9 @@ class ReviewRequest(Base):
     hoc_vien_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
     mc_id: Mapped[str | None] = mapped_column(ForeignKey("app_user.id"), nullable=True)
     status: Mapped[str] = mapped_column(String, default="pending")  # pending|submitted|expired
+    # "MC nhận vé" — khoá cho 1 MC để nhiều MC không xét trùng (feedback #4). Timeout tự nhả.
+    claimed_by: Mapped[str | None] = mapped_column(ForeignKey("app_user.id"), nullable=True)
+    claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
@@ -125,6 +133,7 @@ class LearningPath(Base):
     genre_id: Mapped[str] = mapped_column(ForeignKey("genre.id"))
     title: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String, default="draft")  # AD-12
+    is_free: Mapped[bool] = mapped_column(default=True)  # False = khoá trả phí (Pro) — feedback #7
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

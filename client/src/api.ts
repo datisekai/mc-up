@@ -60,6 +60,9 @@ export const Api = {
   mcQueue: (token: string) => req("/mc/queue", { token }),
   mcReview: (token: string, request_id: string, note: string) =>
     req("/mc/review", { method: "POST", token, body: { request_id, note } }),
+  mcClaim: (token: string, request_id: string) => req("/mc/claim", { method: "POST", token, body: { request_id } }),
+  mcRelease: (token: string, request_id: string) => req("/mc/release", { method: "POST", token, body: { request_id } }),
+  mentors: (token: string) => req("/mentors", { token }),
   leaderboard: (token: string) => req("/leaderboard", { token }),
   achievements: (token: string) => req("/me/achievements", { token }),
   scores: (token: string) => req("/me/scores", { token }),

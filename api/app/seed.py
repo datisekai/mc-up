@@ -326,9 +326,20 @@ async def seed_mc() -> None:
         mc = User(email="mc@test.vn", password_hash=hash_password("123456"),
                   role="mc", display_name="MC Hạnh")
         mc.mc_title = "Dẫn 500+ sự kiện · cưới hỏi"
+        mc.mc_bio = "10 năm dẫn tiệc cưới và sự kiện lớn. Mình tin ai cũng có thể tự tin cầm mic — chỉ cần luyện đúng cách và được lắng nghe."
+        mc.mc_specialties = "MC đám cưới, MC sự kiện"
+        mc.mc_featured = True
         s.add(mc)
         await s.flush()
         s.add(Progress(user_id=mc.id))
+        # MC thứ hai cho danh sách phong phú
+        mc2 = User(email="mc2@test.vn", password_hash=hash_password("123456"), role="mc",
+                   display_name="MC Quang Bảo", mc_title="Host livestream · talkshow",
+                   mc_bio="Chuyên host livestream bán hàng và talkshow. Bí quyết giữ chân người xem là năng lượng thật và biết lắng nghe khán giả.",
+                   mc_specialties="MC livestream, MC sự kiện")
+        s.add(mc2)
+        await s.flush()
+        s.add(Progress(user_id=mc2.id))
         await s.commit()
 
 
