@@ -24,6 +24,23 @@ log = logging.getLogger("mcup.scoring")
 # quanh token trước khi khớp, nên "À," / "ừmmm" / "Ờ." đều đếm đúng.
 FILLERS = {"ừm", "à", "ờ", "ơ", "ừ", "ừa", "hử", "hửm", "ậm", "ầy"}
 
+# Whisper HALLUCINATION khi audio im lặng/quá nhỏ: bịa câu outro YouTube tiếng Việt.
+# Gặp các cụm này trong bản chấm ngắn → coi là "chưa nghe rõ", KHÔNG chấm bừa
+# (EXPERIENCE.md State Patterns: âm thanh không đủ → mời thu lại, giọng dịu).
+_HALLUCINATION_MARKS = (
+    "đăng ký kênh", "subscribe", "cảm ơn các bạn đã theo dõi", "cảm ơn đã xem",
+    "hẹn gặp lại các bạn", "video tiếp theo", "video mới", "chúc các bạn xem video",
+    "like và share", "ghiền mì gõ",
+)
+
+
+def _looks_unclear(text: str, words: list) -> bool:
+    """Audio không đủ để tin: quá ít từ, hoặc dính câu outro hallucination kinh điển."""
+    if len(words) < 3:
+        return True
+    low = (text or "").lower()
+    return any(m in low for m in _HALLUCINATION_MARKS) and len(words) <= 25
+
 
 def _norm_word(w: str) -> str:
     w = w.lower().strip().strip(".,!?;:…“”\"'`()[]-–—")
@@ -92,9 +109,22 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         used_mock = True
 
     words = result.words
+    real_vol = _rms_volume(path) if (path and os.path.exists(path)) else None  # FR-13: RMS thật
+
+    # ASR thật nhưng nghe không ra (im lặng/quá nhỏ → Whisper hay bịa) → KHÔNG chấm bừa
+    if not used_mock and _looks_unclear(result.text, words):
+        log.warning("ASR không tin được (hallucination/quá ít từ): %r → mời thu lại", (result.text or "")[:80])
+        return {
+            "volume_label": real_vol or "hơi nhỏ",
+            "speed_wpm": 0.0,
+            "filler_count": 0,
+            "tip": "Mình chưa nghe rõ giọng bạn — thử lại gần mic hơn, nói to rõ một chút nhé? 🎙",
+            "is_mock": False,
+            "transcript": None,  # tuyệt đối không hiện câu Whisper bịa
+        }
+
     wpm = _wpm(words, duration_seconds)  # FR-14: theo thời gian nói thực
     filler = sum(1 for w in words if _norm_word(w["word"]) in FILLERS)  # FR-12: bền với co giãn/dấu câu
-    real_vol = _rms_volume(path) if (path and os.path.exists(path)) else None  # FR-13: RMS thật
 
     tips = rb["tips"]  # gợi ý theo thể loại (FR-15)
     if wpm > rb["wpm_max"]:

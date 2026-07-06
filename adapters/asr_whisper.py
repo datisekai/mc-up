@@ -41,6 +41,7 @@ class WhisperAsr:
                 prompt=_FILLER_PROMPT,  # FR-12: giữ 'ừm/à/ờ' thay vì làm sạch
                 response_format="verbose_json",
                 timestamp_granularities=["word"],
+                temperature=0.0,  # giảm hallucination ("hãy đăng ký kênh...") khi audio nhỏ/im lặng
             )
         words = [{"word": w.word, "start": w.start, "end": w.end} for w in (resp.words or [])]
         return AsrResult(text=resp.text, words=words)
