@@ -10,7 +10,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import Clip, ContentLesson, Lesson, Progress, Score, User
 from ..schemas import ClipOut, ProgressOut, ScoreOut, SubmitClipIn
-from ..services import run_scoring, tier_of
+from ..services import run_scoring, summarize_score, tier_of
 
 _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi deploy
 
@@ -94,11 +94,18 @@ async def get_clip(clip_id: str, user: User = Depends(current_user),
     if not clip or clip.user_id != user.id:
         raise HTTPException(404, {"error": {"code": "no_clip", "message": "Không tìm thấy clip"}})
     score = (await session.execute(select(Score).where(Score.clip_id == clip_id))).scalar_one_or_none()
+    score_out = None
+    if score:
+        unclear = not score.is_mock and score.speed_wpm == 0
+        # tổng hợp "Đã tốt / Cần cải thiện" (bỏ qua khi chưa nghe rõ — không có gì để tổng hợp)
+        summ = {"positives": [], "improvements": []} if unclear else await summarize_score(session, clip, score)
+        score_out = ScoreOut(
+            **{k: getattr(score, k) for k in
+               ("volume_label", "speed_wpm", "filler_count", "tip", "is_mock", "transcript", "coverage")},
+            unclear=unclear, positives=summ["positives"], improvements=summ["improvements"])
     return ClipOut(
         id=clip.id, lesson_id=clip.lesson_id or clip.content_lesson_id or "", status=clip.status,
-        score=ScoreOut(**{k: getattr(score, k) for k in
-                          ("volume_label", "speed_wpm", "filler_count", "tip", "is_mock", "transcript", "coverage")},
-                       unclear=(not score.is_mock and score.speed_wpm == 0)) if score else None,
+        score=score_out,
     )
 
 

@@ -91,18 +91,61 @@ def _pick_tips(rub: dict) -> dict:
                             for k, v in rub["tips"].items()}}
 
 
+async def _clip_genre_name(s: AsyncSession, clip: Clip) -> str | None:
+    """Tên thể loại của clip (lần cây nội dung). Bài v1 → None (rubric lõi)."""
+    if not clip.content_lesson_id:
+        return None
+    cl = await s.get(ContentLesson, clip.content_lesson_id)
+    cs = await s.get(ContentSession, cl.session_id) if cl else None
+    lv = await s.get(Level, cs.level_id) if cs else None
+    path = await s.get(LearningPath, lv.path_id) if lv else None
+    genre = await s.get(Genre, path.genre_id) if path else None
+    return genre.name if genre else None
+
+
 async def _rubric_for_clip(s: AsyncSession, clip: Clip) -> dict:
     """Lần theo cây nội dung Bài→Buổi→Cấp→Lộ trình→Thể loại để lấy rubric (FR-15).
     Pha B: rubric hiệu lực đọc CẢ override DB (admin sửa không cần deploy)."""
-    genre_name = None
-    if clip.content_lesson_id:
-        cl = await s.get(ContentLesson, clip.content_lesson_id)
-        cs = await s.get(ContentSession, cl.session_id) if cl else None
-        lv = await s.get(Level, cs.level_id) if cs else None
-        path = await s.get(LearningPath, lv.path_id) if lv else None
-        genre = await s.get(Genre, path.genre_id) if path else None
-        genre_name = genre.name if genre else None
-    return _pick_tips(await effective_rubric(s, genre_name))
+    return _pick_tips(await effective_rubric(s, await _clip_genre_name(s, clip)))
+
+
+async def summarize_score(s: AsyncSession, clip: Clip, score: Score) -> dict:
+    """Feedback rõ ràng: ĐÃ TỐT gì / CẦN CẢI THIỆN gì — tổng hợp mọi tín hiệu
+    (âm lượng, tốc độ theo rubric thể loại, từ đệm, đủ ý). Không phán xét."""
+    rub = await effective_rubric(s, await _clip_genre_name(s, clip))
+    lo, hi = rub["wpm_min"], rub["wpm_max"]
+    pos: list[str] = []
+    imp: list[str] = []
+
+    if score.volume_label == "tốt":
+        pos.append("Âm lượng rõ, đều")
+    elif "nhỏ" in (score.volume_label or ""):
+        imp.append("Nói to hơn một chút cho rõ")
+    else:
+        imp.append("Nói nhẹ lại một chút, đừng gắng sức")
+
+    if lo <= score.speed_wpm <= hi:
+        pos.append(f"Tốc độ hợp lý ({round(score.speed_wpm)} chữ/phút)")
+    elif score.speed_wpm > hi:
+        imp.append(f"Chậm lại một nhịp — đang {round(score.speed_wpm)}, hợp là {lo}–{hi} chữ/phút")
+    else:
+        imp.append(f"Tăng nhịp cho cuốn hơn — đang {round(score.speed_wpm)}, hợp là {lo}–{hi} chữ/phút")
+
+    if score.filler_count < 2:
+        pos.append("Ít từ đệm 'ừm/à'")
+    else:
+        imp.append(f"Bớt từ đệm — {score.filler_count} lần 'ừm/à' trong bài")
+
+    if isinstance(score.coverage, dict) and score.coverage.get("steps"):
+        covered = score.coverage.get("covered") or []
+        done = sum(1 for x in covered if x)
+        total = len(score.coverage["steps"])
+        if done >= total:
+            pos.append("Nói đủ ý theo dàn ý")
+        else:
+            imp.append(f"Còn thiếu {total - done} ý trong dàn ý đề bài")
+
+    return {"positives": pos, "improvements": imp}
 
 
 async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: int) -> None:

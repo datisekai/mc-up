@@ -13,6 +13,8 @@ export type ScoreData = {
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
   unclear?: boolean;           // ASR thật nhưng không nghe được → trạng thái riêng, không hiện số
   coverage?: Coverage | null;  // "đủ ý chưa" — đối chiếu dàn ý đề bài
+  positives?: string[];        // "Đã tốt" — tổng hợp từ server
+  improvements?: string[];     // "Cần cải thiện" — tổng hợp từ server
 };
 export type PrevPoint = { speed_wpm: number; filler_count: number } | null;
 
@@ -51,7 +53,11 @@ function CountUp({ to, delay, style }: { to: number; delay: number; style: any }
 
 export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: PrevPoint }) {
   const [reduced, setReduced] = useState(false);
-  const [tip] = useState(() => tipFor(score));
+  // tip đã được server rút NGẪU NHIÊN từ pool 20 biến thể theo thể loại (feedback #2);
+  // fallback pool client nếu server rỗng (vd mock cũ)
+  const [tip] = useState(() => score.tip || tipFor(score));
+  const positives = score.positives ?? [];
+  const improvements = score.improvements ?? [];
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduced); }, []);
   useEffect(() => { sfx("success"); }, []);  // âm "điểm đổ về" — khớp nhịp reveal
 
@@ -80,8 +86,32 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
 
   return (
     <View>
-      <View style={st.card}>
+      {/* Nhận xét RÕ RÀNG lên đầu: đã làm được gì / chưa làm được gì (feedback #1) */}
+      {(positives.length > 0 || improvements.length > 0) && (
         <RowIn delay={0} reduced={reduced}>
+          <View style={st.summaryCard}>
+            {positives.length > 0 && (
+              <View style={{ marginBottom: improvements.length ? 10 : 0 }}>
+                <Text style={st.sumHead}>ĐÃ TỐT</Text>
+                {positives.map((p, i) => (
+                  <View key={i} style={st.sumRow}><Text style={st.sumOk}>✓</Text><Text style={st.sumText}>{p}</Text></View>
+                ))}
+              </View>
+            )}
+            {improvements.length > 0 && (
+              <View>
+                <Text style={st.sumHead}>LẦN SAU THỬ</Text>
+                {improvements.map((m, i) => (
+                  <View key={i} style={st.sumRow}><Text style={st.sumArrow}>→</Text><Text style={st.sumText}>{m}</Text></View>
+                ))}
+              </View>
+            )}
+          </View>
+        </RowIn>
+      )}
+
+      <View style={st.card}>
+        <RowIn delay={improvements.length || positives.length ? 140 : 0} reduced={reduced}>
           <View style={st.row}>
             <Text style={st.k}>Âm lượng</Text>
             <View style={[st.pill, volOk ? st.pillOk : st.pillMid]}>
@@ -204,6 +234,12 @@ const st = StyleSheet.create({
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
+  summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
+  sumHead: { fontFamily: F.title, fontSize: 10.5, color: C.ink2, letterSpacing: 0.8, marginBottom: 6 },
+  sumRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 4 },
+  sumOk: { color: "#3FB984", fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },
+  sumArrow: { color: C.primary, fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },
+  sumText: { flex: 1, fontSize: 14, color: C.ink, lineHeight: 21 },
   covBox: { backgroundColor: C.raised, borderRadius: 12, padding: 12, marginTop: 10, borderWidth: 1, borderColor: C.hair },
   covLabel: { fontFamily: F.title, fontSize: 10, color: C.ink2, letterSpacing: 0.6 },
   covCount: { fontFamily: F.display, fontSize: 13, color: C.ink2 },

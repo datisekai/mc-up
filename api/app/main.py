@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .db import init_db
 from .routers import admin, auth, content, leaderboard, lessons, mc, media, practice, stats, vevang
-from .seed import seed_admin, seed_curriculum, seed_genres, seed_lessons, seed_mc
+from .seed import seed_admin, seed_curriculum, seed_genres, seed_lessons, seed_mc, seed_rubrics
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("mcup")
@@ -31,6 +31,7 @@ async def lifespan(_: FastAPI):
     await seed_curriculum()  # giáo trình đầy đủ từ db/curriculum/*.json (nếu có) — ưu tiên trước
     await seed_lessons()
     await seed_genres()  # Pha C: thể loại đám cưới/sự kiện/livestream
+    await seed_rubrics()  # ≥20 biến thể lời khen/nhắc mỗi loại (feedback #2)
     await seed_mc()
     await seed_admin()
     # Chống quên đổi secret khi lên prod (Postgres = dấu hiệu prod)

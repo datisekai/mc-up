@@ -12,7 +12,8 @@ from sqlalchemy import select
 
 from .db import SessionLocal
 from .models import (ContentLesson, ContentSession, Genre, LearningPath, Lesson, Level,
-                     Progress, User)
+                     Progress, RubricModule, User)
+from .rubrics import get_rubric
 from .security import hash_password
 
 log = logging.getLogger("mcup.seed")
@@ -283,6 +284,36 @@ async def seed_genres() -> None:
                 for li, (ltitle, tip, prompt, brief) in enumerate(lessons):
                     s.add(ContentLesson(session_id=cs.id, title=ltitle, tip=tip, prompt=prompt,
                                         brief=brief, order_index=li, status="published"))
+        await s.commit()
+
+
+_RUBRIC_VARIETY = Path(__file__).resolve().parents[2] / "db" / "rubric-variety.json"
+
+
+async def seed_rubrics() -> None:
+    """Nạp ≥20 biến thể lời khen/nhắc mỗi loại × thể loại (db/rubric-variety.json) vào
+    bảng rubric_module — admin sửa được, bộ chấm rút NGẪU NHIÊN (feedback #2).
+    Idempotent: thể loại đã có override thì KHÔNG đè (giữ chỉnh sửa admin)."""
+    if not _RUBRIC_VARIETY.exists():
+        return
+    try:
+        data = json.loads(_RUBRIC_VARIETY.read_text())
+    except Exception as exc:
+        log.warning("rubric-variety hỏng (%s)", exc)
+        return
+    async with SessionLocal() as s:
+        for genre_name, pools in data.items():
+            g = (await s.execute(select(Genre).where(Genre.name == genre_name))).scalar_one_or_none()
+            if not g:
+                continue
+            exists = (await s.execute(select(RubricModule).where(RubricModule.genre_id == g.id))).scalar_one_or_none()
+            if exists:
+                continue
+            base = get_rubric(genre_name)  # lấy wpm/focus mặc định theo thể loại
+            tips = {k: [str(x) for x in (pools.get(k) or []) if str(x).strip()]
+                    for k in ("fast", "slow", "filler", "good")}
+            s.add(RubricModule(genre_id=g.id, wpm_min=base["wpm_min"], wpm_max=base["wpm_max"],
+                               focus=base["focus"], tips=tips))
         await s.commit()
 
 
