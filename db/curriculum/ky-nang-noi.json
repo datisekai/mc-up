@@ -1,0 +1,672 @@
+{
+ "format": "mcup-path-v1",
+ "genre": "Kỹ năng nói",
+ "title": "Lộ trình: Kỹ năng nói",
+ "levels": [
+  {
+   "name": "Cơ bản",
+   "sessions": [
+    {
+     "title": "Buổi 1",
+     "lessons": [
+      {
+       "title": "Vượt sợ nói",
+       "tip": "Người nói tự tin = chuẩn bị + luyện tập + tư duy tích cực.",
+       "prompt": "Giới thiệu bản thân trong 1 phút: Tôi là ai, điều tôi tự hào nhất.",
+       "brief": {
+        "objective": "Vượt cảm giác run bằng một bài giới thiệu bản thân tự tin.",
+        "context": "Tưởng tượng bạn đứng trước một nhóm mới — lớp học, buổi phỏng vấn, hay câu lạc bộ MC.",
+        "steps": [
+         "Chào + tên của bạn",
+         "Bạn là ai (việc/sở thích)",
+         "Điều bạn tự hào nhất — kèm 1 chi tiết cụ thể",
+         "Một câu kết mở"
+        ],
+        "example": "Xin chào mọi người, mình là Minh. Mình đang là sinh viên năm 2 và rất mê dẫn chương trình. Điều mình tự hào nhất là năm ngoái đã tự tin dẫn đêm văn nghệ 300 khán giả — dù trước đó sợ micro lắm! Rất vui được làm quen với cả nhà."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 2",
+     "lessons": [
+      {
+       "title": "Luyện giọng: âm lượng",
+       "tip": "Lấy hơi bằng bụng, mở khẩu hình, nói đủ to rõ.",
+       "prompt": "Đọc một đoạn tin tức, giữ âm lượng đều.",
+       "brief": {
+        "objective": "Nói đủ to, rõ, đều hơi — nền tảng để khán giả nghe không mệt.",
+        "context": "Bạn đọc một bản tin ngắn như một phát thanh viên, giữ âm lượng ổn định từ đầu đến cuối.",
+        "steps": [
+         "Lấy hơi bằng bụng trước khi nói",
+         "Mở khẩu hình, tròn vành rõ chữ",
+         "Giữ âm lượng câu cuối ngang câu đầu",
+         "Đọc chậm rãi, không nuốt chữ"
+        ],
+        "example": "Bản tin sáng nay: Thời tiết Hà Nội hôm nay nắng nhẹ, nhiệt độ cao nhất 30 độ. Người dân được khuyến cáo mang theo ô khi ra đường buổi trưa. Xin cảm ơn quý vị đã lắng nghe."
+       }
+      },
+      {
+       "title": "Luyện giọng: tốc độ & ngữ điệu",
+       "tip": "4 yếu tố: âm lượng, tốc độ, ngữ điệu, điểm nhấn.",
+       "prompt": "Kể một câu chuyện ngắn với nhiều cảm xúc.",
+       "brief": {
+        "objective": "Dùng tốc độ và ngữ điệu để câu chuyện có cảm xúc, không đều đều buồn ngủ.",
+        "context": "Kể lại một kỷ niệm đáng nhớ như đang ngồi tâm sự với bạn thân.",
+        "steps": [
+         "Mở đầu chậm, đặt bối cảnh",
+         "Đẩy nhanh + cao giọng ở cao trào",
+         "Ngưng một nhịp trước câu quan trọng",
+         "Hạ giọng, chậm lại ở câu kết"
+        ],
+        "example": "Hôm đó trời mưa rất to... mình đứng đợi xe buýt, ướt sũng. Bỗng nhiên — một bạn lạ che ô cho mình suốt 15 phút. Mình chưa kịp hỏi tên thì bạn ấy đã lên xe. Đến giờ mình vẫn nhớ nụ cười đó."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 3",
+     "lessons": [
+      {
+       "title": "Ngôn ngữ cơ thể",
+       "tip": "55% thông điệp đến từ cơ thể. Tránh khoanh tay, cúi mặt, lắc lư.",
+       "prompt": "Nói về người bạn yêu quý nhất, giữ giao tiếp bằng mắt.",
+       "brief": {
+        "objective": "Để cơ thể nói cùng lời — ánh mắt, tư thế, tay — thay vì đứng cứng đơ.",
+        "context": "Bạn chia sẻ về một người thân yêu, tập nhìn thẳng vào camera như đang trò chuyện.",
+        "steps": [
+         "Đứng thẳng, vai mở, hai chân vững",
+         "Nhìn thẳng vào camera như nhìn vào mắt người nghe",
+         "Dùng tay minh hoạ tự nhiên, tránh khoanh tay",
+         "Mỉm cười khi nói điều tích cực"
+        ],
+        "example": "Người mình yêu quý nhất là bà ngoại. Bà là người dạy mình nấu ăn, kể chuyện cổ tích mỗi tối. Mỗi lần nhớ bà, mình lại thấy ấm lòng."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 4",
+     "lessons": [
+      {
+       "title": "Bài nói có cấu trúc (PREP)",
+       "tip": "Point - Reason - Example - Point.",
+       "prompt": "Trình bày về một thói quen tốt theo cấu trúc PREP.",
+       "brief": {
+        "objective": "Nói mạch lạc, có điểm nhấn nhờ khung PREP: Point–Reason–Example–Point.",
+        "context": "Bạn thuyết phục người nghe về một thói quen tốt trong 1 phút.",
+        "steps": [
+         "Point: nêu quan điểm ngay",
+         "Reason: vì sao",
+         "Example: một ví dụ/số liệu cụ thể",
+         "Point: nhắc lại quan điểm để chốt"
+        ],
+        "example": "Mình tin dậy sớm thay đổi cả ngày của bạn. Vì buổi sáng yên tĩnh giúp tập trung nhất. Ví dụ, mình dậy lúc 5h30 và viết xong bài trước khi cả nhà thức giấc. Nên nếu muốn làm được nhiều hơn — hãy thử dậy sớm."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 5",
+     "lessons": [
+      {
+       "title": "Chia sẻ quan điểm",
+       "tip": "Phân biệt ý kiến - sự thật - cảm xúc.",
+       "prompt": "Học online hay offline tốt hơn? Trình bày 2 phút.",
+       "brief": {
+        "objective": "Trình bày quan điểm rõ ràng, phân biệt ý kiến – sự thật – cảm xúc.",
+        "context": "Một chủ đề tranh luận quen thuộc: học online vs offline. Bạn chọn một phía và bảo vệ.",
+        "steps": [
+         "Chọn rõ một phía ngay đầu",
+         "Đưa 2 lý do, mỗi lý do 1 ví dụ",
+         "Thừa nhận 1 điểm của phía kia",
+         "Chốt lại lựa chọn của bạn"
+        ],
+        "example": "Mình nghiêng về học offline. Thứ nhất, được tương tác trực tiếp với thầy cô. Thứ hai, ít bị xao nhãng hơn. Dĩ nhiên online tiện lợi — nhưng với mình, sự tập trung quan trọng hơn."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 6",
+     "lessons": [
+      {
+       "title": "Tư duy phản biện",
+       "tip": "5 câu hỏi: bằng chứng? nguồn? góc khác? bỏ sót gì? nếu ngược lại?",
+       "prompt": "Phân tích một mẩu quảng cáo bằng 5 câu hỏi phản biện.",
+       "brief": {
+        "objective": "Nhìn một thông điệp bằng con mắt phản biện thay vì tin ngay.",
+        "context": "Chọn một quảng cáo bạn hay thấy (mỹ phẩm, đồ ăn...) và mổ xẻ nó.",
+        "steps": [
+         "Bằng chứng nào cho lời quảng cáo?",
+         "Nguồn tin có đáng tin không?",
+         "Có góc nhìn nào khác / họ giấu gì?",
+         "Nếu ngược lại thì sao?"
+        ],
+        "example": "Quảng cáo nói 'kem này trắng da sau 7 ngày'. Bằng chứng đâu? Chỉ có lời người mẫu. Nguồn? Chính hãng bán — khó khách quan. Họ giấu gì? Không nói tác dụng phụ. Vậy mình sẽ tìm review độc lập trước khi mua."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 7",
+     "lessons": [
+      {
+       "title": "Phản hồi & đặt câu hỏi",
+       "tip": "Câu hỏi: mở, đóng, làm rõ, phản biện.",
+       "prompt": "Nghe một quan điểm rồi đặt 1 câu hỏi làm rõ + 1 phản biện.",
+       "brief": {
+        "objective": "Biết đặt câu hỏi đúng loại: làm rõ và phản biện, thay vì chỉ gật đầu.",
+        "context": "Ai đó vừa nói 'Giới trẻ bây giờ lười đọc sách'. Bạn phản hồi lại.",
+        "steps": [
+         "Nhắc lại ý họ để chắc mình hiểu đúng",
+         "Đặt 1 câu hỏi làm rõ",
+         "Đặt 1 câu phản biện lịch sự",
+         "Giữ giọng tôn trọng, không công kích"
+        ],
+        "example": "Bạn nói giới trẻ lười đọc sách. Mình hỏi cho rõ: ý bạn là sách giấy, hay cả đọc trên mạng? Vì nếu tính cả bài viết, ebook thì có khi giới trẻ đọc nhiều hơn thế hệ trước đấy chứ?"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 8",
+     "lessons": [
+      {
+       "title": "Tranh biện cơ bản",
+       "tip": "Luận điểm - Lý do - Dẫn chứng.",
+       "prompt": "Nêu quan điểm: có nên cấm điện thoại trong trường học.",
+       "brief": {
+        "objective": "Dựng một lập luận đủ 3 phần: Luận điểm – Lý do – Dẫn chứng.",
+        "context": "Chủ đề tranh biện học đường kinh điển. Chọn một phía.",
+        "steps": [
+         "Nêu luận điểm rõ ràng",
+         "Đưa lý do chính",
+         "Kèm dẫn chứng cụ thể",
+         "Kết bằng một câu mạnh"
+        ],
+        "example": "Mình cho rằng nên hạn chế điện thoại trong giờ học. Lý do: nó gây xao nhãng. Dẫn chứng: một nghiên cứu cho thấy học sinh mất trung bình 20 phút để tập trung lại sau khi lướt điện thoại. Vì vậy, cất điện thoại giờ học là hợp lý."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 9",
+     "lessons": [
+      {
+       "title": "Tranh biện nâng cao",
+       "tip": "Phản biện ý kiến/lập luận/dẫn chứng, không công kích cá nhân.",
+       "prompt": "Phản biện một quan điểm đối lập, giữ bình tĩnh.",
+       "brief": {
+        "objective": "Phản biện vào lập luận, không công kích cá nhân, giữ bình tĩnh.",
+        "context": "Đối phương vừa nói 'Học đại học là lãng phí thời gian'. Bạn phản biện.",
+        "steps": [
+         "Ghi nhận điểm hợp lý của họ trước",
+         "Chỉ ra lỗ hổng trong lập luận",
+         "Đưa dẫn chứng ngược lại",
+         "Giữ giọng điềm tĩnh, tôn trọng"
+        ],
+        "example": "Mình hiểu ý bạn — đúng là có người thành công không cần bằng cấp. Nhưng đó là số ít. Thực tế, phần lớn ngành nghề vẫn yêu cầu nền tảng đại học. Nên nói 'lãng phí' e là hơi vội."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 10",
+     "lessons": [
+      {
+       "title": "Thuyết trình tốt nghiệp",
+       "tip": "Ứng dụng toàn bộ kỹ năng đã học.",
+       "prompt": "Thuyết trình 3-5 phút: Ước mơ nghề nghiệp của tôi.",
+       "brief": {
+        "objective": "Tổng hợp mọi kỹ năng đã học vào một bài thuyết trình hoàn chỉnh, có cảm xúc.",
+        "context": "Bài 'tốt nghiệp' — trình bày ước mơ nghề nghiệp của bạn trước khán giả.",
+        "steps": [
+         "Mở đầu bằng một câu/khoảnh khắc gây chú ý",
+         "Nêu ước mơ + vì sao (PREP)",
+         "Kể một câu chuyện cá nhân minh hoạ",
+         "Kết bằng lời kêu gọi/quyết tâm"
+        ],
+        "example": "Năm 10 tuổi, mình cầm chiếc micro đồ chơi và dẫn 'chương trình' cho cả xóm. Ước mơ của mình là trở thành MC chuyên nghiệp — vì mình tin lời nói có thể kết nối con người. Và hôm nay, mình đang đi những bước đầu tiên trên hành trình đó."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Trung cấp",
+   "sessions": [
+    {
+     "title": "Kỹ Năng Kể Chuyện Qua Hài Hước",
+     "lessons": [
+      {
+       "title": "Kể Chuyện Qua Một Chi Tiết Nhỏ",
+       "tip": "Sử dụng hình ảnh mạnh mẽ để thu hút sự chú ý.",
+       "prompt": "Hãy kể một câu chuyện ngắn, chỉ tập trung vào một chi tiết thú vị.",
+       "brief": {
+        "objective": "Phát triển khả năng thu hút bằng chi tiết.",
+        "context": "Bạn đang đứng trước một nhóm bạn, chuẩn bị kể một câu chuyện hài hước.",
+        "steps": [
+         "Chọn một chi tiết thú vị từ cuộc sống hàng ngày.",
+         "Mô tả chi tiết đó một cách sinh động.",
+         "Liên kết chi tiết vào một câu chuyện hài hước.",
+         "Kết thúc bằng một đoạn dán chắc chắn."
+        ],
+        "example": "Có lần tôi đã quên mang ô, và khiến bản thân ướt như chuột lột giữa trời mưa. Từ đó, tôi luôn nhớ kiểm tra ô mỗi khi ra khỏi nhà."
+       }
+      },
+      {
+       "title": "Tạo Tình Huống Dự Đoán",
+       "tip": "Chờ đợi sự phản ứng để tạo thêm sự hấp dẫn.",
+       "prompt": "Hãy kể một câu chuyện với một cái kết bất ngờ mà mọi người không thể dự đoán.",
+       "brief": {
+        "objective": "Cải thiện kỹ năng gây bất ngờ trong câu chuyện.",
+        "context": "Bạn đang tham gia một buổi tiệc, và muốn mọi người hào hứng với câu chuyện của mình.",
+        "steps": [
+         "Chọn một câu chuyện quen thuộc nhưng thay đổi cái kết.",
+         "Xây dựng căng thẳng trong câu chuyện.",
+         "Kết thúc với một tình huống bất ngờ.",
+         "Chú ý tới phản ứng của khán giả."
+        ],
+        "example": "Tôi đã thấy một chú chó rất hiền lành, cứ chạy theo xe ô tô. Ai cũng nghĩ chú ấy sẽ bị tai nạn, nhưng cuối cùng... chú chó lại vào được xe là thú cưng của một gia đình!"
+       }
+      },
+      {
+       "title": "Kết Nối Cảm Xúc Với Khán Giả",
+       "tip": "Sử dụng giọng điệu đa dạng để tạo sự đồng cảm.",
+       "prompt": "Hãy kể một câu chuyện có nhiều cảm xúc, làm cho người nghe cảm nhận được sự đồng điệu.",
+       "brief": {
+        "objective": "Nâng cao khả năng truyền tải cảm xúc.",
+        "context": "Trong một buổi gặp mặt đoàn viên, mọi người đều muốn gắn kết với nhau hơn.",
+        "steps": [
+         "Chọn một câu chuyện có thông điệp mạnh mẽ.",
+         "Thể hiện các cảm xúc như vui vẻ, buồn bã, hồi hộp.",
+         "Sử dụng ngôn ngữ cơ thể để hỗ trợ.",
+         "Khuyến khích khán giả tham gia."
+        ],
+        "example": "Khi tôi nhớ về bà ngoại, ánh mắt bà luôn sáng như một ngọn đèn trong bóng tối, mỗi kỷ niệm đều tràn đầy hạnh phúc và nước mắt... Những gì tôi có được hôm nay đều nhờ vào bà."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nâng Cao Kỹ Năng Phản Biện",
+     "lessons": [
+      {
+       "title": "Thảo Luận Chi Tiết Một Vấn Đề",
+       "tip": "Sử dụng câu hỏi để dẫn dắt cuộc trò chuyện.",
+       "prompt": "Hãy đưa ra ý kiến của bạn về một vấn đề gây tranh cãi và phản biện lại quan điểm khác.",
+       "brief": {
+        "objective": "Rèn luyện khả năng tranh luận.",
+        "context": "Bạn đang ở một buổi thảo luận nhóm về chủ đề xã hội.",
+        "steps": [
+         "Chọn một vấn đề cụ thể để thảo luận.",
+         "Lắng nghe ý kiến của người khác.",
+         "Đưa ra phản biện có cơ sở.",
+         "Tóm tắt và kết thúc tranh luận một cách tích cực."
+        ],
+        "example": "Một số người cho rằng công nghệ làm chúng ta xa cách nhau, nhưng cá nhân tôi nghĩ rằng công nghệ giúp chúng ta kết nối dù ở xa. Ai đã từng sử dụng video call khẳng định điều đó."
+       }
+      },
+      {
+       "title": "Đối Đầu Với Những Phản Biện Khác",
+       "tip": "Giữ bình tĩnh và ứng xử lịch sự.",
+       "prompt": "Hãy phản biện lại một ý kiến trái chiều mà bạn không đồng ý.",
+       "brief": {
+        "objective": "Nâng cao khả năng đối phó với áp lực trong tranh luận.",
+        "context": "Bạn đang tham gia một cuộc thảo luận sôi nổi với các đồng nghiệp.",
+        "steps": [
+         "Nghe kỹ ý kiến người khác.",
+         "Tạo một phản biện lịch sự nhưng thuyết phục.",
+         "Trình bày lý do của mình.",
+         "Kết luận bằng việc mở rộng ý kiến."
+        ],
+        "example": "Khi một bạn cho rằng sống theo cách truyền thống là lỗi thời, tôi cảm thấy cần phải nhấn mạnh rằng 'truyền thống' cũng có giá trị của nó trong việc xây dựng nhân cách."
+       }
+      },
+      {
+       "title": "Đặt Câu Hỏi Thuyết Phục",
+       "tip": "Sử dụng câu hỏi mở để khơi gợi suy nghĩ.",
+       "prompt": "Hãy đặt ra một câu hỏi thuyết phục với người nghe để đưa ra phản biện.",
+       "brief": {
+        "objective": "Cải thiện khả năng giáo dục và thuyết phục qua câu hỏi.",
+        "context": "Bạn đang hướng dẫn một nhóm sinh viên về một vấn đề xã hội.",
+        "steps": [
+         "Lên danh sách những câu hỏi mở liên quan đến chủ đề.",
+         "Kết hợp câu hỏi với thông tin thuyết phục.",
+         "Khuyến khích mọi người tham gia trả lời.",
+         "Duy trì sự tập trung và chia sẻ ý kiến."
+        ],
+        "example": "Nếu công nghệ đang làm cho chúng ta xa cách, thì các bạn nghĩ sao về những người sống ở nước ngoài và vẫn có thể kết nối với gia đình qua mạng?"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Ứng Biến Trong Giao Tiếp",
+     "lessons": [
+      {
+       "title": "Phản Ứng Nhanh Với Tình Huống Cần Giải Quyết",
+       "tip": "Giữ tâm lý bình tĩnh và tư duy nhanh.",
+       "prompt": "Hãy đối mặt với một tình huống không mong muốn khi đang nói trước đám đông.",
+       "brief": {
+        "objective": "Rèn luyện khả năng ứng biến trong giao tiếp.",
+        "context": "Bạn đang thuyết trình và đột ngột mất điện.",
+        "steps": [
+         "Giữ bình tĩnh và chờ tình huống ổn định.",
+         "Sử dụng hài hước để thu hút sự chú ý.",
+         "Tạo một câu chuyện tạm thời để giữ chân khán giả.",
+         "Kết thúc phần ứng biến và quay lại trình bày."
+        ],
+        "example": "Haha, hình như máy móc cũng muốn nghỉ ngơi như chúng ta! Thôi thì, có ai muốn nghe một câu chuyện vui không?"
+       }
+      },
+      {
+       "title": "Chuyển Đề Tài Một Cách Linh Hoạt",
+       "tip": "Luôn có sẵn các chủ đề liên quan để nói tiếp.",
+       "prompt": "Hãy chuyển đề tài trong khi thuyết trình mà không làm khán giả cảm thấy bị lạc hướng.",
+       "brief": {
+        "objective": "Cải thiện khả năng lãnh đạo và quản lý nội dung.",
+        "context": "Trong một buổi thuyết trình, bạn nhận ra khán giả không mặn mà với chủ đề hiện tại.",
+        "steps": [
+         "Nhạy bén với phản ứng của khán giả.",
+         "Xác định một điểm chung để chuyển nhượng.",
+         "Phát triển nội dung mới từ bàn tay chủ đề cũ.",
+         "Khuyến khích tạo sự tương tác."
+        ],
+        "example": "Đúng rồi, công nghệ cũng cũ rồi! Nhưng để nói về sự thay đổi này, tôi xin chuyển hướng một chút sang xu hướng tiêu dùng hiện tại!"
+       }
+      },
+      {
+       "title": "Tạo Điểm Nhấn Đặc Biệt Khi Nói",
+       "tip": "Sử dụng ngôn ngữ cơ thể để nhấn mạnh thông điệp.",
+       "prompt": "Hãy tạo điểm nhấn cho một câu quan trọng trong bài nói của bạn.",
+       "brief": {
+        "objective": "Nâng cao khả năng thu hút sự chú ý.",
+        "context": "Trong một hội thảo, bạn muốn khẳng định một quan điểm quan trọng.",
+        "steps": [
+         "Chọn một câu nói mang tính chất quyết định.",
+         "Sử dụng ngữ điệu để tạo sự ấn tượng.",
+         "Sử dụng cơ thể để nhấn mạnh thêm thông điệp.",
+         "Khuyến khích sự tương tác từ khán giả."
+        ],
+        "example": "Công nghệ là chìa khóa cho tương lai! Hãy nhớ rằng, chúng ta không chỉ sử dụng nó mà còn là người tạo ra công nghệ."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tận Dụng Sức Mạnh Của Ngôn Ngữ Cơ Thể",
+     "lessons": [
+      {
+       "title": "Sử Dụng Ngôn Ngữ Cơ Thể Để Giao Tiếp",
+       "tip": "Điều chỉnh ngôn ngữ cơ thể theo cảm xúc của bạn.",
+       "prompt": "Hãy thử nói một câu mà không dùng lời, chỉ sử dụng ngôn ngữ cơ thể.",
+       "brief": {
+        "objective": "Phát triển khả năng giao tiếp không lời.",
+        "context": "Bạn muốn thể hiện một cảm xúc mà không cần nói ra.",
+        "steps": [
+         "Chọn một cảm xúc để thể hiện.",
+         "Sử dụng tư thế, cử chỉ để thể hiện nó.",
+         "Chú ý đến phản ứng của khán giả.",
+         "Kết nối ngôn ngữ cơ thể với lời nói."
+        ],
+        "example": "Khi tôi nói về sự hạnh phúc, cả cơ thể tôi sẽ mở rộng ra, tay chỉ trời và nụ cười trên môi, để mọi người thấy cảm xúc từ tôi."
+       }
+      },
+      {
+       "title": "Lắng Nghe Và Phản Hồi Qua Cơ Thể",
+       "tip": "Lắng nghe mức độ chú ý của bạn đối với khán giả.",
+       "prompt": "Hãy thử thể hiện sự đồng cảm bằng cử chỉ từ cơ thể khi một người khác nói.",
+       "brief": {
+        "objective": "Nâng cao khả năng lắng nghe và phản hồi bằng ngôn ngữ cơ thể.",
+        "context": "Trong một buổi thảo luận nhóm, bạn muốn thể hiện sự quan tâm tới người nói.",
+        "steps": [
+         "Ngồi hoặc đứng gần người nói.",
+         "Dùng ánh mắt và cử chỉ để thể hiện sự quan tâm.",
+         "Phản hồi bằng cử chỉ tương ứng.",
+         "Kết thúc bằng việc tóm tắt lại ý chính họ nói."
+        ],
+        "example": "Khi bạn đó chia sẻ cảm xúc, tôi sẽ nghiêng người về phía họ, gật đầu và tạo điều kiện để họ cảm thấy tôi đang rất chăm chú lắng nghe."
+       }
+      },
+      {
+       "title": "Kết Hợp Giọng Nói Với Ngôn Ngữ Cơ Thể",
+       "tip": "Điều chỉnh giọng nói theo từng tình huống.",
+       "prompt": "Hãy thể hiện một câu nói với cảm xúc khác nhau bằng ngôn ngữ cơ thể và giọng nói.",
+       "brief": {
+        "objective": "Cải thiện khả năng kết hợp giữa giọng nói và ngôn ngữ cơ thể.",
+        "context": "Bạn đang trình bày về một chủ đề yêu thích và muốn thể hiện những cảm xúc khác nhau.",
+        "steps": [
+         "Chọn một câu để thể hiện.",
+         "Điều chỉnh giọng nói theo cảm xúc bạn muốn truyền tải.",
+         "Kết hợp ngôn ngữ cơ thể để nhấn mạnh.",
+         "Quan sát phản ứng của khán giả để điều chỉnh."
+        ],
+        "example": "Khi nói về thành công, tôi sẽ mở rộng tay và hô to, nhưng khi nói về khó khăn, tôi sẽ nghiêng đầu và giọng nói trở nên nhẹ nhàng hơn."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Nâng cao",
+   "sessions": [
+    {
+     "title": "Kỹ Năng Chuyển Đổi Giọng Nói",
+     "lessons": [
+      {
+       "title": "Thực Hành Chuyển Giọng Nói",
+       "tip": "Chuyển giọng phù hợp với cảm xúc để thu hút người nghe.",
+       "prompt": "Hãy kể một câu chuyện ngắn với ít nhất 2 kiểu giọng nói khác nhau trong 30 giây.",
+       "brief": {
+        "objective": "Nâng cao khả năng điều chỉnh giọng nói để tạo sự cuốn hút.",
+        "context": "Bạn đang đứng trước một nhóm bạn để kể về một kỷ niệm vui vẻ.",
+        "steps": [
+         "Chọn một câu chuyện ngắn và thú vị.",
+         "Xác định các cảm xúc chính trong câu chuyện.",
+         "Phân chia giọng nói theo từng phần cảm xúc.",
+         "Thực hiện và ghi lại."
+        ],
+        "example": "Hôm đó, tôi và nhóm bạn đã cùng nhau đi chơi... (giọng hào hứng). Bất ngờ, trời đổ mưa... (giọng lo lắng)."
+       }
+      },
+      {
+       "title": "Kết Hợp Âm Thanh Vào Bài Nói",
+       "tip": "Sử dụng âm thanh để nhấn mạnh thông điệp.",
+       "prompt": "Tạo ra hiệu ứng âm thanh đơn giản cho bài nói 30 giây của bạn.",
+       "brief": {
+        "objective": "Tích hợp âm thanh vào kỹ năng nói để nâng cao trải nghiệm nghe.",
+        "context": "Bạn đang diễn thuyết về những cuộc phiêu lưu ngoài trời.",
+        "steps": [
+         "Chọn một đoạn văn mô tả trải nghiệm một chuyến đi.",
+         "Lên kế hoạch cho âm thanh liên quan.",
+         "Kết hợp âm thanh và lời nói khi thực hiện.",
+         "Ghi lại và xem lại."
+        ],
+        "example": "Khi tôi leo lên đỉnh núi, gió thổi ù ù bên tai... (âm thanh gió). Cảm giác thật tuyệt vời! (âm thanh cổ vũ)."
+       }
+      },
+      {
+       "title": "Đối Đầu Với Câu Hỏi Khó",
+       "tip": "Chuẩn bị cho những câu hỏi bất ngờ bằng cách lắng nghe kỹ.",
+       "prompt": "Giả định bạn bị hỏi một câu hỏi hóc búa trong 30 giây, hãy phản ứng ngay lập tức.",
+       "brief": {
+        "objective": "Nâng cao khả năng ứng biến khi bị hỏi.",
+        "context": "Trong một buổi thuyết trình, một khán giả hỏi về quan điểm của bạn về một vấn đề gây tranh cãi.",
+        "steps": [
+         "Nghe câu hỏi và bình tĩnh phân tích.",
+         "Tóm tắt ý kiến của bạn trong vài giây.",
+         "Phát biểu ý kiến rõ ràng và tự tin.",
+         "Kết thúc với một câu hỏi ngược lại để tạo sự tương tác."
+        ],
+        "example": "Câu hỏi này rất hay! Theo tôi, vấn đề này là... (trình bày) và bạn nghĩ sao về điều đó?"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nâng Cao Kỹ Năng Kể Chuyện",
+     "lessons": [
+      {
+       "title": "Kể Chuyện Qua Hình Ảnh",
+       "tip": "Sử dụng hình ảnh trong đầu để kể lại câu chuyện sinh động hơn.",
+       "prompt": "Kể một câu chuyện mà bạn đã trải qua trong 30 giây, kết hợp hình ảnh tưởng tượng.",
+       "brief": {
+        "objective": "Sử dụng hình ảnh để làm cho câu chuyện trở nên sinh động.",
+        "context": "Khi bạn nhớ về một chuyến đi đáng nhớ.",
+        "steps": [
+         "Xác định những hình ảnh nổi bật từ chuyến đi.",
+         "Xây dựng câu chuyện xung quanh các hình ảnh đó.",
+         "Kết nối cảm xúc và cảm giác của bạn với hình ảnh.",
+         "Thực hành kể lại với hình ảnh trong đầu."
+        ],
+        "example": "Hình ảnh mặt trời mọc trên biển thật tuyệt... (miêu tả ảnh) Khi tôi dạo bước trên bãi cát, cảm giác thật thanh bình..."
+       }
+      },
+      {
+       "title": "Kết Hợp Nhân Vật Vào Câu Chuyện",
+       "tip": "Giới thiệu nhân vật đặc trưng để làm cho câu chuyện thú vị hơn.",
+       "prompt": "Kể một câu chuyện mà trong đó có ít nhất một nhân vật thú vị trong 30 giây.",
+       "brief": {
+        "objective": "Học cách tạo ra nhân vật để làm phong phú thêm câu chuyện.",
+        "context": "Bạn đang kể về một trận đấu thể thao giữa các đội bạn.",
+        "steps": [
+         "Tưởng tượng ra một nhân vật trong đội của bạn.",
+         "Mô tả đặc điểm của nhân vật đó.",
+         "Kể lại câu chuyện dưới góc nhìn của nhân vật.",
+         "Diễn đạt với sự cảm xúc."
+        ],
+        "example": "Đó là Hải, một cậu bạn điển trai... (miêu tả) Khi cậu ấy ghi bàn, cả đội chúng tôi như nổ tung với niềm vui..."
+       }
+      },
+      {
+       "title": "Kỹ Năng Dẫn Dắt Câu Chuyện",
+       "tip": "Luôn có một cấu trúc rõ ràng trong câu chuyện để giữ sự chú ý.",
+       "prompt": "Kể một câu chuyện ngắn có cấu trúc rõ ràng trong 30 giây.",
+       "brief": {
+        "objective": "Phát triển khả năng tổ chức câu chuyện mạch lạc.",
+        "context": "Bạn đang chia sẻ về một bài học cuộc sống bạn đã trải qua.",
+        "steps": [
+         "Xác định đầu - giữa - cuối của câu chuyện.",
+         "Bắt đầu bằng một tình huống hoặc sự kiện gây chú ý.",
+         "Phát triển câu chuyện với các chi tiết thú vị.",
+         "Kết thúc với một bài học ý nghĩa."
+        ],
+        "example": "Một lần tôi đã gặp một khó khăn lớn... (bắt đầu) và nhờ đó tôi đã học được rằng... (kết thúc)."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ Năng Tương Tác Với Khán Giả",
+     "lessons": [
+      {
+       "title": "Khuyến Khích Sự Tham Gia",
+       "tip": "Đặt câu hỏi mở để khuyến khích khán giả mời gọi phản hồi.",
+       "prompt": "Trong 30 giây, hãy tạo ra một câu hỏi hấp dẫn cho khán giả của bạn.",
+       "brief": {
+        "objective": "Khuyến khích khán giả tham gia thông qua câu hỏi.",
+        "context": "Bạn đang thuyết trình một sản phẩm mới.",
+        "steps": [
+         "Lên ý tưởng cho câu hỏi gây kích thích tò mò.",
+         "Nêu rõ câu hỏi và tạo hứng thú.",
+         "Khuyến khích khán giả chia sẻ ý kiến.",
+         "Lắng nghe và phản hồi với họ."
+        ],
+        "example": "Bạn có bao giờ tự hỏi điều gì sẽ xảy ra nếu... (đặt câu hỏi)? Hãy chia sẻ với tôi nhé!"
+       }
+      },
+      {
+       "title": "Phản Ứng Với Phản Hồi",
+       "tip": "Lắng nghe cẩn thận và phản ứng tích cực với khán giả.",
+       "prompt": "Giả định một khán giả có ý kiến trái ngược và phản hồi trong 30 giây.",
+       "brief": {
+        "objective": "Nâng cao khả năng quản lý phản hồi từ khán giả.",
+        "context": "Một người trong khán giả không đồng ý với quan điểm của bạn.",
+        "steps": [
+         "Lắng nghe câu hỏi hoặc ý kiến của khán giả.",
+         "Tóm tắt lại quan điểm của nhau để đảm bảo bạn hiểu.",
+         "Đưa ra phản hồi và lý do của bạn một cách tích cực.",
+         "Rời lại một câu hỏi mở để khán giả tiếp tục tương tác."
+        ],
+        "example": "Đó là một quan điểm thú vị! Tuy nhiên, tôi nghĩ rằng... (phản hồi). Còn bạn nghĩ sao về điều này?"
+       }
+      },
+      {
+       "title": "Sử Dụng Ngôn Ngữ Cơ Thể Hiệu Quả",
+       "tip": "Ngôn ngữ cơ thể giúp truyền tải cảm xúc mạnh mẽ hơn.",
+       "prompt": "Thực hành ngôn ngữ cơ thể khi truyền đạt một thông điệp trong 30 giây.",
+       "brief": {
+        "objective": "Tạo nên sự kết nối dễ dàng hơn với khán giả thông qua ngôn ngữ cơ thể.",
+        "context": "Bạn đang diễn thuyết về một chủ đề thú vị mà bạn đam mê.",
+        "steps": [
+         "Xác định thông điệp chính mà bạn muốn truyền đạt.",
+         "Sử dụng cử chỉ tay, mắt và dáng đứng để nhấn mạnh.",
+         "Thực hành truyền đạt thông điệp đồng bộ với ngôn ngữ cơ thể.",
+         "Ghi lại và xem lại để cải thiện."
+        ],
+        "example": "Khi tôi nói rằng sản phẩm này thật đặc biệt, tôi sẽ mở rộng tay ra để thể hiện sự hào hứng!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ Năng Sáng Tạo Trong Giao Tiếp",
+     "lessons": [
+      {
+       "title": "Sáng Tạo Với Ngôn Từ",
+       "tip": "Lựa chọn từ ngữ độc đáo để làm nổi bật ý tưởng của bạn.",
+       "prompt": "Hãy sử dụng một từ độc đáo trong bài nói 30 giây để diễn đạt ý tưởng của bạn.",
+       "brief": {
+        "objective": "Phát triển khả năng sáng tạo trong việc chọn ngôn từ.",
+        "context": "Bạn đang nói về tầm quan trọng của sự sáng tạo trong công việc.",
+        "steps": [
+         "Xác định ý tưởng chính mà bạn muốn diễn đạt.",
+         "Tìm kiếm từ ngữ mới lạ và ấn tượng.",
+         "Kết hợp các từ vào trong bài nói của bạn.",
+         "Thực hành và ghi âm lại để xem lại."
+        ],
+        "example": "Sự sáng tạo không chỉ là một từ, đó là một hành trình... (sử dụng từ mới)."
+       }
+      },
+      {
+       "title": "Kỹ Năng Kể Chuyện Phong Cách Tự Nhiên",
+       "tip": "Hãy chia sẻ câu chuyện của bạn như một cuộc trò chuyện thật sự.",
+       "prompt": "Kể một câu chuyện cá nhân trong 30 giây như thể bạn đang trò chuyện với bạn bè.",
+       "brief": {
+        "objective": "Nâng cao khả năng nói chuyện tự nhiên và thân thiện.",
+        "context": "Bạn đang chia sẻ một kỷ niệm vui về bạn bè.",
+        "steps": [
+         "Chọn một kỷ niệm vui vẻ và có ý nghĩa.",
+         "Diễn đạt bằng ngữ điệu tự nhiên và thoải mái.",
+         "Sử dụng các câu hỏi để tương tác với người nghe.",
+         "Kết thúc câu chuyện bằng một dấu ấn để khán giả nhớ."
+        ],
+        "example": "Hãy để tôi kể bạn nghe về chuyến dã ngoại của chúng tôi... (bắt đầu theo phong cách trò chuyện)."
+       }
+      },
+      {
+       "title": "Kỹ Năng Biến Hóa Tình Huống",
+       "tip": "Hãy linh hoạt thay đổi và thích ứng với mọi tình huống.",
+       "prompt": "Hãy tưởng tượng bạn gặp một tình huống bất ngờ trong bài nói và ứng biến ngay trong 30 giây.",
+       "brief": {
+        "objective": "Phát triển khả năng ứng biến trong mọi tình huống khó đoán.",
+        "context": "Bạn đang diễn thuyết và một điều bất ngờ xảy ra.",
+        "steps": [
+         "Giữ bình tĩnh và quan sát tình huống.",
+         "Nghĩ ra một cách xử lý tình huống hợp lý.",
+         "Diễn đạt bình luận lạc quan về tình huống.",
+         "Tiếp tục bài nói của bạn một cách tự nhiên."
+        ],
+        "example": "Ồ, có vẻ như có một sự cố nhỏ... (diễn giải tình huống) Nhưng điều này giúp chúng ta thấy rằng... (tiếp tục bài nói)."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

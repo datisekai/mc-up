@@ -709,12 +709,14 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
     criteria = criteria_for(await effective_rubric(s, genre.name if genre else None))
     levels = (await s.execute(select(Level).where(Level.path_id == path_id, Level.status == "published").order_by(Level.order_index))).scalars().all()
     flat = []
+    buoi_no = 0  # số buổi TOÀN CỤC qua các cấp độ (Cơ bản → Trung cấp → Nâng cao)
     for lv in levels:
         sessions = (await s.execute(select(ContentSession).where(ContentSession.level_id == lv.id, ContentSession.status == "published").order_by(ContentSession.order_index))).scalars().all()
         for cs in sessions:
+            buoi_no += 1
             lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id, ContentLesson.status == "published").order_by(ContentLesson.order_index))).scalars().all()
             for ln in lessons:
-                flat.append((ln, cs.order_index + 1))
+                flat.append((ln, buoi_no))
     ids = [ln.id for ln, _ in flat]
     done: set = set()
     if ids:

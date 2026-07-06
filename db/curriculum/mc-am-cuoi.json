@@ -1,0 +1,671 @@
+{
+ "format": "mcup-path-v1",
+ "genre": "MC đám cưới",
+ "title": "Lộ trình: MC đám cưới",
+ "levels": [
+  {
+   "name": "Cơ bản",
+   "sessions": [
+    {
+     "title": "Đón khách & khai lễ",
+     "lessons": [
+      {
+       "title": "Chào khách mời",
+       "tip": "Giọng ấm, chậm rãi — tạo không khí trang trọng ngay từ lời chào.",
+       "prompt": "Chào khách mời đến dự lễ cưới và mời ổn định chỗ ngồi trong 45 giây.",
+       "brief": {
+        "objective": "Mở màn lễ cưới ấm áp, tạo bầu không khí trang trọng ngay từ lời chào.",
+        "context": "Khách vừa đến, còn đang tìm chỗ ngồi, hội trường hơi ồn. Bạn là MC bước ra sân khấu.",
+        "steps": [
+         "Lời chào trang trọng ('Kính thưa quý vị...')",
+         "Giới thiệu dịp (lễ thành hôn của ai)",
+         "Mời khách ổn định chỗ ngồi",
+         "Một câu tạo cảm xúc chờ đợi"
+        ],
+        "example": "Kính thưa quý vị quan khách! Chào mừng quý vị đã đến chung vui trong lễ thành hôn của cô dâu Lan và chú rể Nam. Xin kính mời quý vị an tọa, để cùng nhau chờ đón khoảnh khắc thiêng liêng nhất hôm nay."
+       }
+      },
+      {
+       "title": "Giới thiệu cô dâu chú rể",
+       "tip": "Nhấn tên cô dâu chú rể bằng cảm xúc để tạo khoảnh khắc.",
+       "prompt": "Trân trọng giới thiệu cô dâu và chú rể tiến vào lễ đường.",
+       "brief": {
+        "objective": "Tạo khoảnh khắc bùng cảm xúc khi cô dâu chú rể xuất hiện.",
+        "context": "Đèn tắt bớt, nhạc nổi lên, mọi ánh mắt hướng về cửa lễ đường.",
+        "steps": [
+         "Hạ giọng dẫn dắt tạo hồi hộp",
+         "Nhấn mạnh tên cô dâu, chú rể bằng cảm xúc",
+         "Mời khách hướng về lễ đường + vỗ tay",
+         "Giữ nhịp chậm để khách kịp cảm nhận"
+        ],
+        "example": "Và giờ đây, khoảnh khắc tất cả chúng ta chờ đợi... Xin quý vị hướng ánh nhìn về phía cuối lễ đường, và dành một tràng pháo tay thật nồng nhiệt chào đón cô dâu xinh đẹp cùng chú rể điển trai tiến vào lễ đường!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nghi thức thiêng liêng",
+     "lessons": [
+      {
+       "title": "Dẫn nghi thức trao nhẫn",
+       "tip": "Chậm, thiêng liêng — để khoảnh khắc tự cất lời.",
+       "prompt": "Dẫn nghi thức trao nhẫn cưới, giữ nhịp trang nghiêm trong 40 giây.",
+       "brief": {
+        "objective": "Dẫn khoảnh khắc thiêng liêng — nhịp chậm, ấm, để cảm xúc dẫn dắt.",
+        "context": "Cô dâu chú rể trên lễ đường, cả hội trường lặng đi dõi theo.",
+        "steps": [
+         "Mời mọi người hướng về lễ đường",
+         "Nói ý nghĩa chiếc nhẫn",
+         "Mời chú rể trao nhẫn, rồi cô dâu",
+         "Một câu lắng đọng chốt khoảnh khắc"
+        ],
+        "example": "Xin kính mời toàn thể quan khách cùng hướng về lễ đường... Chiếc nhẫn cưới tuy nhỏ bé, nhưng chứa trọn lời hứa yêu thương trọn đời. Xin mời chú rể trao nhẫn cho người con gái mình yêu thương... và cô dâu, xin trao lại lời hứa của mình."
+       }
+      },
+      {
+       "title": "Mời phát biểu",
+       "tip": "Giới thiệu người phát biểu ngắn gọn, trang trọng.",
+       "prompt": "Mời đại diện gia đình lên phát biểu, dẫn dắt trong 30 giây.",
+       "brief": {
+        "objective": "Chuyển mạch sang phần phát biểu mượt mà, trang trọng.",
+        "context": "Sau nghi thức, đến lượt đại diện hai gia đình chia sẻ.",
+        "steps": [
+         "Một câu chuyển mạch cảm xúc",
+         "Giới thiệu người phát biểu (vai vế, tên)",
+         "Mời lên sân khấu + vỗ tay",
+         "Lùi lại nhường sân khấu"
+        ],
+        "example": "Hôn lễ hôm nay trọn vẹn hơn nhờ tình thương của hai bên gia đình. Xin trân trọng kính mời ông Nguyễn Văn A — đại diện nhà trai — lên có đôi lời phát biểu. Xin một tràng pháo tay ạ!"
+       }
+      },
+      {
+       "title": "Kết lễ & mời tiệc",
+       "tip": "Khép lễ ấm áp, mời khách nhập tiệc thật tự nhiên.",
+       "prompt": "Cảm ơn khách và mời mọi người nhập tiệc chung vui.",
+       "brief": {
+        "objective": "Khép lễ ấm áp và mời khách nhập tiệc thật tự nhiên.",
+        "context": "Nghi thức xong, chuyển sang phần tiệc chung vui.",
+        "steps": [
+         "Cảm ơn quan khách đã đến chung vui",
+         "Một lời chúc cho cô dâu chú rể",
+         "Mời khách nhập tiệc",
+         "Chúc ngon miệng, vui vẻ"
+        ],
+        "example": "Thay mặt hai gia đình, xin cảm ơn quý vị đã đến chung vui và gửi lời chúc phúc cho đôi uyên ương. Kính chúc cô dâu chú rể trăm năm hạnh phúc! Và bây giờ, xin mời quý vị cùng nâng ly khai tiệc. Chúc quý vị một buổi tiệc thật vui!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 1: Nghi Thức Trao Nhẫn",
+     "lessons": [
+      {
+       "title": "Trao Nhẫn Cưới",
+       "tip": "Dùng ngôn ngữ cơ thể để thể hiện cảm xúc trân trọng.",
+       "prompt": "Hãy nói về ý nghĩa của việc trao nhẫn trong lễ cưới trong 30-60 giây.",
+       "brief": {
+        "objective": "Giới thiệu ý nghĩa của nhẫn cưới.",
+        "context": "Trong không khí lãng mạn và đầy cảm xúc của lễ cưới, hai bạn sẽ trao nhẫn cho nhau.",
+        "steps": [
+         "Giới thiệu về nhẫn cưới.",
+         "Giải thích ý nghĩa của nhẫn trong tình yêu.",
+         "Khuyến khích cặp đôi trao nhẫn với tình cảm chân thành."
+        ],
+        "example": "\"Hôm nay, chúng ta không chỉ chứng kiến hai bạn trao cho nhau những chiếc nhẫn cưới, mà còn là trao gửi những nỗi niềm, những hy vọng cho một cuộc sống hạnh phúc bên nhau.\""
+       }
+      },
+      {
+       "title": "Động Viên Cặp Đôi",
+       "tip": "Hãy tạo những câu nói mang tính khích lệ, giúp họ tự tin hơn.",
+       "prompt": "Hãy nói những lời động viên ngắn dành cho cặp đôi trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo động lực cho cặp đôi trước nghi thức trao nhẫn.",
+        "context": "Lúc này, các thành viên gia đình và bạn bè đang chờ đợi khoảnh khắc ngọt ngào này.",
+        "steps": [
+         "Chúc phúc cho cặp đôi.",
+         "Nhấn mạnh vào tình yêu và sự trân trọng.",
+         "Kêu gọi sự ủng hộ từ mọi người xung quanh."
+        ],
+        "example": "\"Hãy nhớ rằng, ngày hôm nay không chỉ là ngày trọng đại của các bạn mà còn là ngày mà mọi người xung quanh đều gửi gắm những điều tốt đẹp đến cho hai bạn!\""
+       }
+      },
+      {
+       "title": "Chia Sẻ Cảm Xúc",
+       "tip": "Chạm đến cảm xúc bằng những câu chuyện ngắn và ý nghĩa.",
+       "prompt": "Hãy để cặp đôi chia sẻ cảm xúc trong ngày trọng đại này trong 30-60 giây.",
+       "brief": {
+        "objective": "Khuyến khích cặp đôi bày tỏ tình cảm trước khán giả.",
+        "context": "Giữa không gian ấm cúng và hạnh phúc, cặp đôi đã quyết định chia sẻ những điều từ trái tim.",
+        "steps": [
+         "Mời cặp đôi phát biểu.",
+         "Khuyến khích họ chia sẻ cảm xúc về nhau.",
+         "Nhắc nhở về những kỷ niệm đặc biệt."
+        ],
+        "example": "\"Giờ đây, tôi xin mời hai bạn chia sẻ đôi lời cảm xúc trong khoảnh khắc này. Hãy để chúng tôi cùng chung vui và đồng cảm với hành trình của hai bạn!\""
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 2: Nghi Thức Rót Rượu",
+     "lessons": [
+      {
+       "title": "Giới Thiệu Nghi Thức Rót Rượu",
+       "tip": "Hãy thể hiện sự tôn trọng đối với nghi thức truyền thống.",
+       "prompt": "Hãy nói về nghi thức rót rượu trong lễ cưới trong 30-60 giây.",
+       "brief": {
+        "objective": "Trình bày về ý nghĩa rót rượu trong lễ cưới.",
+        "context": "Không khí trở nên tươi vui khi cặp đôi thực hiện nghi thức này.",
+        "steps": [
+         "Giới thiệu ý nghĩa của rượu trong tình yêu.",
+         "Nêu cách thức thực hiện nghi thức.",
+         "Khuyến khích cặp đôi thể hiện tình yêu qua hành động."
+        ],
+        "example": "\"Rượu không chỉ là thức uống, mà còn là biểu tượng cho lời hứa và tình yêu bền vững. Hôm nay, chúng ta sẽ cùng nhau chứng kiến nghi thức rót rượu trong tình yêu của đôi bạn.\""
+       }
+      },
+      {
+       "title": "Khán Giả Cùng Chúc Mừng",
+       "tip": "Kêu gọi sự góp mặt của khán giả để tạo không khí vui vẻ.",
+       "prompt": "Hãy khuyến khích khán giả tham gia chúc mừng cặp đôi trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí giao lưu giữa cặp đôi và khán giả.",
+        "context": "Tất cả mọi người đều hướng về cặp đôi với những ánh mắt chúc phúc.",
+        "steps": [
+         "Mời mọi người cùng tham gia chúc mừng.",
+         "Khơi gợi không khí vui vẻ bằng những câu nói hài hước.",
+         "Chia sẻ niềm vui của cặp đôi."
+        ],
+        "example": "\"Các vị khách quý, hãy cùng chúc mừng cho đôi bạn trẻ này bằng những lời chúc tốt đẹp và nụ cười rạng ngời nhé! Chúng ta hãy tạo ra những kỷ niệm tuyệt vời của ngày hôm nay!\""
+       }
+      },
+      {
+       "title": "Nghi Thức Rót Rượu",
+       "tip": "Nhấn mạnh vào từng động tác trong nghi thức.",
+       "prompt": "Hãy nói về cách rót rượu cho nhau trong 30-60 giây.",
+       "brief": {
+        "objective": "Hướng dẫn cách thực hiện nghi thức rót rượu.",
+        "context": "Trong khoảnh khắc này, tình yêu của cặp đôi được thể hiện qua hành động.",
+        "steps": [
+         "Hướng dẫn động tác rót rượu.",
+         "Chia sẻ ý nghĩa từng bước rót rượu.",
+         "Kêu gọi mọi người nhìn ngắm khoảnh khắc đáng nhớ."
+        ],
+        "example": "\"Bây giờ, chúng ta sẽ cùng chứng kiến nghi thức rót rượu, nơi mà hai bạn sẽ thể hiện tình yêu và sự trân trọng dành cho nhau trong từng giọt rượu. Hãy cùng xem họ thực hiện điều này nhé!\""
+       }
+      }
+     ]
+    },
+    {
+     "title": "Buổi 3: Cắt Bánh Cưới",
+     "lessons": [
+      {
+       "title": "Giới Thiệu Nghi Thức Cắt Bánh",
+       "tip": "Sử dụng giọng điệu lôi cuốn để thu hút sự chú ý.",
+       "prompt": "Hãy trình bày về ý nghĩa của việc cắt bánh cưới trong 30-60 giây.",
+       "brief": {
+        "objective": "Giới thiệu về nghi thức cắt bánh cưới.",
+        "context": "Mọi người hướng về cặp đôi với những khuôn mặt háo hức chờ đợi khoảnh khắc ngọt ngào này.",
+        "steps": [
+         "Giới thiệu bánh cưới và ý nghĩa.",
+         "Nêu truyền thống cắt bánh cưới.",
+         "Khuyến khích sự sẻ chia giữa cặp đôi và khách mời."
+        ],
+        "example": "\"Đến với khoảnh khắc đặc biệt này, chúng ta sẽ chứng kiến nghi thức cắt bánh cưới, nơi mà hạnh phúc và tình yêu sẽ được chia sẻ qua từng miếng bánh ngọt ngào.\""
+       }
+      },
+      {
+       "title": "Hỗ Trợ Cặp Đôi Cắt Bánh",
+       "tip": "Hướng dẫn cụ thể cách làm trong nghi thức cắt bánh.",
+       "prompt": "Hãy hướng dẫn cặp đôi cắt bánh trong 30-60 giây.",
+       "brief": {
+        "objective": "Đảm bảo cặp đôi thực hiện nghi thức đúng.",
+        "context": "Trong sự háo hức của mọi người, cặp đôi sắp cắt bánh để phục vụ khách mời.",
+        "steps": [
+         "Giải thích đúng cách cắt bánh.",
+         "Nhấn mạnh ý nghĩa của bánh cưới.",
+         "Mời khán giả chúc mừng trong khoảnh khắc này."
+        ],
+        "example": "\"Giờ đây, tôi xin mời hai bạn cùng nhau cắt bánh, hãy nhớ rằng đây không chỉ là hành động, mà là sự chia sẻ tình yêu đến tất cả mọi người đang có mặt ở đây!\""
+       }
+      },
+      {
+       "title": "Chia Sẻ Kỷ Niệm",
+       "tip": "Khuyến khích cặp đôi chia sẻ kỷ niệm về chiếc bánh cưới.",
+       "prompt": "Hãy để cặp đôi nói về kỷ niệm về chiếc bánh cưới trong 30-60 giây.",
+       "brief": {
+        "objective": "Khuyến khích cặp đôi chia sẻ kỷ niệm hoặc câu chuyện về bánh cưới.",
+        "context": "Cặp đôi đang đứng trước chiếc bánh cưới vĩ đại, trở thành tâm điểm chú ý.",
+        "steps": [
+         "Mời cặp đôi bày tỏ cảm xúc.",
+         "Khuyến khích họ chia sẻ câu chuyện đặc biệt.",
+         "Kêu gọi mọi người tưởng tượng về tương lai."
+        ],
+        "example": "\"Cảm giác thật tuyệt vời khi hai bạn đứng trước chiếc bánh cưới này. Hãy chia sẻ với mọi người về những kỷ niệm, những câu chuyện đặc biệt mà chiếc bánh này mang lại cho hai bạn nhé!\""
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Trung cấp",
+   "sessions": [
+    {
+     "title": "Nghi Thức Trao Quà Cưới",
+     "lessons": [
+      {
+       "title": "Tạo không khí cho nghi thức trao quà cưới",
+       "tip": "Sử dụng âm điệu nhẹ nhàng để tạo cảm giác ấm áp.",
+       "prompt": "Hãy giới thiệu về nghi thức trao quà cưới trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Giới thiệu nghi thức trao quà cưới.",
+        "context": "Khi cô dâu chú rể trao quà cho nhau, tạo dấu ấn của tình yêu thương.",
+        "steps": [
+         "Giới thiệu mục đích của việc trao quà.",
+         "Nhấn mạnh ý nghĩa của món quà.",
+         "Khuyến khích các khách mời biểu lộ cảm xúc."
+        ],
+        "example": "Hôm nay, trong ngày hạnh phúc này, chúng ta sẽ chứng kiến một nghi thức đầy ý nghĩa, đó là trao quà cưới. Đây không chỉ là món quà mà còn là trái tim và tâm tư của mỗi người dành cho nhau."
+       }
+      },
+      {
+       "title": "Chia sẻ kỷ niệm đặc biệt",
+       "tip": "Kết nối câu chuyện cá nhân để tăng tính gần gũi.",
+       "prompt": "Hãy kể một kỷ niệm đáng nhớ giữa cô dâu và chú rể trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ một kỷ niệm đáng nhớ.",
+        "context": "Khi nhắc về một câu chuyện vui giữa cô dâu và chú rể.",
+        "steps": [
+         "Chọn một kỷ niệm cụ thể.",
+         "Mô tả ngắn gọn kỷ niệm.",
+         "Liên kết câu chuyện với hiện tại."
+        ],
+        "example": "Tôi nhớ lần đầu tiên hai bạn gặp nhau, khi đó cả hai đều rất ngại ngùng, nhưng lại chẳng thể rời mắt khỏi nhau. Đó chính là dấu hiệu của tình yêu bắt đầu."
+       }
+      },
+      {
+       "title": "Chúc phúc cho đôi uyên ương",
+       "tip": "Sử dụng từ ngữ lôi cuốn để tăng cảm xúc.",
+       "prompt": "Hãy đưa ra lời chúc phúc cho cô dâu chú rể trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Gửi gắm những lời chúc phúc ý nghĩa.",
+        "context": "Khi tất cả mọi người đều hướng về đôi uyên ương.",
+        "steps": [
+         "Bắt đầu bằng một lời chào thân ái.",
+         "Chia sẻ mong muốn tốt đẹp cho cuộc sống hôn nhân.",
+         "Kết thúc bằng lời chúc ấm áp."
+        ],
+        "example": "Kính thưa quý vị, trong khoảnh khắc thiêng liêng này, tôi xin gửi đến hai bạn những lời chúc tốt đẹp nhất, mong rằng tình yêu của các bạn sẽ mãi mãi bền vững, hạnh phúc và tràn ngập niềm vui."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nghi Thức Rước Dâu Về Nhà Chồng",
+     "lessons": [
+      {
+       "title": "Giới thiệu về nghi thức rước dâu",
+       "tip": "Sử dụng ngôn ngữ trang trọng để tôn vinh khoảnh khắc.",
+       "prompt": "Hãy giới thiệu nghi thức rước dâu trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Giới thiệu ý nghĩa và chuẩn bị cho nghi thức.",
+        "context": "Trong không khí trang trọng của lễ rước dâu.",
+        "steps": [
+         "Giới thiệu về lễ rước dâu.",
+         "Nhấn mạnh những điều tốt đẹp sẽ đến từ nghi thức này.",
+         "Khuyến khích sự tham gia của mọi người."
+        ],
+        "example": "Kính thưa quý vị, hôm nay chúng ta sẽ cùng nhau tham gia một lễ rước dâu rất đặc biệt, nơi mà cô dâu từ gia đình của mình sẽ trở về nhà chồng, mang theo sự hy vọng và hạnh phúc."
+       }
+      },
+      {
+       "title": "Cảm xúc của cô dâu trong lễ rước",
+       "tip": "Chạm đến cảm xúc của người nghe qua việc lựa chọn từ ngữ.",
+       "prompt": "Hãy diễn đạt cảm xúc của cô dâu trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ cảm xúc của cô dâu khi rời xa gia đình.",
+        "context": "Trong khoảnh khắc cô dâu chuẩn bị bước vào xe rước dâu.",
+        "steps": [
+         "Diễn tả sự hồi hộp của cô dâu.",
+         "Tưởng tượng cảm xúc của gia đình cô dâu.",
+         "Gợi ý đến sự quan tâm từ phía chú rể."
+        ],
+        "example": "Khi bước lên chiếc xe rước dâu, chắc hẳn cô dâu đang tràn ngập cảm xúc, vừa vui mừng, vừa lo lắng, như một giấc mơ đang trở thành hiện thực bên cạnh gia đình, mà giờ đây sẽ là gia đình mới của cô."
+       }
+      },
+      {
+       "title": "Nghi thức cúi chào và cầu nguyện",
+       "tip": "Nhấn mạnh nét đẹp văn hóa trong lễ cưới.",
+       "prompt": "Hãy mô tả nghi thức cúi chào và cầu nguyện trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ về nghi thức cúi chào và cầu nguyện.",
+        "context": "Khi cô dâu chú rể thực hiện nghi thức trước gia đình hai bên.",
+        "steps": [
+         "Giải thích mục đích của nghi thức.",
+         "Mô tả hành động cúi chào.",
+         "Nhấn mạnh ý nghĩa tâm linh."
+        ],
+        "example": "Trước khi chính thức trở thành vợ chồng, cô dâu và chú rể sẽ thực hiện nghi thức cúi chào và cầu nguyện, thể hiện sự tôn trọng và biết ơn đối với tổ tiên, cha mẹ và những người đã giúp đỡ hai người trong hành trình tình yêu này."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nghi Thức Mời Trà",
+     "lessons": [
+      {
+       "title": "Giới thiệu nghi thức mời trà",
+       "tip": "Tạo không khí thân mật và gần gũi.",
+       "prompt": "Hãy giới thiệu về nghi thức mời trà trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ ý nghĩa của nghi thức mời trà.",
+        "context": "Khi hai bên gia đình cùng ngồi quây quần bên bàn trà.",
+        "steps": [
+         "Giới thiệu về lễ mời trà.",
+         "Nhấn mạnh tình thân và kết nối gia đình.",
+         "Khuyến khích mọi người tham gia."
+        ],
+        "example": "Kính thưa quý vị, nghi thức mời trà không chỉ là hình thức, mà còn là biểu tượng của lòng biết ơn và tình cảm gia đình giữa hai bên, nơi mà chúng ta cùng nhau chia sẻ những phút giây quý giá bên tách trà."
+       }
+      },
+      {
+       "title": "Chia sẻ cảm xúc khi mời trà",
+       "tip": "Tạo không khí bằng ngữ điệu vui vẻ và thân thiện.",
+       "prompt": "Hãy chia sẻ cảm xúc của cô dâu, chú rể trong lễ mời trà trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ cảm xúc khi mời trà.",
+        "context": "Khi cô dâu và chú rể lần lượt mời trà gia đình hai bên.",
+        "steps": [
+         "Diễn tả sự hòa quyện giữa hai gia đình.",
+         "Nêu cảm xúc của cô dâu và chú rể.",
+         "Khuyến khích mọi người liên kết tâm hồn."
+        ],
+        "example": "Hôm nay, khi thực hiện nghi thức mời trà này, chắc chắn lòng cô dâu chú rể đang ngập tràn hạnh phúc và niềm tự hào khi được thấy hai gia đình quây quần bên nhau."
+       }
+      },
+      {
+       "title": "Ý nghĩa của từng ly trà",
+       "tip": "Liên kết từng hành động với đặc điểm văn hóa.",
+       "prompt": "Hãy nói về ý nghĩa của từng ly trà trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Chia sẻ ý nghĩa các ly trà trong nghi thức.",
+        "context": "Khi từng ly trà được bưng lên và trao tay.",
+        "steps": [
+         "Giới thiệu các loại trà và ý nghĩa của chúng.",
+         "Liên kết văn hóa, phong tục của gia đình.",
+         "Khuyến khích cảm xúc trong lễ cưới."
+        ],
+        "example": "Trong lễ mời trà hôm nay, mỗi ly trà không chỉ là thức uống, mà còn mang theo những điều ước tốt đẹp từ gia đình đôi bên, thể hiện sự gắn kết giữa hai dòng máu."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kết Nối Giữa Hai Gia Đình",
+     "lessons": [
+      {
+       "title": "Chia sẻ vui vẻ về gia đình hai bên",
+       "tip": "Sử dụng sự hài hước nhẹ nhàng để tạo không khí tuyệt vời.",
+       "prompt": "Hãy kể một câu chuyện hài hước về gia đình hai bên trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí vui vẻ và gần gũi giữa hai gia đình.",
+        "context": "Khi cả khách mời cùng nhau tụ họp để chúc mừng.",
+        "steps": [
+         "Giới thiệu câu chuyện ngắn gọn.",
+         "Mô tả nhân vật hài hước.",
+         "Nhấn mạnh sự hòa thuận giữa hai gia đình."
+        ],
+        "example": "Tôi nhớ lần mẹ cô dâu gặp bố chú rể, cả hai đã tranh luận ai làm món ăn ngon hơn. Cuối cùng, họ đã quyết định ‘chia sẻ’ món ăn, và không khí thật sự đã trở nên ấm cúng và hài hước."
+       }
+      },
+      {
+       "title": "Cảm ơn gia đình hai bên",
+       "tip": "Sử dụng ngôn từ chân thành để thể hiện lòng biết ơn.",
+       "prompt": "Hãy gửi lời cảm ơn đến gia đình hai bên trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Thể hiện lòng biết ơn đến các bậc trưởng bối.",
+        "context": "Khi hai gia đình cùng nhau chúc mừng sức khỏe đôi uyên ương.",
+        "steps": [
+         "Mở đầu bằng lòng biết ơn.",
+         "Liệt kê những điều hay đã nhận được từ gia đình.",
+         "Kết thúc bằng lời chúc."
+        ],
+        "example": "Tôi xin chân thành cảm ơn gia đình hai bên đã tạo điều kiện để hôm nay được gặp gỡ nhau trong niềm vui này. Hy vọng rằng, tình yêu mà chúng ta đang cùng chia sẻ sẽ mãi được duy trì và phát triển."
+       }
+      },
+      {
+       "title": "Tương lai sáng sủa của đôi uyên ương",
+       "tip": "Vẽ ra một viễn cảnh tươi sáng.",
+       "prompt": "Hãy diễn tả tương lai của cô dâu chú rể trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Khơi dậy hy vọng về một tương lai tươi đẹp.",
+        "context": "Trong không khí của lễ cưới, mọi người đều vui vẻ chúc mừng.",
+        "steps": [
+         "Diễn tả những ước mơ của cặp đôi.",
+         "Khuyến khích sự ủng hộ từ gia đình.",
+         "Kết thúc với một câu chúc tốt lành."
+        ],
+        "example": "Tôi tin rằng, với nền tảng vững vàng từ tình yêu và sự hỗ trợ từ gia đình hai bên, cô dâu và chú rể sẽ xây dựng được một tương lai tươi đẹp, hạnh phúc và đầy nhiệt huyết."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Nâng cao",
+   "sessions": [
+    {
+     "title": "Đón dâu về nhà chồng - Nâng cao cảm xúc",
+     "lessons": [
+      {
+       "title": "Cảm xúc đầu tiên của cô dâu",
+       "tip": "Hãy thể hiện sự hồi hộp bằng giọng nói và ánh mắt.",
+       "prompt": "Bài phát biểu 30-60 giây về cảm xúc đầu tiên của cô dâu khi về nhà chồng.",
+       "brief": {
+        "objective": "Khơi gợi cảm xúc cho cô dâu.",
+        "context": "Mọi ánh mắt đều hướng về cô dâu khi bước vào nhà chồng, là thời khắc thiêng liêng. ",
+        "steps": [
+         "Giới thiệu cô dâu và không khí đón chờ.",
+         "Chia sẻ những cảm xúc ban đầu của cô dâu.",
+         "Nhấn mạnh sự quan trọng trong ngày này.",
+         "Mời mọi người cùng chúc phúc cho cô dâu."
+        ],
+        "example": "Hôm nay, cô dâu của chúng ta, trong bộ áo cưới thật lộng lẫy, đang bước vào trong vòng tay yêu thương của gia đình mới. Cảm xúc ngập tràn trong lòng cô..."
+       }
+      },
+      {
+       "title": "Lời chào gia đình chồng",
+       "tip": "Dùng giọng nhẹ nhàng, tạo không khí ấm áp.",
+       "prompt": "Bài phát biểu 30-60 giây chào mừng gia đình chồng từ cô dâu.",
+       "brief": {
+        "objective": "Thể hiện sự khiêm tốn và lễ phép.",
+        "context": "Cô dâu đứng trước mặt gia đình chồng, sẵn sàng cho cuộc sống mới.",
+        "steps": [
+         "Giới thiệu bản thân với gia đình chồng.",
+         "Cảm ơn sự đón tiếp nồng nhiệt.",
+         "Khẳng định tình cảm chân thành.",
+         "Mời mọi người cùng nâng ly chúc mừng."
+        ],
+        "example": "Kính thưa gia đình, hôm nay là ngày đặc biệt không chỉ của tôi mà còn là của tất cả chúng ta. Tôi xin chân thành cảm ơn..."
+       }
+      },
+      {
+       "title": "Đánh dấu khoảnh khắc đặc biệt",
+       "tip": "Sử dụng ngôn ngữ hình ảnh để tạo ấn tượng.",
+       "prompt": "Bài phát biểu 30-60 giây về khoảnh khắc đặc biệt giữa cô dâu và chú rể.",
+       "brief": {
+        "objective": "Gợi lên hình ảnh đáng nhớ trong ngày cưới.",
+        "context": "Cặp đôi đứng trước gia đình hai bên với nụ cười rạng rỡ.",
+        "steps": [
+         "Mô tả khoảnh khắc khi cặp đôi nhìn nhau.",
+         "Chia sẻ cảm xúc riêng của cặp đôi.",
+         "Khẳng định tình yêu bền vững.",
+         "Mời mọi người cùng thưởng thức khoảnh khắc."
+        ],
+        "example": "Nhìn vào mắt nhau, họ thấy cả tương lai phía trước, nơi có những ước mơ và hạnh phúc..."
+       }
+      }
+     ]
+    },
+    {
+     "title": "MC Đám Cưới: Thiêng Liêng Giây Phút Trao Lời Hứa",
+     "lessons": [
+      {
+       "title": "Giới thiệu về Lời Hứa",
+       "tip": "Chạm tới cảm xúc của khách mời qua ngôn từ.",
+       "prompt": "Hãy nói về ý nghĩa của lời hứa trong đám cưới của cặp đôi trong 30-60 giây.",
+       "brief": {
+        "objective": "Nâng cao khả năng trình bày cảm xúc về lời hứa trong đám cưới.",
+        "context": "Trong không khí trang trọng của buổi lễ, cặp đôi đang chuẩn bị trao lời hứa trong lòng khán giả.",
+        "steps": [
+         "Chào mừng khách mời với nụ cười",
+         "Giới thiệu ngắn gọn về ý nghĩa lời hứa của cặp đôi",
+         "Nêu những điều tốt đẹp mà lời hứa mang lại cho cuộc sống",
+         "Kết thúc với một câu chúc phúc cho đôi uyên ương."
+        ],
+        "example": "Kính thưa các vị khách quý, hôm nay chúng ta chứng kiến một khoảnh khắc vô cùng thiêng liêng, đó là lời hứa của... và... với nhau."
+       }
+      },
+      {
+       "title": "Chia Sẻ Kỷ Niệm Đặc Biệt",
+       "tip": "Sử dụng hình ảnh để tạo kết nối.",
+       "prompt": "Kể lại một kỷ niệm đặc biệt của cặp đôi trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí thân mật và gần gũi hơn với khách mời.",
+        "context": "Không gian ấm áp, khán giả đang mong chờ những câu chuyện ngọt ngào từ cặp đôi.",
+        "steps": [
+         "Gợi mở một kỷ niệm đáng nhớ của cặp đôi",
+         "Mô tả cảm xúc của cặp đôi trong kỷ niệm đó",
+         "Liên hệ đến tình yêu mà họ dành cho nhau",
+         "Mời khách mời cùng chia sẻ niềm vui."
+        ],
+        "example": "Một lần khi... đã khiến... thấy yêu thêm lần nữa, và hôm nay, họ đang hiện diện ở đây trong hạnh phúc."
+       }
+      },
+      {
+       "title": "Nghi Thức Trao Nhẫn với Cảm Xúc",
+       "tip": "Chắc chắn truyền tải thông điệp yêu thương rõ ràng.",
+       "prompt": "Diễn đạt cảm xúc khi trao nhẫn từ chú rể đến cô dâu trong 30-60 giây.",
+       "brief": {
+        "objective": "Truyền tải cảm xúc chân thành trong nghi thức trao nhẫn.",
+        "context": "Lúc này, đôi uyên ương sắp trao nhẫn cho nhau còn khách mời đang hồi hộp chờ đợi.",
+        "steps": [
+         "Đưa ra ý nghĩa của nhẫn cưới",
+         "Mời chú rể lên trao nhẫn cho cô dâu",
+         "Diễn tả cảm xúc của cả hai khi nhắn gửi yêu thương",
+         "Khép lại với lời chúc cho hạnh phúc trọn vẹn."
+        ],
+        "example": "Khi nắm chặt bàn tay mình... hôm nay, anh xin trao cho em chiếc nhẫn này, không chỉ là biểu tượng của tình yêu, mà còn là lời hứa trọn đời bên nhau."
+       }
+      }
+     ]
+    },
+    {
+     "title": "MC Đám Cưới: Nghi Thức Trao Của Hồi Môn",
+     "lessons": [
+      {
+       "title": "Giới thiệu về của hồi môn",
+       "tip": "Sử dụng tâm thế trang trọng, trung thực và ấm áp khi giới thiệu.",
+       "prompt": "Hãy nói về ý nghĩa của của hồi môn trong lễ cưới trong 30-60 giây.",
+       "brief": {
+        "objective": "Giới thiệu ý nghĩa của của hồi môn trong đám cưới.",
+        "context": "Lễ cưới đang diễn ra, hai gia đình cùng nhau quây quần.",
+        "steps": [
+         "Mở đầu bằng việc nêu rõ vai trò của của hồi môn.",
+         "Đưa ra lịch sử ngắn gọn về phong tục này.",
+         "Nhấn mạnh ý nghĩa của nó trong mối quan hệ giữa hai gia đình.",
+         "Kết thúc bằng lời chúc tốt đẹp đến cô dâu và chú rể."
+        ],
+        "example": "\"Kính thưa quý vị, của hồi môn không chỉ là tài sản mà còn là biểu tượng của tình yêu và sự gắn kết giữa hai gia đình. Truyền thống này đã có từ rất lâu, nhằm củng cố thêm tình cảm và trách nhiệm lẫn nhau. Xin chúc cho tình yêu của hai bạn luôn bền vững và hạnh phúc!\""
+       }
+      },
+      {
+       "title": "Trao của hồi môn từ gia đình nhà gái",
+       "tip": "Hãy luôn nhìn vào mắt người nhận để thể hiện sự chân thành.",
+       "prompt": "Hãy thực hiện bài phát biểu khi trao của hồi môn từ gia đình nhà gái trong 30-60 giây.",
+       "brief": {
+        "objective": "Khẳng định sự trân trọng của gia đình nhà gái.",
+        "context": "Thời điểm giới thiệu và trao của hồi môn cho nhà trai.",
+        "steps": [
+         "Xác định người đại diện để trao của hồi môn.",
+         "Nói về ý nghĩa của món quà này.",
+         "Bày tỏ mong muốn và lời chúc dành cho gia đình nhà trai.",
+         "Kết thúc bằng lời chúc hạnh phúc cho cô dâu và chú rể."
+        ],
+        "example": "\"Thay mặt gia đình nhà gái, tôi xin được trao món của hồi môn này. Đây không chỉ là tài sản mà còn là tình cảm mà gia đình gửi gắm, mong muốn sự trân trọng và duy trì tình nghĩa giữa hai bên. Chúc cho đôi trẻ mãi mãi ở bên nhau!\""
+       }
+      },
+      {
+       "title": "Trao của hồi môn từ gia đình nhà trai",
+       "tip": "Thể hiện lòng biết ơn và vui mừng khi nhận của hồi môn.",
+       "prompt": "Hãy nói về cảm xúc khi nhận của hồi môn từ gia đình nhà gái trong 30-60 giây.",
+       "brief": {
+        "objective": "Khẳng định sự quý trọng đối với món quà từ nhà gái.",
+        "context": "Sau khi gia đình nhà gái đã trao của hồi môn xong.",
+        "steps": [
+         "Bày tỏ sự cảm ơn đối với món quà.",
+         "Nêu rõ ý nghĩa của món quà với gia đình nhà trai.",
+         "Hứa hẹn giữ gìn và phát huy tình cảm giữa hai bên.",
+         "Kết thúc bằng lời chúc đến cô dâu chú rể."
+        ],
+        "example": "\"Nhận món của hồi môn từ gia đình nhà gái, tôi cảm thấy vô cùng biết ơn. Món quà này không chỉ mang giá trị vật chất mà còn thể hiện tình yêu và sự quý trọng của gia đình. Chúng tôi hứa sẽ gìn giữ tình cảm giữa hai bên và chúc cho cô dâu chú rể hạnh phúc trọn vẹn.\""
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nghi Thức Mời Khách Uống Rượu Hôn Phu",
+     "lessons": [
+      {
+       "title": "Hướng Dẫn Nghi Thức Mời Khách Uống Rượu",
+       "tip": "Sử dụng ngôn ngữ cơ thể để thể hiện sự thân thiện và chân thành.",
+       "prompt": "Hãy thực hành nói về nghi thức mời khách uống rượu hôn phu trong đám cưới, thời gian 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí ấm áp, thân mật cho buổi lễ.",
+        "context": "Trong không gian trang trọng của lễ cưới, MC cần thu hút sự chú ý của khách mời để nâng ly chúc mừng cho hạnh phúc của cặp đôi.",
+        "steps": [
+         "Giới thiệu lý do mời khách thưởng rượu.",
+         "Mời các gia đình, bạn bè nâng ly chúc mừng.",
+         "Nhắc lại ý nghĩa của việc nâng ly trong ngày trọng đại."
+        ],
+        "example": "Kính thưa quý vị, giờ đây, xin mời tất cả mọi người cùng nâng ly chúc mừng cho hạnh phúc của đôi bạn trẻ. Đây không chỉ là một ly rượu, mà còn mang bao lời chúc phúc, mong cho tình yêu của họ như rượu, ngày càng nồng nàn và ấm áp."
+       }
+      },
+      {
+       "title": "Chia Sẻ Ý Nghĩ Về Tình Yêu",
+       "tip": "Nên liên hệ cảm xúc với cả hai gia đình để tạo sự gắn kết.",
+       "prompt": "Hãy nói về ý nghĩa của tình yêu trong lễ cưới, thời gian 30-60 giây.",
+       "brief": {
+        "objective": "Kết nối tình cảm giữa các bên liên quan.",
+        "context": "Khi kết thúc nghi thức rót rượu, MC sẽ nói về tình yêu như một sợi dây liên kết giữa hai gia đình.",
+        "steps": [
+         "Nêu bật ý nghĩa của tình yêu.",
+         "Kết nối giữa hai gia đình.",
+         "Khuyến khích khách mời dành lời chúc phúc cho cặp đôi."
+        ],
+        "example": "Tình yêu chính là sợi dây kết nối bền vững giữa hai gia đình. Hôm nay, chúng ta không chỉ chứng kiến hạnh phúc của hai bạn trẻ, mà còn là minh chứng cho tình cảm gắn bó giữa các bậc phụ huynh. Xin mời tất cả chúng ta cùng gửi lời chúc phúc đến cặp đôi."
+       }
+      },
+      {
+       "title": "Gây Cảm Xúc Với Khách Mời",
+       "tip": "Sử dụng những câu hỏi gợi mở để kích thích cảm xúc từ khách mời.",
+       "prompt": "Hãy tạo ra một khoảnh khắc cảm xúc với khách mời trong bài nói của bạn, thời gian 30-60 giây.",
+       "brief": {
+        "objective": "Khẳng định tình yêu và sự gắn kết thông qua cảm xúc.",
+        "context": "Sau khi cắt bánh, MC muốn khơi gợi cảm xúc của khách về những kỷ niệm tình yêu.",
+        "steps": [
+         "Chia sẻ câu chuyện tình yêu của cặp đôi.",
+         "Khuyến khích khách mời nhớ về những kỷ niệm của chính mình.",
+         "Tạo không khí cảm xúc để mọi người chia sẻ niềm vui."
+        ],
+        "example": "Trong khoảnh khắc này, khi nhìn thấy đôi bạn trẻ cùng nhau cắt chiếc bánh cưới, tôi không khỏi nghĩ về những kỷ niệm ngọt ngào trong tình yêu. Mỗi chúng ta đều đã có những khoảnh khắc đáng nhớ, đúng không nào? Hãy nghĩ về người mà bạn yêu thương và cùng chúng ta vui mừng cho tình yêu này!"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

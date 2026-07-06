@@ -1,0 +1,683 @@
+{
+ "format": "mcup-path-v1",
+ "genre": "MC sự kiện",
+ "title": "Lộ trình: MC sự kiện",
+ "levels": [
+  {
+   "name": "Cơ bản",
+   "sessions": [
+    {
+     "title": "Khai mạc & giữ nhịp",
+     "lessons": [
+      {
+       "title": "Khai mạc kéo năng lượng",
+       "tip": "10 giây đầu phải kéo năng lượng cả khán phòng lên.",
+       "prompt": "Khai mạc một lễ khai trương: chào khán giả và mở màn trong 45 giây.",
+       "brief": {
+        "objective": "Mở màn bùng năng lượng — ghim sự chú ý ngay 10 giây đầu.",
+        "context": "Lễ khai trương một thương hiệu. Khán phòng còn ồn, khách đang ổn định chỗ.",
+        "steps": [
+         "Câu chào bật năng lượng (mời pháo tay)",
+         "Nêu dịp & tên thương hiệu",
+         "Một câu tạo khí thế",
+         "Dẫn vào chương trình"
+        ],
+        "example": "Kính thưa quý vị khách quý! Xin một tràng pháo tay thật lớn chào mừng tất cả chúng ta trong ngày đặc biệt hôm nay — lễ khai trương thương hiệu ABC! Đây không chỉ là ngày mở cửa một cửa hàng, mà là ngày mở ra một hành trình mới. Và ngay bây giờ, xin mời quý vị bước vào chương trình!"
+       }
+      },
+      {
+       "title": "Giới thiệu đại biểu",
+       "tip": "Đọc đúng chức danh, trang trọng nhưng không lê thê.",
+       "prompt": "Giới thiệu 3 khách mời VIP lên sân khấu, mỗi người 1–2 câu.",
+       "brief": {
+        "objective": "Giới thiệu đại biểu trang trọng, đọc đúng chức danh, không lê thê.",
+        "context": "Phần nghi thức: xướng tên các khách mời quan trọng có mặt.",
+        "steps": [
+         "Câu mở phần giới thiệu đại biểu",
+         "Xướng đúng chức danh + họ tên từng người",
+         "Nhịp đều, mỗi người một tràng pháo tay",
+         "Cảm ơn sự hiện diện của quý đại biểu"
+        ],
+        "example": "Về tham dự chương trình hôm nay, xin trân trọng giới thiệu: Ông Trần Văn B — Giám đốc Sở Công thương. Bà Lê Thị C — Chủ tịch Hiệp hội Doanh nghiệp. Và ông David — đại diện đối tác quốc tế. Xin một tràng pháo tay chào mừng quý đại biểu!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Bản lĩnh sân khấu",
+     "lessons": [
+      {
+       "title": "Dẫn chuyển tiết mục",
+       "tip": "Câu chuyển cảnh giúp khán giả không hụt hơi giữa các tiết mục.",
+       "prompt": "Dẫn chuyển từ tiết mục văn nghệ sang phần trao giải, giữ mạch cảm xúc.",
+       "brief": {
+        "objective": "Chuyển cảnh mượt để khán giả không hụt hơi giữa hai phần.",
+        "context": "Tiết mục văn nghệ vừa kết thúc, tiếp theo là lễ trao giải.",
+        "steps": [
+         "Khen/điểm lại tiết mục vừa rồi một câu",
+         "Câu cầu nối dẫn sang phần tiếp",
+         "Tạo háo hức cho phần sắp tới",
+         "Giới thiệu phần trao giải"
+        ],
+        "example": "Một tiết mục thật bùng nổ, xin cảm ơn các nghệ sĩ! Và sau những phút giây thăng hoa cảm xúc, đã đến lúc chúng ta vinh danh những gương mặt xuất sắc nhất đêm nay. Xin mời quý vị cùng đến với phần được mong chờ nhất — lễ trao giải!"
+       }
+      },
+      {
+       "title": "Xử lý sự cố (câu giờ)",
+       "tip": "Sự cố là lúc bản lĩnh lộ rõ — bình tĩnh, hài hước, lấp khoảng trống.",
+       "prompt": "Máy chiếu bị lỗi — hãy 'câu giờ' 1 phút giữ khán giả không sốt ruột.",
+       "brief": {
+        "objective": "Giữ bình tĩnh, hài hước, lấp khoảng trống khi sự cố xảy ra.",
+        "context": "Máy chiếu đột ngột lỗi, kỹ thuật đang xử lý. Khán giả bắt đầu xì xào.",
+        "steps": [
+         "Trấn an nhẹ nhàng, không hoảng",
+         "Thêm một câu hài hước duyên dáng",
+         "Tương tác với khán giả (hỏi/mini game)",
+         "Bắc cầu quay lại chương trình khi sẵn sàng"
+        ],
+        "example": "Xin quý vị chờ trong giây lát, bộ phận kỹ thuật đang 'phù phép' cho màn hình thêm lung linh ạ. Trong lúc chờ, xin hỏi nhỏ: quý vị nào hôm nay đến sớm nhất chương trình ạ? À, có anh áo xanh kìa — cảm ơn anh! Vâng, và màn hình đã sẵn sàng, xin mời chúng ta tiếp tục!"
+       }
+      },
+      {
+       "title": "Bế mạc & cảm ơn",
+       "tip": "Kết gọn, ấm, để lại dư âm và lời cảm ơn nhà tài trợ.",
+       "prompt": "Bế mạc sự kiện: cảm ơn khán giả và nhà tài trợ trong 45 giây.",
+       "brief": {
+        "objective": "Kết chương trình gọn, ấm, để lại dư âm và cảm ơn đúng người.",
+        "context": "Chương trình đã xong, đến lúc khép lại và tiễn khách.",
+        "steps": [
+         "Tóm một câu điểm nhấn của chương trình",
+         "Cảm ơn nhà tài trợ + khán giả",
+         "Một lời chúc/hẹn gặp lại",
+         "Câu chào kết"
+        ],
+        "example": "Vậy là chương trình đã khép lại với thật nhiều cảm xúc. Xin chân thành cảm ơn nhà tài trợ ABC đã đồng hành, và cảm ơn quý khán giả đã ở lại đến phút cuối. Kính chúc quý vị sức khỏe, và hẹn gặp lại trong những sự kiện tiếp theo. Xin trân trọng cảm ơn!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tạo cảm hứng cho khán giả",
+     "lessons": [
+      {
+       "title": "Mở đầu ấn tượng",
+       "tip": "Bắt đầu từ câu hỏi hoặc câu chuyện thu hút chú ý.",
+       "prompt": "Hãy mở đầu bài nói 30-60 giây giới thiệu sự kiện hôm nay bằng một câu hỏi thú vị hoặc một câu chuyện ngắn gọn liên quan đến chủ đề sự kiện.",
+       "brief": {
+        "objective": "Tạo không khí thân thiện và hấp dẫn ngay từ đầu.",
+        "context": "Bạn là MC cho sự kiện khai trương một và một. Bạn cần thu hút sự chú ý ngay khi bắt đầu chương trình.",
+        "steps": [
+         "Dẫn dắt câu chuyện hoặc câu hỏi gây chú ý.",
+         "Kết nối với khán giả bằng cách hỏi ý kiến hoặc phản hồi.",
+         "Giới thiệu chương trình và lý do sự kiện hôm nay.",
+         "Mời khán giả tham gia cùng bạn trong hành trình trải nghiệm."
+        ],
+        "example": "Xin chào các bạn, hôm nay mình có một câu hỏi: Ai trong số chúng ta đã từng mơ ước được trải nghiệm một khởi đầu mới? Hãy cùng nhau điểm lại câu chuyện thú vị của những người đã thay đổi cuộc đời mình từ những lựa chọn nhỏ bé!"
+       }
+      },
+      {
+       "title": "Giới thiệu đại biểu và khách mời",
+       "tip": "Luôn nhớ đặt tên và chức vụ đúng cách, tạo không khí trang trọng.",
+       "prompt": "Hãy giới thiệu một vị khách mời VIP trong 30-60 giây, bao gồm tên, chức vụ, và lý do sự hiện diện.",
+       "brief": {
+        "objective": "Thể hiện sự tôn trọng và chuyên nghiệp khi giới thiệu khách mời.",
+        "context": "Bạn cần giới thiệu một doanh nhân nổi bật trong sự kiện khai trương.",
+        "steps": [
+         "Giới thiệu tên và chức vụ của khách mời.",
+         "Nêu ngắn gọn thành tựu hoặc đóng góp của khách mời.",
+         "Mời khách mời lên phát biểu.",
+         "Giới thiệu sự kiện hoặc hoạt động tiếp theo."
+        ],
+        "example": "Xin giới thiệu ông Nguyễn Văn A, Giám đốc điều hành Công ty XYZ, một trong những người tiên phong trong ngành công nghiệp này. Hôm nay, ông sẽ chia sẻ những dự định tương lai và những cơ hội hợp tác hấp dẫn!"
+       }
+      },
+      {
+       "title": "Giữ nhịp và tương tác",
+       "tip": "Ghi nhớ những câu hỏi tương tác đơn giản để khán giả tham gia.",
+       "prompt": "Hãy tạo cơ hội tương tác cho khán giả trong 30-60 giây và đưa ra câu hỏi cho khán giả.",
+       "brief": {
+        "objective": "Khuyến khích khán giả tham gia và tạo không khí vui vẻ.",
+        "context": "Trong một sự kiện khai trương, bạn muốn khán giả cảm thấy mình là một phần của chương trình.",
+        "steps": [
+         "Đặt câu hỏi cho khán giả về chủ đề liên quan.",
+         "Khuyến khích họ đưa ra ý kiến hoặc phản hồi ngay tại chỗ.",
+         "Tạo không khí cởi mở và vui vẻ trước khi giới thiệu phần tiếp theo.",
+         "Chia sẻ một chút thông tin thú vị liên quan đến phản hồi của khán giả."
+        ],
+        "example": "Quý vị có nghĩ rằng sự thay đổi là cần thiết để phát triển? Hãy raise tay nếu bạn đồng ý nhé! Chúng tôi rất muốn nghe suy nghĩ từ các bạn!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ năng xử lý tình huống",
+     "lessons": [
+      {
+       "title": "Xử lý sự cố sân khấu",
+       "tip": "Giữ bình tĩnh và tự tin trong mọi tình huống.",
+       "prompt": "Hãy tập luyện xử lý một sự cố bất ngờ xảy ra trong chương trình (chẳng hạn như rớt mic hoặc mất điện), nói trong 30-60 giây.",
+       "brief": {
+        "objective": "Phát triển kỹ năng ứng biến khi có sự cố xảy ra.",
+        "context": "Một sự kiện lớn và đột nhiên mất điện, bạn cần giữ nhịp và làm quen với khán giả.",
+        "steps": [
+         "Giữ bình tĩnh và thông báo cho khán giả về sự cố.",
+         "Sử dụng phút giây này để giao lưu với khán giả.",
+         "Đưa ra cách giải quyết tạm thời hoặc tiếp tục chương trình.",
+         "Kết thúc bằng một lời khích lệ."
+        ],
+        "example": "Xin lỗi quý vị, sự cố kỹ thuật vừa xảy ra nhưng đừng lo lắng, chúng ta hãy giao lưu một chút với nhau trong khoảnh khắc này nhé! Ai có thể chia sẻ cảm nghĩ về sự kiện hôm nay?"
+       }
+      },
+      {
+       "title": "Tương tác bằng câu hỏi thú vị",
+       "tip": "Câu hỏi gây chú ý giúp khán giả tập trung hơn.",
+       "prompt": "Đưa ra một câu hỏi thú vị và hỏi ý kiến khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Khuyến khích sự tham gia của khán giả thông qua các câu hỏi tương tác.",
+        "context": "Giữa chương trình, bạn muốn khán giả tham gia để tăng tính tương tác.",
+        "steps": [
+         "Đặt câu hỏi thú vị cho khán giả.",
+         "Khuyến khích họ chia sẻ ý kiến hoặc giơ tay trả lời.",
+         "Nhận xét về một số ý kiến và cảm ơn họ.",
+         "Tiếp tục chương trình với một tinh thần tích cực."
+        ],
+        "example": "Các bạn muốn biết bí mật nào trong ngành này chưa? Hãy cho tôi biết một điều bạn muốn tìm hiểu nhất tại đây nhé!"
+       }
+      },
+      {
+       "title": "Giữ năng lượng sân khấu",
+       "tip": "Thay đổi giọng điệu và cử chỉ để duy trì sự chú ý.",
+       "prompt": "Hãy thể hiện năng lượng của bạn trong 30-60 giây khi giới thiệu một hoạt động tiếp theo.",
+       "brief": {
+        "objective": "Giữ nhịp độ chương trình sống động và năng động.",
+        "context": "Bạn cần gây hứng khởi cho khán giả trước một hoạt động sắp diễn ra.",
+        "steps": [
+         "Giới thiệu hoạt động sắp diễn ra.",
+         "Sử dụng giọng điệu và cử chỉ mạnh mẽ để tạo hưng phấn.",
+         "Khuyến khích khán giả tham gia và chia sẻ cảm xúc.",
+         "Kết thúc bằng một câu nói tích cực."
+        ],
+        "example": "Chúng ta chuẩn bị đến với một trải nghiệm vô cùng thú vị đó chính là…! Hãy tăng cường năng lượng của bạn, hãy cùng nhau tạo ra một bầu không khí hứng khởi nào!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tuyệt chiêu song ngữ cơ bản",
+     "lessons": [
+      {
+       "title": "Giới thiệu khái quát sự kiện",
+       "tip": "Sử dụng từ khóa chính, tránh dài dòng.",
+       "prompt": "Giới thiệu tổng quan về sự kiện bằng cả tiếng Việt và tiếng Anh trong 30-60 giây.",
+       "brief": {
+        "objective": "Đưa ra thông tin cần thiết một cách ngắn gọn và súc tích.",
+        "context": "Bạn đang MC cho một sự kiện quốc tế, khán giả có cả người Việt và người nước ngoài.",
+        "steps": [
+         "Nêu tên sự kiện và địa điểm.",
+         "Giới thiệu mục đích và ý nghĩa của sự kiện bằng cả hai ngôn ngữ.",
+         "Khuyến khích khán giả tham gia và tôn trọng nhau.",
+         "Tạo không khí thân thiện và cởi mở."
+        ],
+        "example": "Chào mừng các bạn đến với Lễ Khai Trương XYZ - Welcome to the Opening Ceremony of XYZ. Hôm nay chúng ta sẽ cùng nhau khám phá những điều tuyệt vời mà sự kiện này mang lại. Let's explore together!"
+       }
+      },
+      {
+       "title": "Giới thiệu đại biểu hai ngôn ngữ",
+       "tip": "Giữ cách phát âm rõ ràng và tự nhiên.",
+       "prompt": "Hãy thử giới thiệu một vị khách mời bằng tiếng Việt và tiếng Anh trong 30-60 giây.",
+       "brief": {
+        "objective": "Thể hiện sự tôn trọng với tất cả khán giả.",
+        "context": "Bạn có một khách mời khiếm tốn đến từ nước ngoài.",
+        "steps": [
+         "Nêu tên và chức vụ của khách mời bằng tiếng Việt.",
+         "Tiếp tục bằng tiếng Anh.",
+         "Mời khách mời phát biểu hoặc tham gia chương trình.",
+         "Khuyến khích khán giả chào đón khách mời."
+        ],
+        "example": "Xin trân trọng giới thiệu bà Anna Smith, Giám đốc Marketing của công ty ABC. Let's welcome Ms. Anna Smith, the Marketing Director of ABC!"
+       }
+      },
+      {
+       "title": "Tương tác bằng tiếng Anh",
+       "tip": "Sử dụng câu hỏi đơn giản, dễ hiểu.",
+       "prompt": "Đưa ra câu hỏi cho khán giả bằng cả tiếng Việt và tiếng Anh trong 30-60 giây.",
+       "brief": {
+        "objective": "Thúc đẩy sự tham gia của khán giả quốc tế.",
+        "context": "Bạn muốn tạo không khí tương tác giữa các khán giả Việt Nam và nước ngoài.",
+        "steps": [
+         "Đặt một câu hỏi đơn giản cho khán giả.",
+         "Đưa ra hai cách trả lời trong tiếng Việt và tiếng Anh.",
+         "Khuyến khích khán giả chia sẻ ý kiến và nhận xét.",
+         "Kết nối tất cả mọi người lại với nhau."
+        ],
+        "example": "Nếu các bạn thích sự kiện này, hãy giơ tay! If you like this event, please raise your hand!"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Trung cấp",
+   "sessions": [
+    {
+     "title": "Tạo kết nối với khán giả",
+     "lessons": [
+      {
+       "title": "Kỹ năng tương tác với khán giả",
+       "tip": "Hãy luôn nhìn vào mắt khán giả khi nói.",
+       "prompt": "Hãy giới thiệu 1 câu chuyện ngắn về một kỷ niệm vui vẻ với một sự kiện mà bạn đã tham gia, trong 30-60 giây.",
+       "brief": {
+        "objective": "Học cách thu hút sự chú ý của khán giả.",
+        "context": "Bạn đang đứng trước khán giả và họ đang rất mong chờ điều gì đó mới mẻ, hãy tạo sự kết nối với họ.",
+        "steps": [
+         "Chọn một kỷ niệm vui và liên quan đến sự kiện.",
+         "Sử dụng ngôn ngữ cơ thể để tạo sự thân thiện.",
+         "Kết thúc bằng câu hỏi khơi gợi sự tham gia của khán giả."
+        ],
+        "example": "Khi tôi tham gia một buổi tiệc kỷ niệm, có một khoảnh khắc mà mọi người đều cùng nhau cười và hát. Đó là lúc mà chúng ta cảm thấy gần gũi hơn bao giờ hết. Các bạn có nhớ những kỷ niệm vui như vậy không?"
+       }
+      },
+      {
+       "title": "Giới thiệu đại biểu",
+       "tip": "Chú ý đến cách phát âm và ngữ điệu khi giới thiệu.",
+       "prompt": "Giới thiệu một đại biểu (hư cấu) trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Học cách giới thiệu đại biểu một cách trang trọng và chuyên nghiệp.",
+        "context": "Trên sân khấu, bạn là người đại diện cho tất cả khán giả để vinh danh những người quan trọng.",
+        "steps": [
+         "Nêu tên và chức vụ đại biểu.",
+         "Mô tả một vài thành tựu nổi bật của họ.",
+         "Kết thúc bằng lời chào mừng nồng nhiệt."
+        ],
+        "example": "Kính thưa quý vị, hôm nay chúng ta rất vinh dự được chào đón ông Nguyễn Văn A, Giám đốc điều hành công ty XYZ, người đã có nhiều đóng góp quan trọng cho ngành công nghiệp của chúng ta. Xin mời mọi người dành một tràng pháo tay thật lớn chào mừng ông!"
+       }
+      },
+      {
+       "title": "Duy trì năng lượng sân khấu",
+       "tip": "Sử dụng âm lượng và nhịp điệu để tăng cảm xúc cho chương trình.",
+       "prompt": "Trong 30-60 giây, hãy tạo không khí vui vẻ cho khán giả bằng cách dẫn dắt một hoạt động nhỏ.",
+       "brief": {
+        "objective": "Học cách duy trì năng lượng và cảm xúc trong chương trình.",
+        "context": "Khán giả đang có vẻ hơi mệt mỏi và cần một sự khích lệ mới để tiếp tục.",
+        "steps": [
+         "Gợi ý một trò chơi hoặc hoạt động tương tác đơn giản.",
+         "Sử dụng giọng điệu hào hứng để khích lệ mọi người tham gia.",
+         "Khen ngợi và cổ vũ khán giả khi họ tham gia."
+        ],
+        "example": "Các bạn ơi, để thêm phần sôi nổi, chúng ta cùng nhau thực hiện một trò chơi nhỏ nhé! Ai đang sẵn sàng thì giơ tay lên nào! Bây giờ hãy giao lưu một chút với người bên cạnh bạn nào!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Đỉnh cao phong cách dẫn chương trình",
+     "lessons": [
+      {
+       "title": "Tạo phong cách cá nhân",
+       "tip": "Sự tự tin vào bản thân là chìa khóa thành công.",
+       "prompt": "Hãy mô tả phong cách cá nhân của bạn trong 30-60 giây.",
+       "brief": {
+        "objective": "Xác định phong cách riêng của mình trong dẫn chương trình.",
+        "context": "Bạn đã phát hiện ra phong cách của mình và muốn chia sẻ với khán giả.",
+        "steps": [
+         "Nêu ra ba yếu tố tạo nên phong cách của bạn.",
+         "Giải thích tại sao bạn chọn những yếu tố đó.",
+         "Kết thúc bằng cách khuyến khích mọi người tìm phong cách riêng."
+        ],
+        "example": "Phong cách của tôi có ba yếu tố: sự tự nhiên, nhiệt huyết và gần gũi. Tôi tin rằng chỉ cần là chính mình sẽ giúp tôi kết nối tốt hơn với khán giả. Các bạn cũng hãy tìm ra phong cách riêng của mình nhé!"
+       }
+      },
+      {
+       "title": "Xử lý sự cố trên sân khấu",
+       "tip": "Giữ bình tĩnh và luôn có sẵn giải pháp dự phòng.",
+       "prompt": "Hãy chia sẻ một ví dụ về sự cố bạn từng gặp phải khi dẫn chương trình và cách giải quyết trong 30-60 giây.",
+       "brief": {
+        "objective": "Học cách ứng phó với sự cố một cách khéo léo và tự tin.",
+        "context": "Có tình huống bất ngờ xảy ra và bạn cần phải xử lý rất nhanh.",
+        "steps": [
+         "Kể lại sự cố xảy ra.",
+         "Giải thích cách bạn đã xử lý tình huống đó.",
+         "Rút ra bài học từ sự cố."
+        ],
+        "example": "Trong một sự kiện, microphone của tôi bỗng dưng ngưng hoạt động. Tôi đã bình tĩnh và nói hài hước về tình huống đó, khiến khán giả cười và quên đi sự cố. Cuối cùng, tôi đã nhanh chóng tìm một microphone khác để tiếp tục chương trình."
+       }
+      },
+      {
+       "title": "Làm chủ phần kết chương trình",
+       "tip": "Cách kết thúc ấn tượng có thể tạo dấu ấn lâu dài.",
+       "prompt": "Hãy xây dựng một phần kết chương trình mang tính tóm tắt và truyền cảm hứng trong 30-60 giây.",
+       "brief": {
+        "objective": "Xây dựng kỹ năng kết thúc chương trình một cách ấn tượng.",
+        "context": "Khi chương trình kết thúc, bạn cần tạo ấn tượng tốt với khán giả.",
+        "steps": [
+         "Tóm tắt các điểm chính của chương trình.",
+         "Truyền tải cảm xúc và điều tâm huyết.",
+         "Gửi lời cảm ơn đến khán giả và các thành viên tham gia."
+        ],
+        "example": "Chúng ta đã cùng nhau trải qua một hành trình thú vị hôm nay, hãy ghi nhớ những điều tuyệt vời mà chúng ta đã chia sẻ. Cảm ơn quý vị đã tham gia và hy vọng sẽ gặp lại trong các sự kiện kế tiếp!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Song ngữ nâng cao",
+     "lessons": [
+      {
+       "title": "Sử dụng từ ngữ thông dụng",
+       "tip": "Chọn từ ngữ đơn giản và dễ hiểu khi dẫn song ngữ.",
+       "prompt": "Hãy giới thiệu một hoạt động hoặc chương trình trong 30-60 giây bằng cả tiếng Việt và tiếng Anh.",
+       "brief": {
+        "objective": "Nâng cao kỹ năng dẫn chương trình song ngữ.",
+        "context": "Bạn cần giới thiệu một hoạt động cho khán giả đa ngôn ngữ.",
+        "steps": [
+         "Xác định hoạt động và nội dung cần nói.",
+         "Sắp xếp thứ tự câu cho hai ngôn ngữ.",
+         "Duy trì nhịp điệu khi chuyển đổi giữa hai ngôn ngữ."
+        ],
+        "example": "Chúng ta sẽ có một hoạt động giao lưu rất thú vị ngay sau đây. Miễn là bạn tham gia, bạn sẽ có cơ hội nhận giải thưởng hấp dẫn. So, let's have fun and enjoy the game!"
+       }
+      },
+      {
+       "title": "Thuyết phục khán giả",
+       "tip": "Sử dụng ngữ điệu và cảm xúc để thuyết phục khán giả.",
+       "prompt": "Hãy thuyết phục khán giả tham gia một buổi hoạt động từ thiện trong 30-60 giây.",
+       "brief": {
+        "objective": "Học cách thuyết phục khán giả bằng song ngữ.",
+        "context": "Bạn đang kêu gọi sự hỗ trợ cho một hoạt động từ thiện.",
+        "steps": [
+         "Nêu ra lý do vì sao họ nên tham gia.",
+         "Sử dụng cảm xúc để tạo động lực.",
+         "Kết thúc bằng một lời mời hấp dẫn."
+        ],
+        "example": "Hãy cùng nhau làm điều gì đó tốt đẹp cho cộng đồng. By joining this charity event, we can make a difference together. Xin mời mọi người tham gia nhé!"
+       }
+      },
+      {
+       "title": "Xây dựng tình huống tương tác",
+       "tip": "Sử dụng các câu hỏi để kích thích sự tham gia của khán giả.",
+       "prompt": "Hãy vạch ra một tình huống tương tác cho khán giả song ngữ trong 30-60 giây.",
+       "brief": {
+        "objective": "Kích thích sự tham gia của khán giả thông qua tương tác song ngữ.",
+        "context": "Bạn muốn khán giả cùng tham gia vào một hoạt động thú vị.",
+        "steps": [
+         "Đặt câu hỏi thu hút sự chú ý.",
+         "Khuyến khích khán giả trả lời ngay.",
+         "Duy trì không khí vui vẻ và kích thích."
+        ],
+        "example": "Ai muốn thử sức mình với trò chơi này nào? Raise your hand if you’re interested! Chúng ta sẽ có một phần quà hấp dẫn dành cho người thắng cuộc!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ năng điều khiển không khí",
+     "lessons": [
+      {
+       "title": "Gợi ý mini games",
+       "tip": "Mini game đơn giản nhưng vui dễ khiến khán giả thích thú.",
+       "prompt": "Hãy gợi ý một mini game thú vị cho khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo sự hứng thú và năng lượng cho chương trình.",
+        "context": "Khán giả đang trong không khí sôi nổi và bạn cần gợi ý một hoạt động vui vẻ.",
+        "steps": [
+         "Mô tả về mini game một cách ngắn gọn.",
+         "Khuyến khích sự tham gia của khán giả.",
+         "Duy trì không khí hào hứng khi tổ chức."
+        ],
+        "example": "Hãy cùng chúng tôi tham gia một mini game “Kể chuyện nối tiếp”! Ai muốn lên sân khấu kể một câu chuyện hài hước thì hãy giơ tay nào!"
+       }
+      },
+      {
+       "title": "Khích lệ sự tham gia của khán giả",
+       "tip": "Luôn tạo không gian cho khán giả bày tỏ ý kiến.",
+       "prompt": "Hãy nói vài câu khuyến khích khán giả tham gia nhiều hơn trong chương trình, trong 30-60 giây.",
+       "brief": {
+        "objective": "Tăng cường sự tương tác và sự tham gia của khán giả.",
+        "context": "Bạn nhận thấy khán giả có vẻ im lặng và cần khích lệ.",
+        "steps": [
+         "Gợi ý về mức độ tham gia của khán giả.",
+         "Chia sẻ lợi ích của việc tham gia.",
+         "Kết thúc bằng cách khuyến khích ngay lập tức."
+        ],
+        "example": "Các bạn ơi, hãy cùng chúng tôi tham gia vào những hoạt động thú vị sắp tới nhé! Bạn sẽ không chỉ có cơ hội nhận quà mà còn tạo ra nhiều kỷ niệm đáng nhớ."
+       }
+      },
+      {
+       "title": "Đưa ra câu hỏi mở cho khán giả",
+       "tip": "Câu hỏi mở giúp khích lệ sự phản hồi từ khán giả.",
+       "prompt": "Hãy đặt một câu hỏi mở cho khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Khơi gợi sự phản hồi và tương tác từ khán giả.",
+        "context": "Bạn muốn khán giả bộc lộ cảm xúc hoặc quan điểm.",
+        "steps": [
+         "Chọn một chủ đề thú vị để hỏi.",
+         "Giữ giọng điệu vui vẻ và thân thiện.",
+         "Khuyến khích khán giả tham gia trả lời."
+        ],
+        "example": "Trước khi chúng ta bước vào phần tiếp theo, tôi muốn hỏi các bạn, điều gì là điều tuyệt vời nhất mà bạn đã trải qua hôm nay? Hãy chia sẻ với chúng tôi nào!"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Nâng cao",
+   "sessions": [
+    {
+     "title": "Nâng cao kỹ năng chuyển đổi giữa các phần của chương trình",
+     "lessons": [
+      {
+       "title": "Chuyển tiếp mượt mà giữa các phần",
+       "tip": "Sử dụng câu hỏi để dẫn dắt khán giả.",
+       "prompt": "Hãy mô tả cách bạn chuyển tiếp từ một phần của chương trình sang một phần mới trong 30-60 giây.",
+       "brief": {
+        "objective": "Học cách chuyển tiếp nhẹ nhàng giữa các phần.",
+        "context": "Một sự kiện có nhiều phần trình bày từ các diễn giả khác nhau.",
+        "steps": [
+         "Tóm tắt nội dung phần vừa rồi.",
+         "Đưa ra câu hỏi hoặc một nhận xét để kết nối.",
+         "Giới thiệu phần tiếp theo một cách tự nhiên.",
+         "Khuyến khích khán giả giữ tinh thần tập trung."
+        ],
+        "example": "Và vừa rồi là những chia sẻ thú vị từ diễn giả X, một chủ đề rất hấp dẫn phải không nào? Tiếp theo đây, chúng ta sẽ cùng nhau khám phá một lĩnh vực khác, cũng thú vị không kém, đó chính là..."
+       }
+      },
+      {
+       "title": "Sử dụng câu chuyện để gợi nhớ",
+       "tip": "Kết nối thông điệp với một câu chuyện thực tế.",
+       "prompt": "Hãy kể một câu chuyện ngắn gợi nhớ và chuyển sang phần tiếp theo trong 30-60 giây.",
+       "brief": {
+        "objective": "Khơi gợi cảm xúc qua câu chuyện.",
+        "context": "Sau một phần trình bày khô khan, cần tạo sự kết nối hơn.",
+        "steps": [
+         "Kể một câu chuyện liên quan đến chủ đề.",
+         "Sử dụng ngữ điệu để thể hiện cảm xúc.",
+         "Kết thúc câu chuyện bằng một nội dung liên quan đến phần sắp tới.",
+         "Giới thiệu diễn giả hoặc nội dung tiếp theo."
+        ],
+        "example": "Có lẽ ai trong chúng ta cũng đã từng trải qua những khoảnh khắc thử thách... Hôm nay, chúng ta sẽ nghe thêm về cách vượt qua chúng từ anh/chị Y."
+       }
+      },
+      {
+       "title": "Quản lý thời gian trong chương trình",
+       "tip": "Đặt đồng hồ đếm ngược trên điện thoại để theo dõi thời gian.",
+       "prompt": "Hãy mô tả một cách bạn giữ cho chương trình đúng giờ trong 30-60 giây.",
+       "brief": {
+        "objective": "Nâng cao kỹ năng quản lý thời gian của MC.",
+        "context": "Để tránh việc diễn giả nói quá giờ và ảnh hưởng đến chương trình.",
+        "steps": [
+         "Thống nhất thời gian cho từng phần trước chương trình.",
+         "Theo dõi thời gian thật cẩn thận trong từng phần.",
+         "Có những tín hiệu nhắc nhở cho diễn giả.",
+         "Biết cách cắt ngắn lời dẫn nhưng vẫn giữ được nội dung."
+        ],
+        "example": "Để chương trình không bị kéo dài, chúng ta sẽ có 2 phút cho mỗi diễn giả. Tôi xin lỗi anh/chị nếu các bạn thấy thời gian trôi nhanh, nhưng hãy cùng điểm lại những nội dung chính."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ năng tương tác khán giả nâng cao",
+     "lessons": [
+      {
+       "title": "Sử dụng câu hỏi mở để khuyến khích phản hồi",
+       "tip": "Đặt câu hỏi khiến khán giả phải suy nghĩ.",
+       "prompt": "Hãy tạo ra một câu hỏi mở để tương tác với khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Khuyến khích sự tham gia tích cực từ khán giả.",
+        "context": "Một sự kiện đông người, cần gợi mở ý kiến từ khán giả.",
+        "steps": [
+         "Đưa ra một câu hỏi mở liên quan đến nội dung đã nói.",
+         "Khuyến khích mọi người giơ tay hoặc phát biểu.",
+         "Khi có phản hồi, hãy công nhận sự tham gia.",
+         "Sử dụng phản hồi để dẫn dắt vào nội dung tiếp theo."
+        ],
+        "example": "Vậy theo các bạn, điều gì là quan trọng nhất trong việc phát triển bản thân? Hãy giơ tay để chia sẻ ý kiến của mình!"
+       }
+      },
+      {
+       "title": "Tạo cuộc thi nhỏ tương tác với khán giả",
+       "tip": "Sử dụng quiz hoặc trò chơi đơn giản để tạo không khí vui vẻ.",
+       "prompt": "Hãy giới thiệu một trò chơi đơn giản cho khán giả để tương tác trong 30-60 giây.",
+       "brief": {
+        "objective": "Kích thích sự tham gia và tương tác từ khán giả.",
+        "context": "Một hội thảo sôi động, cần phá băng không khí.",
+        "steps": [
+         "Giới thiệu trò chơi đơn giản.",
+         "Giải thích cách tham gia.",
+         "Khuyến khích đảm bảo mọi người đều tham gia.",
+         "Công bố người thắng cuộc và tặng quà."
+        ],
+        "example": "Chúng ta sẽ có một mini game nho nhỏ. Ai trong số các bạn đã biết đến một câu thành ngữ liên quan đến sự sáng tạo? Đưa ra câu trả lời nào!"
+       }
+      },
+      {
+       "title": "Duy trì sự tập trung của khán giả",
+       "tip": "Thay đổi giọng điệu và tốc độ khi cần.",
+       "prompt": "Hãy mô tả cách bạn duy trì sự tập trung của khán giả trong suốt sự kiện trong 30-60 giây.",
+       "brief": {
+        "objective": "Giúp khán giả luôn chú ý và hứng thú.",
+        "context": "Giữa chương trình dài, khán giả có dấu hiệu mất tập trung.",
+        "steps": [
+         "Thay đổi nhịp điệu và giọng nói.",
+         "Sử dụng những câu hỏi hấp dẫn.",
+         "Chèn những câu chuyện thú vị hoặc ví dụ thực tế.",
+         "Đưa ra các hoạt động nhỏ để khôi phục động lực."
+        ],
+        "example": "Tôi biết rằng chương trình hôm nay khá dài, nhưng hãy cùng tôi nỗ lực nhé! Để tôi hỏi một câu: ai trong số các bạn muốn thành công trong công việc của mình?"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ thuật tạo không khí và duy trì sự hứng khởi",
+     "lessons": [
+      {
+       "title": "Sử dụng âm nhạc và âm thanh để khuyến khích tinh thần",
+       "tip": "Chọn âm nhạc phù hợp với từng phần.",
+       "prompt": "Hãy giới thiệu một bài hát để tăng năng lượng sân khấu trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí tích cực và nâng cao tinh thần khán giả.",
+        "context": "Trong một sự kiện dài, cần phá bỏ sự ngột ngạt.",
+        "steps": [
+         "Giới thiệu bài hát sẽ phát.",
+         "Nêu lý do vì sao chọn bài hát đó.",
+         "Khuyến khích khán giả tham gia theo điệu nhạc.",
+         "Thực hiện một hoạt động nhỏ cùng với âm nhạc."
+        ],
+        "example": "Hãy cùng tôi nâng cao tinh thần bằng một bài hát nổi tiếng nào đó! Hãy cùng lắng nghe bài hát XYZ... và hãy hát theo nhé!"
+       }
+      },
+      {
+       "title": "Tạo không khí giao lưu giữa các phần",
+       "tip": "Khuyến khích khán giả tương tác giữa các phần.",
+       "prompt": "Hãy mô tả cách bạn tạo không khí giao lưu trong sự kiện trong 30-60 giây.",
+       "brief": {
+        "objective": "Kết nối khán giả với nhau và với chương trình.",
+        "context": "Sự kiện có nhiều phần khác nhau cần tạo sự cởi mở.",
+        "steps": [
+         "Đưa ra câu hỏi cho khán giả trao đổi với nhau.",
+         "Khuyến khích tạo ra nhóm thảo luận nhỏ.",
+         "Dành thời gian cho phản hồi.",
+         "Chuyển tiếp sang phần tiếp theo một cách tự nhiên."
+        ],
+        "example": "Trước khi chuyển sang phần tiếp theo, hãy tìm một người bên cạnh và chia sẻ một điều bạn cảm thấy thú vị nhất trong phần này nào!"
+       }
+      },
+      {
+       "title": "Giữ năng lượng cao trong suốt chương trình",
+       "tip": "Sử dụng các trò chơi hoặc hoạt động giải trí.",
+       "prompt": "Hãy nghĩ ra một hoạt động nhỏ để giữ năng lượng cao cho khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Giúp khán giả luôn thoải mái và hứng thú.",
+        "context": "Trong một sự kiện dài có nhiều phần trình bày mệt mỏi.",
+        "steps": [
+         "Đưa ra một hoạt động thể chất ngắn.",
+         "Khuyến khích mọi người cùng tham gia.",
+         "Duy trì tinh thần hòa nhã và vui vẻ.",
+         "Giới thiệu phần tiếp theo ngay khi hoạt động kết thúc."
+        ],
+        "example": "Hãy đứng lên nào, tất cả mọi người! Chúng ta sẽ thử một bài thể dục nhỏ, cùng làm theo tôi nhé!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ năng giới thiệu và giới thiệu lại",
+     "lessons": [
+      {
+       "title": "Giới thiệu diễn giả với sự trau chuốt",
+       "tip": "Sử dụng thông tin nổi bật và ấn tượng nhất.",
+       "prompt": "Hãy giới thiệu một diễn giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo ấn tượng tốt về diễn giả.",
+        "context": "Một sự kiện lớn với dàn diễn giả nổi tiếng.",
+        "steps": [
+         "Nêu tên và chức vụ của diễn giả.",
+         "Chia sẻ một số thành tựu nổi bật.",
+         "Giới thiệu lý do họ sẽ nói về nội dung gì.",
+         "Mời diễn giả lên sân khấu."
+        ],
+        "example": "Bây giờ, xin mời quý vị lắng nghe chia sẻ từ Tiến sĩ Nguyễn Văn A, một chuyên gia hàng đầu trong lĩnh vực... Với nhiều năm kinh nghiệm, anh sẽ chia sẻ với chúng ta những insights quý giá."
+       }
+      },
+      {
+       "title": "Giới thiệu lại nội dung đã qua",
+       "tip": "Tổng kết ngắn gọn và súc tích đi kèm ví dụ.",
+       "prompt": "Hãy tóm tắt lại phần đã qua trong 30-60 giây.",
+       "brief": {
+        "objective": "Giúp khán giả nắm bắt lại thông tin quan trọng.",
+        "context": "Sau một phần trình bày dài, cần tạo sự liên kết với phần tiếp theo.",
+        "steps": [
+         "Đưa ra những điểm chính đã đề cập.",
+         "Sử dụng ví dụ cụ thể.",
+         "Khuyến khích khán giả nhớ lại lý do quan trọng.",
+         "Giới thiệu nội dung tiếp theo."
+        ],
+        "example": "Vừa rồi, chúng ta đã cùng nhau lắng nghe diễn giả A nói về... Với những điểm nổi bật mà chúng ta vừa chứng kiến, hãy chuẩn bị cho phần tiếp theo, nơi mà diễn giả B sẽ chia sẻ..."
+       }
+      },
+      {
+       "title": "Giới thiệu các hoạt động giải trí giữa các phần",
+       "tip": "Sử dụng hoạt động thú vị để giữ khán giả hứng thú.",
+       "prompt": "Hãy giới thiệu một hoạt động vui chơi cho khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Tạo không khí thú vị giữa các phần của chương trình.",
+        "context": "Giữa các phần trình bày, khán giả có xu hướng mệt mỏi.",
+        "steps": [
+         "Ý tưởng về hoạt động thú vị.",
+         "Giới thiệu cách thức tham gia.",
+         "Khuyến khích sự tham gia nhiệt tình.",
+         "Tạo sự kết nối qua hoạt động."
+        ],
+        "example": "Để giữ không khí vui vẻ, giờ đây chúng ta sẽ tham gia vào một trò chơi nhỏ! Ai muốn thử sức với câu đố vui này nào?"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

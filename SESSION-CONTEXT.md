@@ -211,6 +211,22 @@ Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build *
 - **Thùng rác:** archived + nút khôi phục per-node ở khu Nội dung (đã có từ Pha A) — đủ theo
   tinh thần plan, không làm view riêng.
 
+### Đợt 7 phiên 2 — Giáo trình đầy đủ (148 bài) + âm thanh thật + minimal UI
+- **Âm thanh thật** (Finn chê bộ tự sinh): SFX = Kenney Interface Sounds (CC0);
+  nhạc nền = "Wholesome" — Kevin MacLeod, CC BY 4.0, trích 76s loop (ambient.m4a).
+  Credit BẮT BUỘC hiển thị ở Hồ sơ + `client/assets/CREDITS.md`. Đổi nhạc = thay file cùng tên.
+- **Minimal UI thấy được** (Finn chê đợt trước không thấy khác): tab bar xuống ĐÁY (icon),
+  header 1 cụm chip, vuốt ngang đổi tab từ MỌI màn (trừ đang thu/Reels), toast dạy cử chỉ 1 lần.
+- **Giáo trình đầy đủ:** `scripts/generate_curriculum.py` (gpt-4o-mini) — GIỮ bài tay, BỔ SUNG:
+  mỗi thể loại 3 cấp (Cơ bản/Trung cấp/Nâng cao). Kết quả: Kỹ năng nói 18 buổi/35 bài ·
+  đám cưới 13/38 · sự kiện 13/38 · livestream 13/37 = **57 buổi · 148 bài**, tất cả PUBLISHED,
+  admin sửa được. Export `db/curriculum/*.json` (mcup-path-v1) + `seed_curriculum()` chạy ĐẦU
+  lifespan → reset DB tự nhập lại, không mất.
+  ⚠️ Chạy script sinh: PHẢI TẮT uvicorn trước (SQLite lock — bài học đợt này); script idempotent,
+  buổi "gầy" (<3 bài) thì sinh từng-buổi-một để bù.
+- Sửa kèm: số Buổi đếm TOÀN CỤC xuyên cấp độ (get_content_lessons_for_user);
+  StageMap landmark mở rộng buổi 11–18 (đỉnh "Nhà hát thành phố").
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)

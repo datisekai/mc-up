@@ -18,10 +18,13 @@ const STAGE_H = 172;   // chiều cao sân khấu (đỉnh)
 const GROUND_H = 116;  // chiều cao mặt đất (đáy)
 const AMP = 52;        // biên độ zig-zag (rộng hơn để nhãn 2 node cạnh nhau tách ra)
 
-// địa danh theo buổi (chất "phiêu lưu nghề MC" — concept C) cho mốc Vé Vàng
+// địa danh theo buổi (chất "phiêu lưu nghề MC" — concept C) cho mốc Vé Vàng.
+// Lộ trình giờ dài 13–18 buổi (3 cấp độ) → thang leo dài hơn, đỉnh là nhà hát lớn.
 const LANDMARK: Record<number, string> = {
   1: "Lớp học nhỏ", 2: "Góc luyện thanh", 3: "Quán cafe", 4: "Câu lạc bộ",
   5: "Tiệc sinh nhật", 6: "Toạ đàm", 7: "Phỏng vấn", 8: "Tiệc cưới", 9: "Gala", 10: "Hội trường lớn",
+  11: "Sân khấu quận", 12: "Lễ hội đường phố", 13: "Trường quay", 14: "Sự kiện ngàn người",
+  15: "Sóng truyền hình", 16: "Sân vận động", 17: "Đêm nhạc lớn", 18: "Nhà hát thành phố",
 };
 
 function buildItems(lessons: Lesson[]): Item[] {

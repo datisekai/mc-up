@@ -1,0 +1,679 @@
+{
+ "format": "mcup-path-v1",
+ "genre": "MC livestream",
+ "title": "Lộ trình: MC livestream",
+ "levels": [
+  {
+   "name": "Cơ bản",
+   "sessions": [
+    {
+     "title": "Lên sóng & giữ chân",
+     "lessons": [
+      {
+       "title": "Mở màn 3 giây vàng",
+       "tip": "3 giây đầu quyết định người xem ở hay lướt — nêu ngay lý do nên ở lại.",
+       "prompt": "Mở màn buổi live bán hàng: chào và cho biết hôm nay có gì hot trong 30 giây.",
+       "brief": {
+        "objective": "Ghim người xem trong 3 giây đầu — nêu ngay lý do đáng ở lại.",
+        "context": "Bạn vừa bấm nút live, người xem đang lác đác vào, dễ lướt đi ngay.",
+        "steps": [
+         "Chào nhanh + gọi thân mật ('cả nhà ơi')",
+         "Nêu ngay hôm nay có gì hot/ưu đãi",
+         "Tạo lý do ở lại ('cuối live có quà')",
+         "Kêu gọi thả tim/chia sẻ"
+        ],
+        "example": "Cả nhà ơi, chào cả nhà đã vào live! Hôm nay shop có deal cực sốc — giảm tới 50% chỉ trong 1 tiếng live thôi nha. Ai ở lại tới cuối còn có quà tặng bí mật nữa đó! Cả nhà thả tim và share giúp em nào!"
+       }
+      },
+      {
+       "title": "Tương tác bình luận",
+       "tip": "Đọc tên người xem, trả lời realtime để giữ tương tác.",
+       "prompt": "Đọc và trả lời 3 bình luận giả định của người xem một cách tự nhiên.",
+       "brief": {
+        "objective": "Giữ tương tác realtime — đọc tên, trả lời bình luận để người xem thấy được quan tâm.",
+        "context": "Bình luận đang chạy liên tục. Bạn vừa nói vừa 'bắt' comment.",
+        "steps": [
+         "Đọc tên người bình luận",
+         "Trả lời đúng câu hỏi của họ",
+         "Khen/cảm ơn để tạo thiện cảm",
+         "Khéo léo lái về sản phẩm"
+        ],
+        "example": "À, bạn Hương hỏi 'áo này có size M không?' — Có nha Hương ơi, còn đủ size từ S đến XL luôn. Cảm ơn bạn Tuấn vừa share live nha! Còn bạn Mai hỏi giá — chị nói ngay đây, chỉ 199k thôi mà chất vải xịn lắm nè."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Chốt đơn & giữ nhịp",
+     "lessons": [
+      {
+       "title": "Giới thiệu sản phẩm",
+       "tip": "Lợi ích trước, thông số sau; nhanh nhưng rõ chữ ở đoạn quan trọng.",
+       "prompt": "Giới thiệu một sản phẩm bất kỳ trong 45 giây theo kiểu livestream.",
+       "brief": {
+        "objective": "Bán bằng lợi ích trước, thông số sau; nhanh nhưng rõ ở đoạn quan trọng.",
+        "context": "Bạn cầm sản phẩm lên, cần khiến người xem muốn mua ngay.",
+        "steps": [
+         "Nêu lợi ích/nỗi đau nó giải quyết trước",
+         "Cho xem cận cảnh + demo nhanh",
+         "Thông số/chất liệu ngắn gọn",
+         "Chốt bằng giá + ưu đãi"
+        ],
+        "example": "Cả nhà có hay bị khô da mùa lạnh không? Em có ngay kem dưỡng này nè — thấm cực nhanh, không nhờn. Chất kem mịn nè cả nhà thấy không? Thành phần B5 lành tính cho cả da nhạy cảm. Giá gốc 350k, nhưng trong live hôm nay chỉ còn 249k thôi ạ!"
+       }
+      },
+      {
+       "title": "Kêu gọi chốt đơn",
+       "tip": "Tạo cảm giác khan hiếm & khẩn cấp mà vẫn chân thành.",
+       "prompt": "Kêu gọi người xem chốt đơn ngay với ưu đãi có hạn trong 30 giây.",
+       "brief": {
+        "objective": "Tạo cảm giác khan hiếm & khẩn cấp mà vẫn chân thành, để người xem chốt ngay.",
+        "context": "Sản phẩm đã giới thiệu xong, giờ là lúc thúc đẩy hành động.",
+        "steps": [
+         "Nhắc lại ưu đãi hấp dẫn",
+         "Tạo khan hiếm (số lượng/thời gian có hạn)",
+         "Hướng dẫn cách chốt đơn cụ thể",
+         "Thúc một câu kêu gọi mạnh"
+        ],
+        "example": "Cả nhà ơi, mức giá 249k này chỉ áp dụng trong 10 phút tới thôi nha, mà kho chỉ còn 20 suất! Ai muốn chốt thì gõ ngay 'CHỐT' kèm size vào bình luận, shop lên đơn liền tay. Nhanh tay kẻo lỡ cả nhà ơi — hết là hết thật đó!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tương Tác Hiệu Quả với Người Xem",
+     "lessons": [
+      {
+       "title": "Giới Thiệu Bản Thân và Chủ Đề Livestream",
+       "tip": "Sử dụng câu hỏi mở để khơi gợi sự quan tâm.",
+       "prompt": "Khi bắt đầu livestream, hãy giới thiệu bản thân và chủ đề hôm Nay trong vòng 30-60 giây.",
+       "brief": {
+        "objective": "Học cách tạo ấn tượng ban đầu với khán giả.",
+        "context": "Bạn đang livestream một buổi bán hàng trực tiếp, rất đông người vào xem.",
+        "steps": [
+         "Giới thiệu tên và kênh livestream.",
+         "Nêu chủ đề chính của buổi livestream.",
+         "Khuyến khích khán giả để lại câu hỏi hoặc ý kiến.",
+         "Nêu rõ lợi ích khi họ tham gia buổi livestream hôm nay."
+        ],
+        "example": "Xin chào mọi người! Tôi là [Tên bạn], chào mừng các bạn đến với kênh livestream [Tên kênh]. Hôm nay chúng ta sẽ khám phá những sản phẩm tuyệt vời và có những ưu đãi hấp dẫn. Hãy để lại câu hỏi cho tôi nhé!"
+       }
+      },
+      {
+       "title": "Khuyến Khích Bình Luận và Tương Tác",
+       "tip": "Sử dụng các câu hỏi thú vị để khơi dậy sự tham gia.",
+       "prompt": "Trong 30-60 giây, hãy đưa ra một câu hỏi và khuyến khích người xem bình luận.",
+       "brief": {
+        "objective": "Tạo cơ hội cho khán giả tham gia nhiều hơn.",
+        "context": "Bạn thấy có nhiều bình luận nhưng chưa có sự tương tác tích cực.",
+        "steps": [
+         "Đưa ra một câu hỏi thú vị liên quan đến sản phẩm.",
+         "Khuyến khích người xem chia sẻ ý kiến cá nhân.",
+         "Giải thích về lý do bạn đặt câu hỏi này.",
+         "Xem và phản hồi lại một vài bình luận trong thời gian trực tiếp."
+        ],
+        "example": "Các bạn nghĩ sao về sản phẩm [Tên sản phẩm]? Hãy cho tôi biết trong bình luận nhé! Sản phẩm này có điều gì đặc biệt mà bạn thích không?"
+       }
+      },
+      {
+       "title": "Giải Quyết Tình Huống Khó Khăn trong Livestream",
+       "tip": "Giữ bình tĩnh và phản hồi một cách tích cực với các phản hồi tiêu cực.",
+       "prompt": "Trong 30-60 giây, bạn sẽ phản hồi trước ý kiến tiêu cực của một người xem.",
+       "brief": {
+        "objective": "Học cách ứng xử khi gặp phản đối hoặc ý kiến tiêu cực.",
+        "context": "Một người xem để lại câu bình luận châm chọc về sản phẩm bạn đang giới thiệu.",
+        "steps": [
+         "Đọc câu bình luận tiêu cực.",
+         "Phản hồi với thái độ tích cực và chuyên nghiệp.",
+         "Giải thích rõ ràng hơn về sản phẩm.",
+         "Khuyến khích người xem có thể thử nghiệm và cho ý kiến thêm."
+        ],
+        "example": "Cảm ơn bạn đã góp ý! Mỗi sản phẩm đều có điểm mạnh riêng, và tôi rất mong bạn sẽ cho chúng tôi cơ hội chứng minh điều đó. Nếu bạn có thắc mắc nào khác, hãy cho tôi biết nhé!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Xây Dựng Nhân Vật và Phong Cách Riêng",
+     "lessons": [
+      {
+       "title": "Xác Định Nhân Vật Trực Tuyến Của Bạn",
+       "tip": "Tìm ra một câu slogan độc đáo cho bản thân.",
+       "prompt": "Trong 30-60 giây, hãy nói về phong cách của bạn và tagline cá nhân.",
+       "brief": {
+        "objective": "Giúp người xem hiểu rõ hơn về phong cách và cá tính của bạn.",
+        "context": "Bạn muốn xây dựng thương hiệu cá nhân trên nền tảng livestream.",
+        "steps": [
+         "Nói về phong cách livestream của bạn.",
+         "Chia sẻ tagline hoặc câu slogan mà bạn dùng.",
+         "Nêu lý do vì sao bạn chọn phong cách nào đó.",
+         "Khuyến khích khán giả nhớ tên và hình ảnh của bạn."
+        ],
+        "example": "Chào mừng các bạn đến với [Tên bạn]! Với phong cách trẻ trung, năng động, tôi sẽ làm cho buổi livestream của chúng ta trở nên thú vị hơn với câu slogan: 'Mua sắm vui vẻ, cùng nhau khám phá!'"
+       }
+      },
+      {
+       "title": "Chọn Thời Điểm Tương Tác Thích Hợp",
+       "tip": "Xem tương tác của khán giả để quyết định thời điểm chốt câu hỏi.",
+       "prompt": "Hãy mô phỏng một cuộc trò chuyện với khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Biết cách nhận diện thời điểm tốt nhất để khuyến khích tương tác.",
+        "context": "Bạn nhận thấy có khoảng thời gian khán giả tham gia đông nhưng lặng im.",
+        "steps": [
+         "Nhận diện thời điểm khi khán giả nhiều nhưng ít bình luận.",
+         "Khơi gợi sự tham gia bằng câu hỏi đơn giản.",
+         "Tạo cơ hội cho họ thoải mái hơn khi tham gia.",
+         "Sử dụng thông tin từ bình luận để tiếp tục trò chuyện."
+        ],
+        "example": "Wow, có vẻ như chúng ta đang có nhiều người xem! Hãy cho tôi biết bạn đang ở đâu ở trong bình luận nhé, tôi muốn biết các bạn đều ở đây!"
+       }
+      },
+      {
+       "title": "Đọc Giả Thuyết và Đưa Ra Giải Pháp Cho Khán Giả",
+       "tip": "Sẵn sàng để đưa ra một giải pháp cho tình huống của khán giả.",
+       "prompt": "Trong 30-60 giây, hãy thử đặt mình vào vị trí của khán giả và giải quyết một câu hỏi hay từ họ.",
+       "brief": {
+        "objective": "Tạo kết nối mạnh mẽ hơn với khán giả thông qua việc hiểu và giải quyết nhu cầu của họ.",
+        "context": "Người xem thắc mắc về cách sử dụng sản phẩm mà bạn giới thiệu.",
+        "steps": [
+         "Lắng nghe và ghi nhận câu hỏi từ khán giả.",
+         "Phân tích vấn đề mà khán giả đang gặp phải.",
+         "Đưa ra giải pháp cụ thể và dễ áp dụng.",
+         "Khuyến khích họ thử nghiệm và cho phản hồi."
+        ],
+        "example": "Cảm ơn bạn đã hỏi về cách sử dụng sản phẩm [Tên sản phẩm]! Để dễ dàng hơn, hãy làm theo hướng dẫn trong 3 bước sau đây..."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Kỹ Năng Kết Nối và Khuyến Khích Người Xem",
+     "lessons": [
+      {
+       "title": "Tạo Nội Dung Hấp Dẫn và Thú Vị",
+       "tip": "Nâng cao nội dung bằng cách chia sẻ kinh nghiệm cá nhân.",
+       "prompt": "Trong 30-60 giây, hãy kể một trải nghiệm liên quan đến sản phẩm bạn đang livestream.",
+       "brief": {
+        "objective": "Giúp khán giả cảm thấy gần gũi hơn với bạn.",
+        "context": "Bạn đang muốn tăng sự hứng thú cho chương trình livestream.",
+        "steps": [
+         "Chọn một trải nghiệm cá nhân liên quan đến sản phẩm.",
+         "Kể lại câu chuyện một cách tự nhiên.",
+         "Liên kết sản phẩm với trải nghiệm của bản thân.",
+         "Kêu gọi khán giả chia sẻ nếu họ có trải nghiệm tương tự."
+        ],
+        "example": "Tôi nhớ khi lần đầu tiên tôi sử dụng [Tên sản phẩm], tôi đã từng gặp khá nhiều khó khăn. Tuy nhiên, sau đó tôi tìm ra cách và nó thực sự đã thay đổi cách tôi...!"
+       }
+      },
+      {
+       "title": "Xây Dựng Câu Chuyện Cuốn Hút",
+       "tip": "Luôn kết thúc bằng một câu hỏi mở để khuyến khích tương tác.",
+       "prompt": "Trong 30-60 giây, hãy kể một câu chuyện ngắn có liên quan đến sản phẩm.",
+       "brief": {
+        "objective": "Tăng độ thu hút cho livestream thông qua việc kể chuyện.",
+        "context": "Bạn muốn giữ chân khán giả lâu hơn trong livestream của mình.",
+        "steps": [
+         "Giới thiệu bối cảnh câu chuyện.",
+         "Kể những tình tiết cuốn hút.",
+         "Liên kết câu chuyện với sản phẩm bạn đang bán.",
+         "Kết thúc với một câu hỏi để mở rộng cuộc trò chuyện."
+        ],
+        "example": "Có một lần, tôi đã sử dụng [Tên sản phẩm] trong một sự kiện quan trọng và... mọi người đều yêu thích nó. Bạn đã bao giờ có trải nghiệm nào tương tự chưa?"
+       }
+      },
+      {
+       "title": "Khuyến Khích Đặt Hàng và Chia Sẻ Thông Tin Giảm Giá",
+       "tip": "Nhấn mạnh lợi ích khi đặt hàng sớm và chia sẻ thông tin.",
+       "prompt": "Trong 30-60 giây, hãy tập trung vào việc khuyến khích người xem đặt hàng ngay.",
+       "brief": {
+        "objective": "Tăng doanh số thông qua khuyến mãi và ưu đãi.",
+        "context": "Chương trình giảm giá đang diễn ra, bạn cần thúc đẩy đơn hàng.",
+        "steps": [
+         "Giới thiệu về chương trình khuyến mãi hiện có.",
+         "Nêu rõ thời gian ưu đãi và cách thức đặt hàng.",
+         "Khuyến khích người xem chia sẻ thông tin giảm giá.",
+         "Kêu gọi hành động để khán giả đặt hàng ngay."
+        ],
+        "example": "Hôm nay, khi bạn đặt hàng [Tên sản phẩm], bạn sẽ được giảm giá ngay 20%! Đừng bỏ lỡ cơ hội này, hãy truy cập và đặt hàng ngay nha!"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Trung cấp",
+   "sessions": [
+    {
+     "title": "Kỹ Năng Xử Lý Tình Huống Khó Khăn",
+     "lessons": [
+      {
+       "title": "Xử Lý Anti/Troll Hiệu Quả",
+       "tip": "Luôn giữ bình tĩnh và tự tin.",
+       "prompt": "Hãy nói 30-60 giây về cách bạn sẽ xử lý một bình luận tiêu cực trong livestream.",
+       "brief": {
+        "objective": "Học cách phản hồi chuyên nghiệp với bình luận tiêu cực.",
+        "context": "Bạn đang livestream bán hàng và một người xem để lại bình luận châm chọc.",
+        "steps": [
+         "Phân tích bình luận và xác định cảm xúc.",
+         "Đáp lại một cách nhẹ nhàng và tự tin.",
+         "Chuyển hướng cuộc trò chuyện về sản phẩm.",
+         "Khuyến khích những người xem tích cực khác tham gia."
+        ],
+        "example": "\"Cảm ơn bạn đã góp ý! Hãy cho tôi biết bạn muốn tìm hiểu thêm về sản phẩm nào nhé, tôi rất muốn giúp bạn!\""
+       }
+      },
+      {
+       "title": "Nâng Cao Kỹ Năng Kể Chuyện",
+       "tip": "Mỗi sản phẩm đều có một câu chuyện.",
+       "prompt": "Kể một câu chuyện ngắn về một sản phẩm bạn đang bán trong livestream, kéo dài 30-60 giây.",
+       "brief": {
+        "objective": "Biết cách tạo ra sự hấp dẫn quanh sản phẩm.",
+        "context": "Những người xem đang cảm thấy nhàm chán với phần giới thiệu sản phẩm.",
+        "steps": [
+         "Chọn sản phẩm để giới thiệu.",
+         "Nghĩ ra một câu chuyện thú vị liên quan.",
+         "Đưa ra điểm nhấn và cảm xúc trong câu chuyện.",
+         "Kết thúc bằng lời nhắc nhở về sản phẩm."
+        ],
+        "example": "\"Cách đây một tháng, tôi đã gặp một khách hàng rất đặc biệt... Và từ đó, sản phẩm này đã trở thành lựa chọn hàng đầu của họ, khiến tôi rất vui!\""
+       }
+      },
+      {
+       "title": "Tạo Động Lực Cho Người Xem",
+       "tip": "Hãy khơi dậy sự tò mò và mong muốn khám phá.",
+       "prompt": "Giới thiệu một chương trình khuyến mãi đặc biệt trong 30-60 giây, khiến người xem không thể từ chối.",
+       "brief": {
+        "objective": "Kích thích sự quan tâm và phản ứng của người xem.",
+        "context": "Bạn vừa nhận được một sản phẩm mới với ưu đãi hấp dẫn cho người xem.",
+        "steps": [
+         "Giới thiệu sản phẩm mới.",
+         "Nêu rõ các ưu đãi đi kèm.",
+         "Khuyến khích người xem hành động ngay.",
+         "Kết thúc bằng một câu gọi hành động mạnh mẽ."
+        ],
+        "example": "\"Hôm nay, tôi có một bất ngờ tuyệt vời dành cho bạn! Đây là sản phẩm mới nhất của chúng tôi với giá ưu đãi chỉ trong hôm nay thôi!\""
+       }
+      }
+     ]
+    },
+    {
+     "title": "Chiến Lược Tương Tác Sâu",
+     "lessons": [
+      {
+       "title": "Khuyến Khích Bình Luận",
+       "tip": "Hãy hỏi câu để khơi gợi người xem nói chuyện.",
+       "prompt": "Tạo ra một câu hỏi thú vị để khuyến khích người xem bình luận trong 30-60 giây.",
+       "brief": {
+        "objective": "Kích thích sự tham gia của người xem.",
+        "context": "Bạn muốn tăng cường sự tương tác trong livestream khi giới thiệu sản phẩm.",
+        "steps": [
+         "Đưa ra câu hỏi liên quan đến sản phẩm.",
+         "Chung tay thảo luận với người xem.",
+         "Khẳng định giá trị đóng góp của họ.",
+         "Khuyến khích giữ tương tác liên tục."
+        ],
+        "example": "\"Các bạn cho mình biết sản phẩm này có điều gì khiến bạn tò mò nhất? Hãy chia sẻ ý kiến của bạn nhé!\""
+       }
+      },
+      {
+       "title": "Tạo Cuộc Thi Nho Nhỏ",
+       "tip": "Cuộc thi nhỏ nhưng tạo sự hứng thú lớn.",
+       "prompt": "Hãy mô tả một mini-game trong livestream kéo dài 30-60 giây.",
+       "brief": {
+        "objective": "Tăng sự hào hứng cho người xem.",
+        "context": "Bạn đang muốn tạo ra cuộc thi nhỏ trong livestream để khuyến khích tham gia.",
+        "steps": [
+         "Giới thiệu cách chơi mini-game.",
+         "Đưa ra phần thưởng hấp dẫn.",
+         "Khuyến khích người xem tham gia ngay.",
+         "Xác định thời gian cho phần thi."
+        ],
+        "example": "\"Hôm nay mình có một mini-game thú vị! Hãy nhanh tay đoán màu sắc yêu thích của mình và nhận ngay quà tặng nhé!\""
+       }
+      },
+      {
+       "title": "Tạo Cảm Giác Gắn Kết",
+       "tip": "Người xem cảm thấy thân thuộc sẽ ở lại lâu hơn.",
+       "prompt": "Hãy chia sẻ một chút về bản thân và lí do bạn yêu thích sản phẩm này trong 30-60 giây.",
+       "brief": {
+        "objective": "Xây dựng sự kết nối với người xem.",
+        "context": "Một sản phẩm đặc biệt đem lại kỷ niệm quý giá cho bạn.",
+        "steps": [
+         "Kể một số thông tin cá nhân.",
+         "Chia sẻ lý do bạn yêu thích sản phẩm.",
+         "Khuyến khích người xem cùng chia sẻ.",
+         "Tạo không khí thân thiện và gần gũi."
+        ],
+        "example": "\"Mình muốn chia sẻ với các bạn một kỷ niệm đẹp về sản phẩm này mà mình từng trải qua... Nó giúp mình rất nhiều trong cuộc sống!\""
+       }
+      }
+     ]
+    },
+    {
+     "title": "Xây Dựng Mạch Kịch Bản Livestream Hấp Dẫn",
+     "lessons": [
+      {
+       "title": "Lên Kế Hoạch Mạch Kịch Bản",
+       "tip": "Chuẩn bị trước, sáng tạo trong lúc lên sóng.",
+       "prompt": "Tạo một mạch kịch bản cho livestream tối nay, dài 30-60 giây, giới thiệu sản phẩm nổi bật.",
+       "brief": {
+        "objective": "Lên kế hoạch cho một buổi livestream thú vị.",
+        "context": "Bạn sắp phát sóng một livestream quảng bá sản phẩm mới và cần thu hút khán giả ngay từ đầu.",
+        "steps": [
+         "Giới thiệu bản thân và nội dung buổi livestream.",
+         "Chia sẻ câu chuyện ngắn về sản phẩm.",
+         "Thuyết phục khán giả tại sao cần sản phẩm này.",
+         "Mời gọi khán giả tham gia bình luận và hỏi đáp."
+        ],
+        "example": "Xin chào cả nhà! Hôm nay chúng ta sẽ khám phá sản phẩm mới giúp bạn cải thiện cuộc sống hàng ngày. Đừng bỏ lỡ những chia sẻ thú vị và câu hỏi của các bạn nhé!"
+       }
+      },
+      {
+       "title": "Tạo Kịch Tính Trong Livestream",
+       "tip": "Sử dụng câu hỏi mở để kích thích sự tham gia.",
+       "prompt": "Đưa ra một câu hỏi mở thú vị cho khán giả trong 30-60 giây.",
+       "brief": {
+        "objective": "Thúc đẩy sự tham gia của khán giả.",
+        "context": "Trong khi livestream, bạn cần tạo cơ hội để khán giả cảm thấy họ là một phần không thể thiếu.",
+        "steps": [
+         "Đặt ra một câu hỏi liên quan đến sản phẩm.",
+         "Khuyến khích khán giả chia sẻ ý kiến của họ.",
+         "Phản hồi lại những câu trả lời của khán giả.",
+         "Dẫn dắt câu chuyện từ phản hồi đó."
+        ],
+        "example": "Vậy các bạn nghĩ sao về sản phẩm này? Ai đã từng dùng rồi thì chia sẻ ngay cảm nhận của mình nhé, có lý do gì khiến bạn yêu thích sản phẩm này?"
+       }
+      },
+      {
+       "title": "Kết Nối Với Khán Giả Qua Cảm Xúc",
+       "tip": "Chia sẻ cảm xúc chân thật để chạm tới trái tim người xem.",
+       "prompt": "Chia sẻ một kỷ niệm cá nhân liên quan đến sản phẩm, dài 30-60 giây.",
+       "brief": {
+        "objective": "Xây dựng mối liên kết cảm xúc với người xem.",
+        "context": "Khi chia sẻ cảm xúc chân thật, bạn sẽ tạo được sự gắn kết mạnh mẽ với khán giả.",
+        "steps": [
+         "Mở đầu câu chuyện một cách nhẹ nhàng.",
+         "Chia sẻ cảm xúc rõ ràng và chân thật.",
+         "Liên hệ cảm xúc đó với sản phẩm.",
+         "Kết thúc với lời mời khán giả thử nghiệm sản phẩm."
+        ],
+        "example": "Hồi trước, tôi đã gặp khó khăn khi tìm kiếm sản phẩm này, và khi tìm thấy nó, tôi đã cảm thấy như tìm được 'vị cứu tinh'. Chính vì thế, tôi rất muốn chia sẻ điều tuyệt vời này với mỗi người trong các bạn."
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tăng Cường Kỹ Năng Giải Quyết Khiếu Nại Trong Livestream",
+     "lessons": [
+      {
+       "title": "Xử Lý Khiếu Nại Khéo Léo",
+       "tip": "Luôn giữ bình tĩnh và lắng nghe trước khi phản hồi.",
+       "prompt": "Mô phỏng một tình huống xử lý khiếu nại trong livestream, dài 30-60 giây.",
+       "brief": {
+        "objective": "Nâng cao khả năng xử lý phản hồi tiêu cực.",
+        "context": "Một khán giả không hài lòng về sản phẩm và bình luận tiêu cực trong livestream của bạn.",
+        "steps": [
+         "Lắng nghe và thể hiện sự đồng cảm với khán giả.",
+         "Trả lời một cách lịch sự và thân thiện.",
+         "Đưa ra giải pháp hoặc khuyến nghị.",
+         "Kết thúc bằng một câu khích lệ sự tiếp tục tham gia."
+        ],
+        "example": "Cảm ơn bạn đã chia sẻ, tôi rất xin lỗi vì trải nghiệm của bạn không được tốt. Hãy cho tôi biết rõ hơn về vấn đề ấy, chúng tôi sẽ cố gắng giúp bạn giải quyết ngay nhé!"
+       }
+      },
+      {
+       "title": "Chuyển Hóa Phản Hồi Tiêu Cực Thành Tích Tích Cực",
+       "tip": "Sử dụng phản hồi để cải thiện và phát triển.",
+       "prompt": "Phân tích một bình luận tiêu cực và biến nó thành cơ hội trong 30-60 giây.",
+       "brief": {
+        "objective": "Học cách biến thử thách thành lợi thế.",
+        "context": "Bạn đã nhận được phản hồi không tốt từ một khán giả, nhưng bạn muốn biến nó thành một điểm cộng cho sản phẩm.",
+        "steps": [
+         "Mô tả phản hồi tiêu cực một cách trung thực.",
+         "Chia sẻ cách bạn đã cải thiện sản phẩm dựa trên phản hồi.",
+         "Khuyến khích khán giả tham gia để cảm nhận sự cải thiện.",
+         "Kết thúc với sự tích cực và cơ hội cho khán giả."
+        ],
+        "example": "Tôi rất cảm ơn bạn đã chỉ ra điểm chưa hợp lý ở sản phẩm này. Chúng tôi đã sửa đổi và tự tin rằng bạn sẽ yêu thích phiên bản mới hơn. Hãy cho chúng tôi biết khi bạn có cơ hội thử nghiệm nhé!"
+       }
+      },
+      {
+       "title": "Đối Phó với Anti và Troll Hiệu Quả",
+       "tip": "Đầu tư thời gian để chuyển hướng câu chuyện.",
+       "prompt": "Thể hiện cách bạn ứng phó với một anti/troll trong livestream, dài 30-60 giây.",
+       "brief": {
+        "objective": "Nâng cao khả năng xử lý những ý kiến xem thường một cách thông minh.",
+        "context": "Có một người dùng liên tục có những bình luận tiêu cực về bạn trong livestream.",
+        "steps": [
+         "Duy trì sự bình tĩnh và không phản ứng dữ dội.",
+         "Dùng hài hước để chuyển hướng sự chú ý.",
+         "Mời khán giả khác tham gia tích cực hơn.",
+         "Kết thúc bằng cách nhấn mạnh về chất lượng nội dung."
+        ],
+        "example": "Cảm ơn bạn đã có ý kiến, nhưng có vẻ như bạn đang có một ngày không suôn sẻ. Hãy để tôi làm cho bạn vui hơn với sản phẩm thú vị này nhé!"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Nâng cao",
+   "sessions": [
+    {
+     "title": "Nâng cao Kỹ Năng Thuyết Phục trong Livestream",
+     "lessons": [
+      {
+       "title": "Làm cho Sản Phẩm Trở Nên Hấp Dẫn",
+       "tip": "Sử dụng câu chuyện để làm nổi bật sản phẩm.",
+       "prompt": "Giới thiệu sản phẩm của bạn trong 30-60 giây và kể một câu chuyện thú vị về cách sản phẩm giúp giải quyết vấn đề của khách hàng.",
+       "brief": {
+        "objective": "Học cách kết hợp kể chuyện vào phần giới thiệu sản phẩm.",
+        "context": "Bạn đang livestream bán sản phẩm mới, cần làm nổi bật để thu hút sự chú ý người xem.",
+        "steps": [
+         "Mở đầu với một câu hỏi gây chú ý.",
+         "Kể một câu chuyện ngắn liên quan đến sản phẩm.",
+         "Nêu lên lợi ích và tính năng của sản phẩm.",
+         "Kết thúc với một lời kêu gọi hành động."
+        ],
+        "example": "Bạn đã bao giờ cảm thấy mệt mỏi sau một ngày dài làm việc? Sản phẩm này chính là giải pháp mà bạn cần – nó đã giúp tôi lấy lại năng lượng nhanh chóng và dễ dàng nhất!"
+       }
+      },
+      {
+       "title": "Xử Lý Các Tình Huống Không Lường Trước",
+       "tip": "Luôn giữ bình tĩnh và sử dụng sự hài hước.",
+       "prompt": "Trong 30-60 giây, hãy tưởng tượng bạn gặp một bình luận trái chiều, hãy phản hồi một cách khéo léo và duy trì không khí vui vẻ.",
+       "brief": {
+        "objective": "Rèn luyện kỹ năng xử lý bình luận khó khăn và duy trì tinh thần tích cực.",
+        "context": "Trong khi livestream, bạn nhận được một bình luận tiêu cực từ người xem.",
+        "steps": [
+         "Đọc bình luận và tạm dừng một giây để phản ứng.",
+         "Phân tích bình luận một cách công bằng.",
+         "Trả lời với sự hài hước hoặc thông điệp tích cực.",
+         "Khuyến khích sự góp ý từ khách hàng."
+        ],
+        "example": "Cảm ơn bạn đã góp ý! Mỗi người có góc nhìn riêng, và chúng tôi rất trân trọng điều đó. Cùng nhau tạo nên những sản phẩm tốt hơn nhé!"
+       }
+      },
+      {
+       "title": "Kỹ Năng Kết Nối Với Người Xem",
+       "tip": "Hãy gọi tên người xem để tạo sự thân thiện.",
+       "prompt": "Trong 30-60 giây, chia sẻ một kinh nghiệm cá nhân có liên quan tới sản phẩm và mời người xem cùng tham gia bình luận.",
+       "brief": {
+        "objective": "Tăng cường kết nối cá nhân hóa với người xem trong livestream.",
+        "context": "Bạn muốn người xem cảm thấy gắn bó và tự nhiên khi bình luận trong livestream.",
+        "steps": [
+         "Chia sẻ một trải nghiệm cá nhân với sản phẩm.",
+         "Kêu gọi người xem phản hồi hoặc chia sẻ kinh nghiệm của họ.",
+         "Tương tác với bình luận ngay khi nhận được.",
+         "Duy trì sự gần gũi và thân thiện."
+        ],
+        "example": "Tôi nhớ lần đầu sử dụng sản phẩm này, thật sự bất ngờ với hiệu quả của nó. Các bạn đã sử dụng như thế nào? Hãy chia sẻ câu chuyện của bạn với tôi nhé!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nâng Cao Nghệ Thuật Chốt Đơn và Tương Tác",
+     "lessons": [
+      {
+       "title": "Kỹ Năng Thuyết Phục Khi Chốt Đơn",
+       "tip": "Tạo sự khẩn cấp với giới hạn thời gian.",
+       "prompt": "Trong 30-60 giây, hãy chốt đơn cho một sản phẩm đang trong chương trình khuyến mãi đặc biệt.",
+       "brief": {
+        "objective": "Học cách tạo ra sự khẩn cấp khi chốt đơn.",
+        "context": "Bạn đang livestream và có một chương trình khuyến mãi có thời hạn.",
+        "steps": [
+         "Giới thiệu sản phẩm và chương trình khuyến mãi.",
+         "Nhấn mạnh thời gian hạn chế của ưu đãi.",
+         "Kêu gọi ngay lập tức hành động từ người xem.",
+         "Động viên họ không nên bỏ lỡ cơ hội."
+        ],
+        "example": "Chỉ hôm nay, bạn sẽ nhận được 20% giảm giá nếu đặt hàng ngay bây giờ! Đừng để cơ hội này trôi qua, click ngay chốt đơn nhé!"
+       }
+      },
+      {
+       "title": "Kỹ Năng Thuyết Phục Qua Bình Luận và Đặt Câu Hỏi",
+       "tip": "Truy cập cảm xúc của người xem.",
+       "prompt": "Trong 30-60 giây, hỏi người xem về sở thích của họ liên quan đến sản phẩm và khuyến khích họ bình luận.",
+       "brief": {
+        "objective": "Tạo ra cuộc hội thoại hai chiều trong livestream.",
+        "context": "Bạn muốn tạo một cuộc thảo luận sôi nổi quanh sản phẩm.",
+        "steps": [
+         "Đặt câu hỏi thú vị liên quan đến sản phẩm.",
+         "Khuyến khích người xem đăng bình luận.",
+         "Chia sẻ ý kiến cá nhân của bạn về câu hỏi đó.",
+         "Tương tác với những câu trả lời từ người xem."
+        ],
+        "example": "Các bạn thích sản phẩm này hơn ở điểm nào? Thiết kế hay tính năng? Chia sẻ với tôi ngay nhé, tôi rất muốn nghe ý kiến của các bạn!"
+       }
+      },
+      {
+       "title": "Giữ Nhịp Livestream trong Phần Chốt Đơn",
+       "tip": "Sử dụng âm điệu và nhịp điệu linh hoạt.",
+       "prompt": "Trong 30-60 giây, hãy tạo sự hào hứng trong khi mời gọi người xem chốt đơn.",
+       "brief": {
+        "objective": "Thực hành kỹ năng điều chỉnh âm điệu để thu hút sự chú ý.",
+        "context": "Bạn đang ở phần giữa chốt đơn và muốn khuấy động không khí.",
+        "steps": [
+         "Đổi giọng nói và tốc độ cho phần giới thiệu mua hàng.",
+         "Sử dụng từ ngữ tích cực và kích thích.",
+         "Khuyến khích người xem hành động ngay lập tức.",
+         "Kết thúc bằng một lời hứa về chất lượng sản phẩm."
+        ],
+        "example": "Hãy sẵn sàng cho một trải nghiệm không thể quên! Hãy đặt hàng ngay hôm nay để nhận được sản phẩm tốt nhất mà bạn từng thấy, tôi cam đoan bạn sẽ không thất vọng!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Tạo Dựng Không Khí Livestream Chuyên Nghiệp",
+     "lessons": [
+      {
+       "title": "Xây Dựng Một Lịch Trình Livestream Hấp Dẫn",
+       "tip": "Luôn công bố trước lịch trình cho người xem.",
+       "prompt": "Trong 30-60 giây, hãy trình bày lịch trình livestream hàng tuần của bạn và những gì người xem có thể mong đợi.",
+       "brief": {
+        "objective": "Hướng dẫn cách tạo lịch livestream để thu hút nhiều người theo dõi.",
+        "context": "Bạn muốn giữ chân người xem với lịch trình livestream rõ ràng.",
+        "steps": [
+         "Giới thiệu nội dung chính của mỗi buổi livestream.",
+         "Thông báo thời gian cụ thể.",
+         "Khuyến khích người xem lên lịch tham gia.",
+         "Chia sẻ lý do tại sao mỗi buổi đều thú vị."
+        ],
+        "example": "Mỗi thứ 2, hãy cùng tôi khám phá những sản phẩm mới, và mỗi thứ 5, chúng ta sẽ có những ưu đãi độc quyền! Hãy đánh dấu lịch nhé, đừng bỏ lỡ nhé!"
+       }
+      },
+      {
+       "title": "Sử Dụng Hình Ảnh và Video Hỗ Trợ Trực Quan",
+       "tip": "Luôn chuẩn bị hình ảnh rõ nét và video chất lượng.",
+       "prompt": "Trong 30-60 giây, hãy mô tả cách mà bạn sẽ sử dụng hình ảnh hoặc video để giới thiệu sản phẩm.",
+       "brief": {
+        "objective": "Học cách kết hợp hình ảnh vào trong livestream.",
+        "context": "Bạn cần sử dụng phương tiện trực quan để tạo sự thu hút cho sản phẩm.",
+        "steps": [
+         "Giới thiệu sản phẩm bằng hình ảnh hoặc video.",
+         "Giải thích nội dung của hình ảnh/video với người xem.",
+         "Kêu gọi người xem quan sát và bình luận.",
+         "Nhấn mạnh lợi ích từ hình ảnh/video đó."
+        ],
+        "example": "Nhìn vào video này, bạn sẽ thấy sản phẩm đang hoạt động hiệu quả như thế nào. Đừng ngần ngại chia sẻ cảm nhận của bạn khi xem nhé!"
+       }
+      },
+      {
+       "title": "Tạo Một Không Khí Thân Thiện và Gần Gũi",
+       "tip": "Sử dụng ngôn ngữ thân thiện, dễ gần.",
+       "prompt": "Trong 30-60 giây, hãy chia sẻ một cách thân thiện cách bạn tạo không khí gần gũi trong livestream.",
+       "brief": {
+        "objective": "Thực hành cách làm cho không khí livestream trở nên thân thiện.",
+        "context": "Bạn đang muốn mọi người cảm thấy thoải mái khi tham gia livestream.",
+        "steps": [
+         "Chào hỏi thân thiện, giới thiệu bản thân.",
+         "Hỏi thăm sức khỏe hoặc sở thích của người xem.",
+         "Sử dụng từ ngữ ấm áp và gần gũi.",
+         "Khuyến khích người xem tham gia vào cuộc trò chuyện."
+        ],
+        "example": "Xin chào mọi người, hôm nay mình rất vui được gặp lại các bạn! Hãy cho mình biết bạn đang ở đâu và tâm trạng hôm nay của bạn như thế nào nhé!"
+       }
+      }
+     ]
+    },
+    {
+     "title": "Nâng Cao Kỹ Năng Quản Trị Khán Giả",
+     "lessons": [
+      {
+       "title": "Quản Trị Rủi Ro và Phản Hồi",
+       "tip": "Theo dõi ngay lập tức các câu hỏi của người xem.",
+       "prompt": "Trong 30-60 giây, hãy tưởng tượng bạn gặp câu hỏi rắc rối từ khán giả và xử lý một cách dung hòa.",
+       "brief": {
+        "objective": "Thực hành khả năng quản trị khán giả ngay cả khi gặp rắc rối.",
+        "context": "Khán giả đặt câu hỏi khó hoặc có bình luận tiêu cực về sản phẩm.",
+        "steps": [
+         "Nghe kỹ câu hỏi/bình luận.",
+         "Đáp ứng với sự tự tin và lịch thiệp.",
+         "Đưa ra góp ý hoặc lời khuyên hữu ích.",
+         "Nhấn mạnh tầm quan trọng của sự giao tiếp."
+        ],
+        "example": "Cảm ơn bạn đã đặt câu hỏi! Đây thực sự là một vấn đề thú vị – mình sẽ cố gắng giải thích rõ nhé!"
+       }
+      },
+      {
+       "title": "Xây Dựng Đội Ngũ Hỗ Trợ Khán Giả",
+       "tip": "Có một đội ngũ cùng hỗ trợ bạn trong livestream.",
+       "prompt": "Trong 30-60 giây, hãy trình bày tầm quan trọng của việc có một đội ngũ hỗ trợ trong livestream.",
+       "brief": {
+        "objective": "Hiểu và chia sẻ về tầm quan trọng của tính đồng đội trong livestream.",
+        "context": "Một người dẫn chương trình không thể làm mọi thứ một mình.",
+        "steps": [
+         "Giới thiệu vai trò của từng thành viên trong đội ngũ.",
+         "Nêu bật lợi ích khi có một nhóm hỗ trợ.",
+         "Mời gọi ý kiến của người xem về vai trò của họ.",
+         "Kết thúc bằng thông điệp về sức mạnh của đội ngũ."
+        ],
+        "example": "Đằng sau mỗi livestream thành công là một đội ngũ tuyệt vời! Hãy comment cho tôi biết bạn nghĩ sao về sự hỗ trợ trong một buổi livestream!"
+       }
+      },
+      {
+       "title": "Tạo Ra Sự Gắn Kết Dài Hạn Với Khán Giả",
+       "tip": "Tạo ra những cơ hội cho sự kết nối liên tục.",
+       "prompt": "Trong 30-60 giây, hãy giới thiệu một cách thức để giữ liên lạc thường xuyên với khán giả ngoài livestream.",
+       "brief": {
+        "objective": "Khám phám cách tạo dựng mối quan hệ bền vững với người xem.",
+        "context": "Bạn muốn phát triển cộng đồng từ những người xem livestream của mình.",
+        "steps": [
+         "Giới thiệu những kênh liên lạc khác (Facebook, Instagram).",
+         "Khuyến khích người xem theo dõi để không bỏ lỡ nội dung mới.",
+         "Chia sẻ thông tin về các sự kiện khác ngoài livestream.",
+         "Tạo điều kiện để người xem cảm thấy họ là một phần của cộng đồng."
+        ],
+        "example": "Hãy theo dõi mính trên Instagram để luôn cập nhật những sản phẩm hot và sự kiện thú vị sắp tới nhé! Cảm ơn các bạn đã tham gia hôm nay!"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

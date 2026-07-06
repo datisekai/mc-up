@@ -4,12 +4,45 @@ Mỗi bài có 'brief' = Thẻ nhiệm vụ: mục tiêu, bối cảnh, gợi ý
 (giấu sau nút 'Xem gợi ý' ở client). 'Tiêu chí đạt' KHÔNG lưu ở đây — sinh động
 từ rubric thể loại (rubrics.criteria_for) để luôn khớp với bộ chấm (FR-15).
 """
+import json
+import logging
+from pathlib import Path
+
 from sqlalchemy import select
 
 from .db import SessionLocal
 from .models import (ContentLesson, ContentSession, Genre, LearningPath, Lesson, Level,
                      Progress, User)
 from .security import hash_password
+
+log = logging.getLogger("mcup.seed")
+
+# Giáo trình đầy đủ sinh bởi scripts/generate_curriculum.py (format mcup-path-v1).
+# Có file → nhập nguyên cây (đã gồm cả nội dung tay) thay cho seed tay bên dưới.
+_CURRICULUM_DIR = Path(__file__).resolve().parents[2] / "db" / "curriculum"
+
+
+async def seed_curriculum() -> None:
+    """Nhập giáo trình đầy đủ từ db/curriculum/*.json (nếu có) — idempotent theo genre.
+    Chạy TRƯỚC seed_lessons/seed_genres: genre đã nhập thì seed tay tự bỏ qua."""
+    if not _CURRICULUM_DIR.exists():
+        return
+    from .services import import_path, publish_path  # import muộn tránh vòng lặp
+    async with SessionLocal() as s:
+        for f in sorted(_CURRICULUM_DIR.glob("*.json")):
+            try:
+                data = json.loads(f.read_text())
+            except Exception as exc:
+                log.warning("curriculum %s hỏng (%s) — bỏ qua", f.name, exc)
+                continue
+            name = data.get("genre") or ""
+            exists = (await s.execute(select(Genre).where(Genre.name == name))).scalar_one_or_none()
+            if exists:
+                continue
+            pid = await import_path(s, data)
+            if pid:
+                await publish_path(s, pid)
+                log.info("curriculum: nhập '%s' từ %s", name, f.name)
 
 
 def _b(objective: str, context: str, steps: list[str], example: str) -> dict:
