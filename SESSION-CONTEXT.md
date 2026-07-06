@@ -227,6 +227,37 @@ Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build *
 - Sửa kèm: số Buổi đếm TOÀN CỤC xuyên cấp độ (get_content_lessons_for_user);
   StageMap landmark mở rộng buổi 11–18 (đỉnh "Nhà hát thành phố").
 
+### Đợt 8+ phiên 2 — hoàn thiện trước trial (nhiều commit, đều đã push origin/main)
+- **Âm thanh thật:** SFX = Kenney Interface Sounds (CC0), nhạc nền = "Wholesome" — Kevin
+  MacLeod (CC BY 4.0, ambient.m4a). `src/sound.ts` quản lý tập trung: preload SFX + loop nhạc,
+  CHẶN nhạc 2 lớp khi mic mở (setRecording), công tắc Bật/Tắt ở Hồ sơ, reset audio mode sau thu
+  (tôn trọng im lặng iOS). Credit CC-BY hiện ở Hồ sơ + `client/assets/CREDITS.md`.
+- **Minimal UI:** tab bar ĐÁY (icon), header 1 cụm chip, vuốt ngang đổi tab mọi màn.
+- **Admin đổi máu sang Ant Design v6** (`mcup/admin/`): Layout/Menu/Table/Modal/Segmented/
+  Statistic, icon @ant-design/icons (hết emoji), theme "Sân khấu ấm" + Be Vietnam Pro,
+  tooltip mọi nút. Vẫn build vào `api/app/web/admin-dist` (commit), serve `/admin-web`.
+- **Robustness:** `ApiError` (isNetwork/isAuth) → boot KHÔNG đá người dùng ra khi mạng chập chờn
+  (banner "Thử lại", giữ phiên); token hỏng → về đăng nhập dịu. Kéo-để-tải-lại (RefreshControl)
+  bản đồ + hồ sơ. Quota chấm 30/user/ngày + chặn farm khách (đợt hardening). ffmpeg trong Docker.
+  Caddy HTTPS tự động (`DOMAIN` trong .env) — xem DEPLOY.md.
+- **Chấm điểm — 3 nâng cấp quan trọng:**
+  1. **Whisper hallucination guard** (`scoring._looks_unclear`): audio im lặng → Whisper bịa
+     "đăng ký kênh…"; phát hiện → KHÔNG chấm bừa. `temperature=0`.
+  2. **Trạng thái "Chưa nghe rõ"** (`ScoreOut.unclear`, ASR thật + wpm=0): màn riêng, không hiện
+     số 0, KHÔNG cộng XP/streak/vé (chặn farm vé bằng clip câm), nút "Thử lại ngay".
+  3. **"Xem lại lời bạn nói"** (`Score.transcript`, chỉ ASR thật): tô từ đệm vàng ấm.
+  4. **"Đủ ý chưa"** (`Score.coverage` {steps,covered[]}): gpt-4o-mini đối chiếu transcript với
+     `brief.steps` → ✓ đạt/○ thiếu (không đỏ). Chấm phần NỘI DUNG, best-effort.
+- **Huy hiệu:** đếm cả bài nội dung (coalesce lesson_id/content_lesson_id — sửa bug); 8 mốc +
+  progress/target + "Sắp mở khoá".
+- **Khách:** `/auth/guest` + `/auth/upgrade` (giữ streak/XP). **TESTER-GUIDE.md** cho tester.
+- **DB dev:** schema đổi nhiều lần đợt này (Score.transcript/coverage, RubricModule, audit_log,
+  BadgeCard.stats, MCReview.transcript) → mcup_dev.db đã reset; **prod cần Alembic** (Deferred).
+- **Quyết định Finn:** chưa đăng ký Apple Developer → cụm dev-build (Sign-In/widget/notif) PARKED
+  (`_bmad-output/planning-artifacts/dev-build-milestone-2026-07-06.md`). Dark mode HOÃN tới sau
+  trial (Finn chọn, 2026-07-06). **Bước kế: deploy VPS + trial ~20-30 người** (nấc 2, xem
+  `TESTER-GUIDE.md` + `admin-panel-plan`/`DEPLOY.md`). Repo: đã push hết lên origin/main.
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)
