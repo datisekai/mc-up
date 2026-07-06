@@ -100,6 +100,8 @@ class MCReview(Base):
     mc_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
     note: Mapped[str] = mapped_column(String)
     audio_path: Mapped[str | None] = mapped_column(String, nullable=True)  # giọng MC thật (crown jewel)
+    # "Xem bản chữ" (a11y + nghe nơi công cộng): ASR trên giọng MC qua AsrPort, best-effort
+    transcript: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
@@ -153,6 +155,18 @@ class ContentLesson(Base):
     brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # Thẻ nhiệm vụ (Pha C+)
     order_index: Mapped[int] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String, default="draft")
+
+
+class AuditLog(Base):
+    """Nhật ký thao tác admin (Pha D admin-plan): ai sửa gì, lúc nào. Append-only."""
+    __tablename__ = "audit_log"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    admin_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
+    action: Mapped[str] = mapped_column(String)   # patch|create|duplicate|move|publish|unpublish|rubric|user|grant|refund|import|ai-split
+    entity: Mapped[str] = mapped_column(String)   # path|level|session|lesson|genre|rubric|user|review
+    entity_id: Mapped[str] = mapped_column(String, default="")
+    detail: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
 class RubricModule(Base):

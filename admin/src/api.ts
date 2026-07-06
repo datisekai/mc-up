@@ -58,6 +58,9 @@ export const Api = {
   reviews: (status = "all") => req("/admin/reviews?status=" + status),
   refund: (id: string) => req(`/admin/reviews/${id}/refund`, { method: "POST" }),
   metrics: () => req("/admin/metrics"),
+  exportPath: (id: string) => req(`/admin/paths/${id}/export`),
+  importPath: (data: unknown) => req("/admin/paths/import", { method: "POST", body: { data } }),
+  audit: (limit = 100) => req("/admin/audit?limit=" + limit),
   aiSuggest: (body: { genre: string; lesson_title: string; prompt: string; field: string }) =>
     req("/admin/ai-suggest", { method: "POST", body }),
   criteria: (genre: string) => req("/admin/criteria?genre=" + encodeURIComponent(genre)),

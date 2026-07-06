@@ -11,8 +11,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .db import SessionLocal
-from .models import (BadgeCard, Clip, ContentLesson, ContentSession, Genre, LearningPath, Level,
-                     MCReview, Progress, ReviewRequest, RubricModule, Score, User)
+from .models import (AuditLog, BadgeCard, Clip, ContentLesson, ContentSession, Genre,
+                     LearningPath, Level, MCReview, Progress, ReviewRequest, RubricModule,
+                     Score, User)
 from .rubrics import criteria_for, get_rubric
 from .scoring import score_clip
 from .security import hash_password
@@ -109,11 +110,12 @@ async def _badge_stats(s: AsyncSession, req: ReviewRequest) -> dict | None:
 
 
 async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: str,
-                           audio_path: str | None = None) -> BadgeCard:
+                           audio_path: str | None = None, transcript: str | None = None) -> BadgeCard:
     """MC gửi nhận xét (phần Hồn, AD-5) → tự sinh Thẻ bảo chứng (FR-11). audio_path = giọng MC."""
     req.mc_id = mc.id
     req.status = "submitted"
-    review = MCReview(request_id=req.id, mc_id=mc.id, note=note, audio_path=audio_path)
+    review = MCReview(request_id=req.id, mc_id=mc.id, note=note, audio_path=audio_path,
+                      transcript=transcript)
     s.add(review)
     await s.flush()
     badge = BadgeCard(review_id=review.id, hoc_vien_id=req.hoc_vien_id,
@@ -587,6 +589,75 @@ async def admin_refund_review(s: AsyncSession, request_id: str) -> bool:
         prog.tickets += 1
     await s.commit()
     return True
+
+
+# ===== Pha D — Nhật ký thao tác + Xuất/Nhập JSON =====
+
+async def log_action(s: AsyncSession, admin_id: str, action: str, entity: str,
+                     entity_id: str = "", detail: dict | None = None) -> None:
+    """Append-only. Gọi SAU khi thao tác thành công."""
+    s.add(AuditLog(admin_id=admin_id, action=action, entity=entity, entity_id=entity_id, detail=detail))
+    await s.commit()
+
+
+async def admin_audit(s: AsyncSession, limit: int = 100) -> list[dict]:
+    rows = (await s.execute(select(AuditLog).order_by(AuditLog.at.desc()).limit(limit))).scalars().all()
+    out = []
+    for r in rows:
+        admin = await s.get(User, r.admin_id)
+        out.append({"id": r.id, "admin": (admin.display_name or admin.email) if admin else "?",
+                    "action": r.action, "entity": r.entity, "entity_id": r.entity_id,
+                    "detail": r.detail, "at": r.at.isoformat()})
+    return out
+
+
+EXPORT_FORMAT = "mcup-path-v1"
+
+
+async def export_path(s: AsyncSession, path_id: str) -> dict | None:
+    """Xuất cả cây thành JSON di động (backup / chuyển môi trường). Không kèm id/status."""
+    tree = await get_path_tree(s, path_id)
+    if not tree:
+        return None
+    return {
+        "format": EXPORT_FORMAT,
+        "genre": tree["genre"],
+        "title": tree["title"],
+        "levels": [{
+            "name": lv["name"],
+            "sessions": [{
+                "title": cs["title"],
+                "lessons": [{"title": ln["title"], "tip": ln["tip"], "prompt": ln["prompt"],
+                             "brief": ln["brief"]} for ln in cs["lessons"]],
+            } for cs in lv["sessions"]],
+        } for lv in tree["levels"]],
+    }
+
+
+async def import_path(s: AsyncSession, data: dict) -> str | None:
+    """Nhập JSON (đúng format export) → cây MỚI, LUÔN DRAFT (AD-12) — duyệt rồi publish."""
+    if data.get("format") != EXPORT_FORMAT or not isinstance(data.get("levels"), list):
+        return None
+    genre = await admin_create_genre(s, str(data.get("genre") or "Chưa phân loại"))
+    path = LearningPath(genre_id=genre.id, title=str(data.get("title") or "Lộ trình nhập"), status="draft")
+    s.add(path)
+    await s.flush()
+    for li, lv in enumerate(data["levels"]):
+        level = Level(path_id=path.id, name=str(lv.get("name") or "Cơ bản"), order_index=li, status="draft")
+        s.add(level)
+        await s.flush()
+        for si, cs in enumerate(lv.get("sessions") or []):
+            sess = ContentSession(level_id=level.id, title=str(cs.get("title") or "Buổi"),
+                                  order_index=si, status="draft")
+            s.add(sess)
+            await s.flush()
+            for ci, ln in enumerate(cs.get("lessons") or []):
+                brief = ln.get("brief") if isinstance(ln.get("brief"), dict) else None
+                s.add(ContentLesson(session_id=sess.id, title=str(ln.get("title") or "Bài"),
+                                    tip=str(ln.get("tip") or ""), prompt=str(ln.get("prompt") or ""),
+                                    brief=brief, order_index=ci, status="draft"))
+    await s.commit()
+    return path.id
 
 
 # ===== Admin Pha C — Dashboard =====

@@ -16,9 +16,10 @@ from ..services import (admin_create_genre, admin_create_lesson, admin_create_pa
                         admin_duplicate_lesson, admin_duplicate_session, admin_grant,
                         admin_list_genres, admin_list_reviews, admin_list_rubrics,
                         admin_list_users, admin_metrics, admin_move_node, admin_patch_user,
-                        admin_refund_review, admin_update_node, admin_upsert_rubric,
-                        ai_split_and_persist, ai_suggest_field, effective_rubric,
-                        get_path_tree, list_paths, publish_path, unpublish_path)
+                        admin_audit, admin_refund_review, admin_update_node,
+                        admin_upsert_rubric, ai_split_and_persist, ai_suggest_field,
+                        effective_rubric, export_path, get_path_tree, import_path,
+                        list_paths, log_action, publish_path, unpublish_path)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -69,6 +70,7 @@ async def ai_split(body: AiSplitIn, user: User = Depends(current_user), session:
     if not body.raw_text.strip():
         raise HTTPException(400, {"error": {"code": "empty", "message": "Thiếu nội dung tài liệu"}})
     res = await ai_split_and_persist(session, body.raw_text, body.genre, settings.openai_api_key)
+    await log_action(session, user.id, "ai-split", "path", res["path_id"], {"genre": body.genre})
     tree = await get_path_tree(session, res["path_id"])
     return {"is_mock": res["is_mock"], **(tree or {})}
 
@@ -128,6 +130,7 @@ async def publish(path_id: str, user: User = Depends(current_user), session: Asy
     _require_admin(user)
     if not await publish_path(session, path_id):
         _404("Không tìm thấy lộ trình")
+    await log_action(session, user.id, "publish", "path", path_id)
     return {"status": "published", "path_id": path_id}
 
 
@@ -137,6 +140,7 @@ async def unpublish(path_id: str, user: User = Depends(current_user), session: A
     _require_admin(user)
     if not await unpublish_path(session, path_id):
         _404("Không tìm thấy lộ trình")
+    await log_action(session, user.id, "unpublish", "path", path_id)
     return {"status": "draft", "path_id": path_id}
 
 
@@ -151,6 +155,7 @@ async def patch_node(kind: str, node_id: str, body: PatchIn,
         raise HTTPException(400, {"error": {"code": "bad_kind", "message": "kind không hợp lệ"}})
     if not await admin_update_node(session, kind, node_id, body.fields):
         _404()
+    await log_action(session, user.id, "patch", kind, node_id, {"fields": list(body.fields.keys())})
     return {"ok": True}
 
 
@@ -227,6 +232,7 @@ async def upsert_rubric(genre_id: str, body: PatchIn,
     _require_admin(user)
     if not await admin_upsert_rubric(session, genre_id, body.fields):
         _404("Không tìm thấy thể loại")
+    await log_action(session, user.id, "rubric", "rubric", genre_id, {"fields": list(body.fields.keys())})
     return {"ok": True}
 
 
@@ -264,6 +270,7 @@ async def create_user(body: UserCreateIn, user: User = Depends(current_user), se
                                   body.display_name.strip(), body.role, body.mc_title)
     if not out:
         raise HTTPException(409, {"error": {"code": "email_taken", "message": "Email đã được dùng"}})
+    await log_action(session, user.id, "user", "user", out["id"], {"email": body.email, "role": body.role})
     return out
 
 
@@ -291,6 +298,8 @@ async def grant(user_id: str, body: GrantIn,
     out = await admin_grant(session, user_id, body.tickets_delta, body.xp_delta, body.streak_set)
     if out is None:
         _404("Không tìm thấy tiến độ người dùng")
+    await log_action(session, user.id, "grant", "user", user_id,
+                     {"tickets": body.tickets_delta, "xp": body.xp_delta, "streak": body.streak_set})
     return out
 
 
@@ -309,6 +318,7 @@ async def refund(request_id: str, user: User = Depends(current_user), session: A
     _require_admin(user)
     if not await admin_refund_review(session, request_id):
         raise HTTPException(400, {"error": {"code": "cant_refund", "message": "Chỉ hoàn được yêu cầu đang chờ"}})
+    await log_action(session, user.id, "refund", "review", request_id)
     return {"ok": True}
 
 
@@ -317,3 +327,37 @@ async def metrics(user: User = Depends(current_user), session: AsyncSession = De
     """Dashboard: tổng quan + chuỗi 14 ngày."""
     _require_admin(user)
     return await admin_metrics(session)
+
+
+# ===== Pha D — Xuất/Nhập JSON + Nhật ký =====
+
+@router.get("/paths/{path_id}/export")
+async def export_json(path_id: str, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Xuất cả cây thành JSON (backup / chuyển môi trường / chia sẻ giáo trình)."""
+    _require_admin(user)
+    data = await export_path(session, path_id)
+    if not data:
+        _404("Không tìm thấy lộ trình")
+    return data
+
+
+class ImportIn(BaseModel):
+    data: dict
+
+
+@router.post("/paths/import")
+async def import_json(body: ImportIn, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Nhập JSON đúng format export → cây MỚI luôn DRAFT (AD-12), duyệt rồi publish."""
+    _require_admin(user)
+    pid = await import_path(session, body.data)
+    if not pid:
+        raise HTTPException(400, {"error": {"code": "bad_format", "message": "JSON sai định dạng mcup-path-v1"}})
+    await log_action(session, user.id, "import", "path", pid, {"title": body.data.get("title")})
+    return {"id": pid}
+
+
+@router.get("/audit")
+async def audit(limit: int = 100, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Nhật ký thao tác admin — ai sửa gì, lúc nào (append-only)."""
+    _require_admin(user)
+    return await admin_audit(session, min(limit, 500))

@@ -35,13 +35,14 @@ async def my_reviews(user: User = Depends(current_user), session: AsyncSession =
     for r in reqs:
         badge = None
         if r.status == "submitted":
-            b = (await session.execute(
-                select(BadgeCard).join(MCReview, MCReview.id == BadgeCard.review_id)
+            row = (await session.execute(
+                select(BadgeCard, MCReview.transcript).join(MCReview, MCReview.id == BadgeCard.review_id)
                 .where(MCReview.request_id == r.id)
-            )).scalar_one_or_none()
-            if b:
+            )).first()
+            if row:
+                b, transcript = row
                 badge = BadgeOut(mc_name=b.mc_name, mc_title=b.mc_title, note=b.note,
                                  audio_url=(f"/media/{b.audio_path}" if b.audio_path else None),
-                                 stats=b.stats)
+                                 stats=b.stats, transcript=transcript)
         out.append(ReviewRequestOut(id=r.id, clip_id=r.clip_id, status=r.status, badge=badge))
     return out

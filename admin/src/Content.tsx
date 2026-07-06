@@ -82,6 +82,27 @@ export default function Content() {
           {showSplit && <SplitForm genres={genres} onDone={async (t) => { setTree(t); await loadLists(); }} onErr={setErr} />}
         </div>
 
+        <div className="card">
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <b>📦 Sao lưu</b>
+            <button className="tiny ghost" onClick={async () => {
+              // Nhập JSON (đúng format export) → cây MỚI luôn draft
+              const inp = document.createElement("input");
+              inp.type = "file"; inp.accept = "application/json";
+              inp.onchange = async () => {
+                const f = inp.files?.[0]; if (!f) return;
+                try {
+                  const data = JSON.parse(await f.text());
+                  const r = await Api.importPath(data);
+                  await loadLists(); await open(r.id);
+                } catch (e: any) { setErr(e.message); }
+              };
+              inp.click();
+            }}>⬆ Nhập JSON</button>
+          </div>
+          <p className="muted" style={{ marginTop: 4 }}>Xuất từng lộ trình bằng nút ⬇ ở đầu cây. Nhập ra bản nháp mới — duyệt rồi mới xuất bản.</p>
+        </div>
+
         {err && <p className="err">{err}</p>}
       </div>
 
@@ -147,6 +168,13 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
           </div>
           <div className="row">
             <span className={"pill " + tree.status}>{tree.status}</span>
+            <button className="tiny ghost" title="Xuất JSON (backup)" onClick={async () => {
+              const data = await Api.exportPath(tree.id);
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+              a.download = `mcup-${tree.genre}-${tree.id.slice(0, 6)}.json`;
+              a.click();
+            }}>⬇ JSON</button>
             {tree.status === "published"
               ? <button className="ghost" disabled={busy} onClick={() => act(() => Api.unpublish(tree.id))}>Gỡ xuất bản</button>
               : <button className="gold" disabled={busy} onClick={() => act(() => Api.publish(tree.id))}>✓ Duyệt & Xuất bản</button>}

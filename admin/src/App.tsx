@@ -1,6 +1,7 @@
 // App.tsx — khung admin: đăng nhập + sidebar 7 khu (Pha A: khu Nội dung).
 import { useState } from "react";
 import { Api, hasToken, setToken } from "./api";
+import Audit from "./Audit";
 import Content from "./Content";
 import Metrics from "./Metrics";
 import Ops from "./Ops";
@@ -14,6 +15,7 @@ const AREAS = [
   { key: "users", label: "👥 Người dùng & vé", ready: true },
   { key: "reviews", label: "🎤 Vận hành review", ready: true },
   { key: "metrics", label: "📈 Số liệu", ready: true },
+  { key: "audit", label: "🗂 Nhật ký", ready: true },
 ];
 
 export default function App() {
@@ -43,6 +45,7 @@ export default function App() {
       {area === "users" && <Users />}
       {area === "reviews" && <Ops />}
       {area === "metrics" && <Metrics />}
+      {area === "audit" && <Audit />}
     </div>
   );
 }

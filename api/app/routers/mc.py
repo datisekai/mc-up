@@ -1,13 +1,35 @@
+import logging
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import settings
 from ..db import get_session
 from ..deps import current_user
 from ..media import media
 from ..models import ReviewRequest, Score, User
 from ..schemas import BadgeOut, MCQueueItemOut, SubmitReviewIn
 from ..services import submit_mc_review
+
+log = logging.getLogger("mcup.mc")
+
+
+async def _transcribe_voice(key: str) -> str | None:
+    """'Xem bản chữ' (a11y + nghe nơi công cộng): ASR giọng MC qua AsrPort — best-effort,
+    lỗi/không có key thì bỏ qua, KHÔNG chặn luồng review."""
+    try:
+        from adapters.asr_factory import get_asr  # type: ignore
+        asr = get_asr(settings.asr_provider, openai_key=settings.openai_api_key,
+                      google_key=settings.google_stt_api_key, viettel_token=settings.viettel_stt_token)
+        if getattr(asr, "is_mock", False):
+            return None
+        res = await asr.transcribe(audio_path=str(Path(settings.upload_dir) / key), language="vi")
+        return (res.text or "").strip() or None
+    except Exception as exc:
+        log.warning("transcript giọng MC lỗi (%s) → bỏ qua", exc)
+        return None
 
 router = APIRouter(prefix="/mc", tags=["mc-mode"])
 
@@ -63,6 +85,7 @@ async def submit_review_audio(request_id: str = Form(...), note: str = Form("Nh�
     ext = (file.filename or "voice.m4a").split(".")[-1]
     key = f"review-{req.id}.{ext}"
     await media.put(key, data, file.content_type or "audio/m4a")  # AD-4
-    badge = await submit_mc_review(session, user, req, note, audio_path=key)
+    transcript = await _transcribe_voice(key)
+    badge = await submit_mc_review(session, user, req, note, audio_path=key, transcript=transcript)
     return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note,
-                    audio_url=f"/media/{key}", stats=badge.stats)
+                    audio_url=f"/media/{key}", stats=badge.stats, transcript=transcript)

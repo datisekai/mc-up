@@ -98,7 +98,8 @@ class BadgeOut(BaseModel):
     mc_title: str | None = None
     note: str
     audio_url: str | None = None
-    stats: dict | None = None  # before/after cho thẻ khoe (P1)
+    stats: dict | None = None       # before/after cho thẻ khoe (P1)
+    transcript: str | None = None   # "Xem bản chữ" — ASR giọng MC (best-effort)
 
 
 class ReviewRequestOut(BaseModel):

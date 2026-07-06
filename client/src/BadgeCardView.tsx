@@ -14,6 +14,7 @@ type StatPoint = { speed_wpm: number; filler_count: number };
 export type BadgeData = {
   mc_name: string; mc_title?: string | null; note: string; audio_url?: string | null;
   stats?: { before: StatPoint; after: StatPoint } | null;
+  transcript?: string | null;  // "Xem bản chữ" — ASR giọng MC (best-effort)
 };
 
 const APP_URL = "https://mcup.vn"; // landing/deep-link — đổi khi có domain thật
@@ -39,6 +40,7 @@ function bars(seed: string, n = 36): number[] {
 export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; audioBase: string }) {
   const [skin, setSkin] = useState<Skin>("cream");
   const [playing, setPlaying] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
   const cardRef = useRef<View>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
   const k = SKINS[skin];
@@ -134,6 +136,19 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
             </View>
           </View>
         ) : null}
+        {badge.transcript ? (
+          <TouchableOpacity onPress={() => setShowTranscript(!showTranscript)}
+            accessibilityLabel={showTranscript ? "Ẩn bản chữ giọng MC" : "Xem bản chữ giọng MC"}>
+            <Text style={[st.transcriptLink, { color: k.sub }]}>
+              {showTranscript ? "Ẩn bản chữ ▴" : "Xem bản chữ ▾"}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {showTranscript && badge.transcript ? (
+          <View style={[st.transcriptBox, { backgroundColor: k.raised }]}>
+            <Text style={[st.transcriptT, { color: k.text }]}>{badge.transcript}</Text>
+          </View>
+        ) : null}
 
         <View style={[st.footer, { borderTopColor: k.hair }]}>
           <Text style={[st.watermark, { color: k.accent }]}>Luyện MC cùng McUp · @mcup</Text>
@@ -177,6 +192,9 @@ const st = StyleSheet.create({
   statK: { fontSize: 13, fontFamily: F.body },
   statV: { fontSize: 13, fontFamily: F.med },
   voiceBox: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, padding: 10, marginTop: 12 },
+  transcriptLink: { fontSize: 11.5, fontFamily: F.semi, textDecorationLine: "underline", textAlign: "right", marginTop: 6 },
+  transcriptBox: { borderRadius: 12, padding: 11, marginTop: 6 },
+  transcriptT: { fontSize: 13, fontFamily: F.body, lineHeight: 19 },
   playBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
   playT: { color: "#fff", fontSize: 13, fontWeight: "800" },
   waveRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 2, height: 30 },

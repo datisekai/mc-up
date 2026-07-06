@@ -194,6 +194,23 @@ Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build *
   refund hoàn vé đúng, metrics đếm đúng) · SPA build 170KB · client tsc + bundle 969 modules ✓.
 - **Plan admin còn:** Pha D (import/export JSON, audit log, thùng rác) — khi cần.
 
+### Đợt 6 phiên 2 — Admin Pha D + "Xem bản chữ" (PLAN ADMIN HOÀN TẤT A→D)
+**Schema mới (ĐÃ RESET DB lần nữa):** `audit_log` (append-only: admin_id/action/entity/detail/at)
++ cột `mc_review.transcript`.
+- **Xuất/Nhập JSON:** GET `/admin/paths/{id}/export` (format `mcup-path-v1`, không kèm id/status)
+  · POST `/admin/paths/import` → cây MỚI luôn DRAFT (AD-12), sai format bị chặn.
+  SPA: nút ⬇ JSON ở đầu cây + ⬆ Nhập JSON (file picker) ở cột trái.
+- **Nhật ký:** `log_action()` gọi sau mọi mutation admin (patch/publish/unpublish/ai-split/
+  rubric/user/grant/refund/import) · GET `/admin/audit` · khu SPA "🗂 Nhật ký" (chỉ đọc).
+- **"Xem bản chữ" giọng MC:** khi MC gửi review-audio → `_transcribe_voice()` chạy AsrPort
+  (auto: viettel>google>whisper) trên file giọng, best-effort (lỗi/mock → None, không chặn
+  luồng) → lưu `MCReview.transcript` → `BadgeOut.transcript` → client BadgeCardView có
+  toggle "Xem bản chữ ▾" (a11y + nghe nơi công cộng).
+- Verify: export→import round-trip 5 bài (bản nhập DRAFT) ✓ · format sai bị chặn ✓ ·
+  audit ghi patch/import ✓ · BadgeOut.transcript có mặt ✓ · SPA build 172KB · client tsc + bundle ✓.
+- **Thùng rác:** archived + nút khôi phục per-node ở khu Nội dung (đã có từ Pha A) — đủ theo
+  tinh thần plan, không làm view riêng.
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)
