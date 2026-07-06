@@ -2,13 +2,21 @@
 // 3 dòng đổ vào stagger 140ms · wpm count-up · chip so sánh lần trước · tip từ pool.
 // KHÔNG hiển thị "(giả lập)" cho học viên (§2.5). KHÔNG đỏ khi luyện.
 import { useEffect, useRef, useState } from "react";
-import { AccessibilityInfo, Animated, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { C, F } from "./theme";
 import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
-export type ScoreData = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
+export type ScoreData = {
+  volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
+  transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
+};
 export type PrevPoint = { speed_wpm: number; filler_count: number } | null;
+
+// Từ đệm — khớp bộ đếm backend (scoring.FILLERS + _norm_word: bỏ dấu câu, co ký tự lặp)
+const FILLERS = new Set(["ừm", "à", "ờ", "ơ", "ừ", "ừa", "hử", "hửm", "ậm", "ầy"]);
+const PUNCT = /^[.,!?;:…“”"'`()\[\]\-–—]+|[.,!?;:…“”"'`()\[\]\-–—]+$/g;
+const normWord = (w: string) => w.toLowerCase().replace(PUNCT, "").replace(/(.)\1{2,}/g, "$1");
 
 function RowIn({ delay, reduced, children }: { delay: number; reduced: boolean; children: React.ReactNode }) {
   const a = useRef(new Animated.Value(0)).current;
@@ -44,6 +52,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduced); }, []);
   useEffect(() => { sfx("success"); }, []);  // âm "điểm đổ về" — khớp nhịp reveal
 
+  const [showTranscript, setShowTranscript] = useState(false);
   const volOk = score.volume_label === "tốt";
   const delta = prev ? score.filler_count - prev.filler_count : null;
   const better = delta !== null && delta < 0;
@@ -95,6 +104,33 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
         <RowIn delay={720} reduced={reduced}>
           <View style={st.tip}><Text style={st.tipT}>{tip}</Text></View>
         </RowIn>
+
+        {/* "Xem lại lời bạn nói" — bằng chứng cho số từ đệm. Gấp mặc định (không phán xét),
+            tô vàng ấm (không đỏ), chỉ có khi ASR thật (mock = null → ẩn hẳn). */}
+        {score.transcript ? (
+          <RowIn delay={860} reduced={reduced}>
+            {showTranscript ? (
+              <View style={st.transcriptBox}>
+                <Text style={st.transcriptLabel}>LỜI BẠN NÓI · từ đệm được đánh dấu</Text>
+                <Text style={st.transcriptT}>
+                  {score.transcript.split(/(\s+)/).map((w, i) =>
+                    FILLERS.has(normWord(w))
+                      ? <Text key={i} style={st.fillerHi}>{w}</Text>
+                      : <Text key={i}>{w}</Text>
+                  )}
+                </Text>
+                <TouchableOpacity onPress={() => setShowTranscript(false)} accessibilityLabel="Ẩn lời bạn nói">
+                  <Text style={st.transcriptLink}>Ẩn đi ▴</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setShowTranscript(true)}
+                accessibilityLabel="Xem lại lời bạn vừa nói, từ đệm được đánh dấu">
+                <Text style={st.transcriptLink}>Xem lại lời bạn nói ▾</Text>
+              </TouchableOpacity>
+            )}
+          </RowIn>
+        ) : null}
       </View>
     </View>
   );
@@ -119,4 +155,10 @@ const st = StyleSheet.create({
   compareMidT: { color: C.ink2, fontWeight: "600", fontSize: 12.5 },
   tip: { backgroundColor: C.sunken, borderRadius: 12, padding: 12, marginTop: 10 },
   tipT: { color: C.ink, fontSize: 13.5, lineHeight: 19 },
+  transcriptLink: { color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", textAlign: "center", marginTop: 12 },
+  transcriptBox: { backgroundColor: C.raised, borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1, borderColor: C.hair },
+  transcriptLabel: { fontFamily: F.title, fontSize: 10, color: C.ink2, letterSpacing: 0.6, marginBottom: 6 },
+  transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
+  // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
+  fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
 });

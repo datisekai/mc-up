@@ -112,4 +112,6 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         "filler_count": filler,
         "tip": tip,
         "is_mock": used_mock,
+        # transcript CHỈ khi ASR thật — hiện text giả lập là phá niềm tin
+        "transcript": ((result.text or "").strip() or None) if not used_mock else None,
     }

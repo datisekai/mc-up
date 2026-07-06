@@ -64,6 +64,8 @@ class Score(Base):
     filler_count: Mapped[int] = mapped_column()           # số "ừm/à/ờ" (GIẢ LẬP ở MVP)
     tip: Mapped[str] = mapped_column(String)
     is_mock: Mapped[bool] = mapped_column(default=True)   # đánh dấu chấm giả lập
+    # "Xem lại lời bạn nói": transcript ASR THẬT (mock = None — không bao giờ hiện text giả)
+    transcript: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     clip: Mapped["Clip"] = relationship(back_populates="score")

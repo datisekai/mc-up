@@ -45,6 +45,7 @@ class ScoreOut(BaseModel):
     filler_count: int
     tip: str
     is_mock: bool
+    transcript: str | None = None  # lời user nói (chỉ ASR thật) — client tô từ đệm
 
 
 class ClipOut(BaseModel):
