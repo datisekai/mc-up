@@ -10,6 +10,7 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { C, F } from "./theme";
 import { Mic } from "./icons";
+import { setRecording, sfx } from "./sound";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 export type RecLesson = {
@@ -70,10 +71,12 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
   }, [mode, reduced]);
 
   function clearTimers() { timers.current.forEach(clearTimeout); timers.current = []; }
-  useEffect(() => () => { clearTimers(); recRef.current?.stopAndUnloadAsync().catch(() => {}); }, []);
+  useEffect(() => () => { clearTimers(); setRecording(false); recRef.current?.stopAndUnloadAsync().catch(() => {}); }, []);
 
   function startCountdown() {
     setMode("count"); setCount(3);
+    setRecording(true);  // chặn nhạc nền TRƯỚC khi mic mở (cue kêu lúc đếm, không lọt vào clip)
+    sfx("start");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const tick = (n: number) => {
       timers.current.push(setTimeout(() => {
@@ -87,7 +90,7 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
     tick(3);
   }
 
-  function cancelCountdown() { clearTimers(); setMode("ready"); }
+  function cancelCountdown() { clearTimers(); setRecording(false); setMode("ready"); }
 
   async function startRecording() {
     try {
@@ -119,6 +122,7 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
       loop();
     } catch {
       // mic không vào được → đường lui giả lập, giọng dịu (không đổ lỗi)
+      setRecording(false);
       Alert.alert("Micro", "Không vào được micro — nộp giả lập nhé.");
       setMode("ready");
       onMock();
@@ -131,6 +135,8 @@ export default function RecordScreen({ lesson, busy, onSubmit, onMock, onBack }:
     clearTimers();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     await rec.stopAndUnloadAsync();
+    setRecording(false);  // mic đã đóng → nhạc/SFX được phép trở lại
+    sfx("stop");
     const uri = rec.getURI();
     recRef.current = null;
     const dur = Math.max(1, Math.round((Date.now() - startAt.current) / 1000));

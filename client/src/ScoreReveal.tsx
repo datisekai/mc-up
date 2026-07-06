@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from "react-native";
 import { C, F } from "./theme";
+import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
 export type ScoreData = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
@@ -41,6 +42,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
   const [reduced, setReduced] = useState(false);
   const [tip] = useState(() => tipFor(score));
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduced); }, []);
+  useEffect(() => { sfx("success"); }, []);  // âm "điểm đổ về" — khớp nhịp reveal
 
   const volOk = score.volume_label === "tốt";
   const delta = prev ? score.filler_count - prev.filler_count : null;

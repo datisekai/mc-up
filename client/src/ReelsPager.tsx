@@ -11,6 +11,7 @@ import { C, F } from "./theme";
 import { Fire, Lock, Mic } from "./icons";
 import ScoreReveal, { ScoreData } from "./ScoreReveal";
 import { RecLesson } from "./RecordScreen";
+import { setRecording as setRecAudio, sfx } from "./sound";
 import { useEffect } from "react";
 
 export type ReelsLesson = RecLesson & { unlocked: boolean; done: boolean };
@@ -57,7 +58,7 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
   const scroll = useRef<ScrollView>(null);
 
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduced); }, []);
-  useEffect(() => () => { timers.current.forEach(clearTimeout); recRef.current?.stopAndUnloadAsync().catch(() => {}); }, []);
+  useEffect(() => () => { timers.current.forEach(clearTimeout); setRecAudio(false); recRef.current?.stopAndUnloadAsync().catch(() => {}); }, []);
 
   const pages = buildPages(lessons);
   const startPage = pages.findIndex((p) => p.kind === "lesson" && p.li === startIndex);
@@ -76,6 +77,8 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
 
   function startCount(l: ReelsLesson) {
     setRec({ id: l.id, mode: "count", n: 3, sec: 0 });
+    setRecAudio(true);  // chặn nhạc nền trước khi mic mở
+    sfx("start");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const tick = (n: number) => timers.current.push(setTimeout(() => {
       if (n > 1) { setRec((r) => r && { ...r, n: n - 1 }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); tick(n - 1); }
@@ -111,14 +114,17 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
     let audio: { uri: string; dur: number } | null = null;
     if (r) {
       await r.stopAndUnloadAsync();
+      sfx("stop");
       const uri = r.getURI();
       recRef.current = null;
       if (uri) audio = { uri, dur: Math.max(1, Math.round((Date.now() - startAt.current) / 1000)) };
     }
+    setRecAudio(false);
     await finish(l, audio);
   }
 
   async function finish(l: ReelsLesson, audio: { uri: string; dur: number } | null) {
+    setRecAudio(false);  // mọi nhánh (kể cả mic lỗi) đều nhả cờ chặn nhạc
     setRec({ id: l.id, mode: "proc", n: 0, sec: 0 });
     const score = await onRun(l, audio); // App lo submit + poll + celebration; null = mạng chậm
     setRec(null);

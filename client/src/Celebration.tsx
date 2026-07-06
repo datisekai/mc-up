@@ -3,9 +3,9 @@
 // Tôn trọng "Giảm chuyển động" (§1.7): chỉ fade, giữ haptic + âm.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import Confetti from "./Confetti";
+import { sfx } from "./sound";
 import { C, F } from "./theme";
 import { Fire, Star, Ticket, Trophy } from "./icons";
 import {
@@ -38,7 +38,6 @@ export default function Celebration({ kind, value, onClose }: {
   const spot = useRef(new Animated.Value(0)).current;
   const icon = useRef(new Animated.Value(0)).current;
   const text = useRef(new Animated.Value(0)).current;
-  const soundRef = useRef<Audio.Sound | null>(null);
   const closed = useRef(false);
 
   function close() {
@@ -58,16 +57,8 @@ export default function Celebration({ kind, value, onClose }: {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     }
 
-    // âm "ting!" (§1.6) — tôn trọng chế độ im lặng (không ép playsInSilentMode)
-    (async () => {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          require("../assets/ting.wav"), { volume: 0.6, shouldPlay: false });
-        if (!mounted) { sound.unloadAsync(); return; }
-        soundRef.current = sound;
-        setTimeout(() => sound.playAsync().catch(() => {}), 180);
-      } catch {}
-    })();
+    // âm "ting!" (§1.6) — qua sound.ts: preload sẵn + tôn trọng công tắc Bật/Tắt
+    const tingT = setTimeout(() => sfx("ting"), 180);
 
     Animated.timing(backdrop, { toValue: 1, duration: 180, useNativeDriver: true }).start();
     Animated.spring(spot, { toValue: 1, damping: 14, delay: 120, useNativeDriver: true }).start();
@@ -75,7 +66,7 @@ export default function Celebration({ kind, value, onClose }: {
     Animated.timing(text, { toValue: 1, duration: 420, delay: 360, useNativeDriver: true }).start();
 
     const t = setTimeout(close, AUTO_DISMISS_MS);
-    return () => { mounted = false; clearTimeout(t); soundRef.current?.unloadAsync(); };
+    return () => { mounted = false; clearTimeout(t); clearTimeout(tingT); };
   }, []);
 
   const IconCmp = kind === "ticket" ? Ticket : kind === "tier" ? Trophy : kind === "streak" ? Fire : Star;

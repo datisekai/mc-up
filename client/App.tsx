@@ -20,6 +20,7 @@ import ScoreReveal from "./src/ScoreReveal";
 import Celebration, { CelebKind } from "./src/Celebration";
 import BadgeCardView from "./src/BadgeCardView";
 import ReelsPager, { ReelsLesson } from "./src/ReelsPager";
+import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./src/sound";
 import { STREAK_GREET, fill, pick } from "./src/variety";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -105,8 +106,21 @@ export default function App() {
 
   useEffect(() => { restore(); }, []);
 
+  const [soundOn, setSoundOn] = useState(true);
+  async function toggleSound() {
+    await setSoundEnabled(!soundOn);
+    setSoundOn(!soundOn);
+  }
+  // nhạc nền chỉ ở bản đồ / hồ sơ / màn điểm — KHÔNG ở màn thu (sound.ts còn chặn thêm lớp recording)
+  useEffect(() => {
+    const wanted = !!token && role === "hoc_vien" && (tab === "hs" || screen === "feed" || screen === "score");
+    setMusicScene(wanted);
+  }, [token, role, tab, screen]);
+
   async function restore() {
     try {
+      await initSound();
+      setSoundOn(soundEnabled());
       const ob = await AsyncStorage.getItem("onboarded");
       const g = (await AsyncStorage.getItem("goal")) || "";
       setGoalPref(g);
@@ -415,7 +429,7 @@ export default function App() {
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
-          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onLogout={logout} />}
+          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />}
         </ScrollView>
         )}
       </View>
@@ -424,12 +438,12 @@ export default function App() {
       {/* tab bar đáy — icon, chuẩn native */}
       {screen !== "reels" && (
         <View style={s.bottomBar}>
-          <TouchableOpacity style={s.bTab} onPress={() => { setTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
             accessibilityLabel="Tab Lộ trình">
             <MapIcon size={22} color={tab === "hv" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.bTab} onPress={() => setTab("hs")} accessibilityLabel="Tab Hồ sơ">
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hs"); }} accessibilityLabel="Tab Hồ sơ">
             <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hs" && { color: C.primary }]}>Hồ sơ</Text>
           </TouchableOpacity>
@@ -442,7 +456,7 @@ export default function App() {
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onLogout: () => void }) {
+function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   const [upEmail, setUpEmail] = useState("");
@@ -500,6 +514,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
         <BadgeCardView key={r.id} badge={r.badge} audioBase={API_BASE} />
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
+      <Btn ghost label={soundOn ? "Âm thanh: Bật 🔊" : "Âm thanh: Tắt 🔇"} onPress={onToggleSound} />
       <Btn ghost label="Đăng xuất" onPress={onLogout} />
       <View style={{ height: 20 }} />
     </View>
@@ -559,8 +574,8 @@ function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; on
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontFamily: F.display, fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
-const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
-const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
+const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
+const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={() => { sfx("tap"); onPress?.(); }} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },
