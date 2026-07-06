@@ -185,6 +185,11 @@ function TreeEditor({ tree, onSave, onReload, onPreview }: {
           </div>
           <Space>
             <StatusTag s={tree.status} />
+            <Tooltip title="Free = ai cũng học được · Trả phí = chỉ học viên McUp Pro (feedback #7)">
+              <Button size="small" onClick={() => act(() => Api.patch("path", tree.id, { is_free: !tree.is_free }))}>
+                {tree.is_free ? "🆓 Free" : "🔒 Trả phí (Pro)"}
+              </Button>
+            </Tooltip>
             <Tooltip title="Tải cả cây lộ trình này về file JSON — backup hoặc chuyển môi trường">
               <Button icon={<DownloadOutlined />} onClick={async () => {
                 const data = await Api.exportPath(tree.id);

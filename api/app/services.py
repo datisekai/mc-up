@@ -403,7 +403,7 @@ async def get_path_tree(s: AsyncSession, path_id: str) -> dict | None:
                                               "status": ln.status, "order_index": ln.order_index} for ln in lessons]})
         out_levels.append({"id": lv.id, "name": lv.name, "status": lv.status, "sessions": out_sessions})
     return {"id": path.id, "title": path.title, "genre": genre.name if genre else "",
-            "genre_id": path.genre_id, "status": path.status, "levels": out_levels}
+            "genre_id": path.genre_id, "status": path.status, "is_free": path.is_free, "levels": out_levels}
 
 
 async def list_paths(s: AsyncSession, status: str | None = None) -> list[dict]:
@@ -414,7 +414,7 @@ async def list_paths(s: AsyncSession, status: str | None = None) -> list[dict]:
     out = []
     for p in paths:
         g = await s.get(Genre, p.genre_id)
-        out.append({"id": p.id, "title": p.title, "genre": g.name if g else "", "status": p.status})
+        out.append({"id": p.id, "title": p.title, "genre": g.name if g else "", "status": p.status, "is_free": p.is_free})
     return out
 
 
@@ -452,7 +452,7 @@ async def unpublish_path(s: AsyncSession, path_id: str) -> bool:
 # field cho sửa theo whitelist từng tầng — không mở toang setattr.
 
 _EDITABLE: dict[str, tuple[type, set[str]]] = {
-    "path": (LearningPath, {"title", "status"}),
+    "path": (LearningPath, {"title", "status", "is_free"}),
     "level": (Level, {"name", "status"}),
     "session": (ContentSession, {"title", "status"}),
     "lesson": (ContentLesson, {"title", "tip", "prompt", "brief", "status"}),
@@ -680,8 +680,9 @@ async def admin_list_users(s: AsyncSession, q: str = "", limit: int = 50, offset
     for u in users:
         prog = await s.get(Progress, u.id)
         out.append({"id": u.id, "email": u.email, "display_name": u.display_name, "role": u.role,
-                    "mc_title": u.mc_title, "is_guest": u.email.endswith(_GUEST_DOMAIN),
-                    "created_at": u.created_at.isoformat(),
+                    "mc_title": u.mc_title, "mc_bio": u.mc_bio, "mc_specialties": u.mc_specialties,
+                    "mc_featured": u.mc_featured, "is_pro": u.is_pro,
+                    "is_guest": u.email.endswith(_GUEST_DOMAIN), "created_at": u.created_at.isoformat(),
                     "xp": prog.xp if prog else 0, "streak": prog.streak if prog else 0,
                     "tickets": prog.tickets if prog else 0})
     return out

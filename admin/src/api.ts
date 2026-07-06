@@ -24,7 +24,7 @@ export type Brief = { objective?: string; context?: string; steps?: string[]; ex
 export type LessonNode = { id: string; title: string; tip: string; prompt: string; brief: Brief | null; status: string; order_index: number };
 export type SessionNode = { id: string; title: string; status: string; order_index: number; lessons: LessonNode[] };
 export type LevelNode = { id: string; name: string; status: string; sessions: SessionNode[] };
-export type Tree = { id: string; title: string; genre: string; genre_id: string; status: string; levels: LevelNode[] };
+export type Tree = { id: string; title: string; genre: string; genre_id: string; status: string; is_free: boolean; levels: LevelNode[] };
 
 export const Api = {
   login: (email: string, password: string) => req("/auth/login", { method: "POST", body: { email, password } }),

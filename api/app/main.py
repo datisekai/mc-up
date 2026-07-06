@@ -87,6 +87,13 @@ app.include_router(admin.router)
 app.include_router(content.router)
 
 
+@app.get("/", include_in_schema=False)
+@app.get("/landing", include_in_schema=False)
+async def landing():
+    """Landing page giới thiệu app + MC hợp tác (feedback #6)."""
+    return FileResponse(Path(__file__).parent / "web" / "landing.html")
+
+
 @app.get("/app", include_in_schema=False)
 async def web_prototype():
     """Prototype web 'Sân khấu ấm' — mở để xem & bấm thử toàn bộ luồng."""
