@@ -147,6 +147,29 @@ Apple/Google Sign-In native, widget iOS streak, notifications — đóng băng c
   App: refactor `pollScore` → `settleScore` (dùng chung, celebration giữ nguyên) + `runReelsLesson`.
 - Verify đợt 3: tsc sạch · bundle 969 modules · smoke guest→upgrade→login + chặn upgrade lần 2 ✓.
 
+### Đợt 4 phiên 2 — Admin Pha A (kế hoạch: `_bmad-output/planning-artifacts/admin-panel-plan-2026-07-06.md`)
+Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build **Pha A: sửa được nội dung**.
+- **SPA admin mới `mcup/admin/`** (Vite + React 18 + TS): build `npm run build` →
+  `api/app/web/admin-dist/` (COMMIT vào repo để deploy không cần node) → FastAPI serve
+  same-origin `/admin-web` (mount StaticFiles; trang cũ giữ ở `/admin-web-legacy`).
+  Dev SPA: `cd mcup/admin && npm run dev` (proxy /auth /admin → :8000).
+- **Backend** (`routers/admin.py` viết lại + services):
+  `GET/POST /admin/genres` · `POST /admin/paths` (kèm level "Cơ bản" mặc định) ·
+  `PATCH /admin/nodes/{kind}/{id}` (whitelist field từng tầng, status ∈ draft/published/archived) ·
+  `POST .../move` (↑↓ hoán vị order trong cùng cha) · `POST /admin/lessons|sessions/{id}/duplicate` ·
+  `POST /admin/paths/{id}/unpublish` (cascade draft; node archived được giữ nguyên khi cascade) ·
+  `POST /admin/ai-suggest` (✨ gợi ý TỪNG Ô: objective/context/steps/example/tip/prompt —
+  gpt-4o-mini JSON, fallback mock) · `GET /admin/criteria?genre=` (preview tiêu chí từ rubric).
+- **UI khu Nội dung:** sidebar 7 khu (khu khác gắn nhãn Pha B/C) · danh sách lộ trình +
+  tạo genre/path tay · AI-split panel · cây soạn thảo: inline edit blur=lưu, brief 4 ô,
+  ↑↓ reorder, ⧉ nhân bản (bài + cả buổi), 🗄 lưu trữ/khôi phục, 👁 **preview "xem như học
+  viên"** (render Thẻ nhiệm vụ + tiêu chí sinh từ rubric), ✨ từng ô.
+- Xoá = ARCHIVE (không xoá cứng); node mới/bản sao LUÔN draft (AD-12).
+- Verify: build SPA OK · smoke e2e: tạo genre→path→buổi→2 bài tay, patch+brief, reorder,
+  duplicate, publish→học viên thấy, unpublish→hết thấy, criteria 4 dòng, ai-suggest THẬT ✓.
+- **Còn lại của plan:** Pha B (migrate bài v1 vào cây + rubric editor DB + user mgmt — CÓ đổi
+  schema, reset DB 1 lần) · Pha C (review ops/vé/dashboard) · Pha D (import/export, audit).
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)

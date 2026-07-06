@@ -177,11 +177,13 @@ async def get_path_tree(s: AsyncSession, path_id: str) -> dict | None:
         out_sessions = []
         for cs in sessions:
             lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id).order_by(ContentLesson.order_index))).scalars().all()
-            out_sessions.append({"id": cs.id, "title": cs.title,
+            out_sessions.append({"id": cs.id, "title": cs.title, "status": cs.status, "order_index": cs.order_index,
                                  "lessons": [{"id": ln.id, "title": ln.title, "tip": ln.tip,
-                                              "prompt": ln.prompt, "brief": ln.brief} for ln in lessons]})
-        out_levels.append({"id": lv.id, "name": lv.name, "sessions": out_sessions})
-    return {"id": path.id, "title": path.title, "genre": genre.name if genre else "", "status": path.status, "levels": out_levels}
+                                              "prompt": ln.prompt, "brief": ln.brief,
+                                              "status": ln.status, "order_index": ln.order_index} for ln in lessons]})
+        out_levels.append({"id": lv.id, "name": lv.name, "status": lv.status, "sessions": out_sessions})
+    return {"id": path.id, "title": path.title, "genre": genre.name if genre else "",
+            "genre_id": path.genre_id, "status": path.status, "levels": out_levels}
 
 
 async def list_paths(s: AsyncSession, status: str | None = None) -> list[dict]:
@@ -196,20 +198,206 @@ async def list_paths(s: AsyncSession, status: str | None = None) -> list[dict]:
     return out
 
 
-async def publish_path(s: AsyncSession, path_id: str) -> bool:
-    """Duyệt & xuất bản: cascade status=published cho cả cây (AD-12)."""
+async def _cascade_status(s: AsyncSession, path_id: str, status: str) -> bool:
+    """Đặt status cả cây (AD-12). Node ARCHIVED được giữ nguyên — lưu trữ là quyết định riêng."""
     path = await s.get(LearningPath, path_id)
     if not path:
         return False
-    path.status = "published"
+    path.status = status
     for lv in (await s.execute(select(Level).where(Level.path_id == path_id))).scalars().all():
-        lv.status = "published"
+        if lv.status != "archived":
+            lv.status = status
         for cs in (await s.execute(select(ContentSession).where(ContentSession.level_id == lv.id))).scalars().all():
-            cs.status = "published"
+            if cs.status != "archived":
+                cs.status = status
             for ln in (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id))).scalars().all():
-                ln.status = "published"
+                if ln.status != "archived":
+                    ln.status = status
     await s.commit()
     return True
+
+
+async def publish_path(s: AsyncSession, path_id: str) -> bool:
+    """Duyệt & xuất bản: cascade status=published cho cả cây (AD-12)."""
+    return await _cascade_status(s, path_id, "published")
+
+
+async def unpublish_path(s: AsyncSession, path_id: str) -> bool:
+    """Gỡ xuất bản: cả cây về draft — học viên không thấy nữa (AD-12)."""
+    return await _cascade_status(s, path_id, "draft")
+
+
+# ===== Admin CRUD nội dung (Pha A — admin-panel-plan-2026-07-06) =====
+# Nguyên tắc: node mới LUÔN draft (AD-12) · xoá = archive (không xoá cứng) ·
+# field cho sửa theo whitelist từng tầng — không mở toang setattr.
+
+_EDITABLE: dict[str, tuple[type, set[str]]] = {
+    "path": (LearningPath, {"title", "status"}),
+    "level": (Level, {"name", "status"}),
+    "session": (ContentSession, {"title", "status"}),
+    "lesson": (ContentLesson, {"title", "tip", "prompt", "brief", "status"}),
+}
+_STATUSES = {"draft", "published", "archived"}
+
+
+async def admin_create_genre(s: AsyncSession, name: str) -> Genre:
+    g = (await s.execute(select(Genre).where(Genre.name == name))).scalar_one_or_none()
+    if not g:
+        g = Genre(name=name, status="published")
+        s.add(g)
+        await s.commit()
+    return g
+
+
+async def admin_list_genres(s: AsyncSession) -> list[dict]:
+    gs = (await s.execute(select(Genre).order_by(Genre.created_at))).scalars().all()
+    return [{"id": g.id, "name": g.name, "status": g.status} for g in gs]
+
+
+async def admin_create_path(s: AsyncSession, genre_id: str, title: str) -> str | None:
+    if not await s.get(Genre, genre_id):
+        return None
+    path = LearningPath(genre_id=genre_id, title=title, status="draft")
+    s.add(path)
+    await s.flush()
+    s.add(Level(path_id=path.id, name="Cơ bản", order_index=0, status="draft"))
+    await s.commit()
+    return path.id
+
+
+async def admin_create_session(s: AsyncSession, level_id: str, title: str) -> str | None:
+    if not await s.get(Level, level_id):
+        return None
+    n = (await s.execute(select(func.count(ContentSession.id)).where(ContentSession.level_id == level_id))).scalar() or 0
+    cs = ContentSession(level_id=level_id, title=title, order_index=n, status="draft")
+    s.add(cs)
+    await s.commit()
+    return cs.id
+
+
+async def admin_create_lesson(s: AsyncSession, session_id: str, title: str) -> str | None:
+    if not await s.get(ContentSession, session_id):
+        return None
+    n = (await s.execute(select(func.count(ContentLesson.id)).where(ContentLesson.session_id == session_id))).scalar() or 0
+    ln = ContentLesson(session_id=session_id, title=title, tip="", prompt="", order_index=n, status="draft")
+    s.add(ln)
+    await s.commit()
+    return ln.id
+
+
+async def admin_update_node(s: AsyncSession, kind: str, node_id: str, fields: dict) -> bool:
+    model, allowed = _EDITABLE[kind]
+    node = await s.get(model, node_id)
+    if not node:
+        return False
+    for k, v in fields.items():
+        if k not in allowed:
+            continue
+        if k == "status" and v not in _STATUSES:
+            continue
+        if k == "brief" and v is not None and not isinstance(v, dict):
+            continue
+        setattr(node, k, v)
+    await s.commit()
+    return True
+
+
+async def admin_duplicate_lesson(s: AsyncSession, lesson_id: str) -> str | None:
+    src = await s.get(ContentLesson, lesson_id)
+    if not src:
+        return None
+    n = (await s.execute(select(func.count(ContentLesson.id)).where(ContentLesson.session_id == src.session_id))).scalar() or 0
+    dup = ContentLesson(session_id=src.session_id, title=f"{src.title} (bản sao)", tip=src.tip,
+                        prompt=src.prompt, brief=dict(src.brief) if src.brief else None,
+                        order_index=n, status="draft")
+    s.add(dup)
+    await s.commit()
+    return dup.id
+
+
+async def admin_duplicate_session(s: AsyncSession, session_id: str) -> str | None:
+    src = await s.get(ContentSession, session_id)
+    if not src:
+        return None
+    n = (await s.execute(select(func.count(ContentSession.id)).where(ContentSession.level_id == src.level_id))).scalar() or 0
+    dup = ContentSession(level_id=src.level_id, title=f"{src.title} (bản sao)", order_index=n, status="draft")
+    s.add(dup)
+    await s.flush()
+    lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == src.id).order_by(ContentLesson.order_index))).scalars().all()
+    for i, ln in enumerate(lessons):
+        s.add(ContentLesson(session_id=dup.id, title=ln.title, tip=ln.tip, prompt=ln.prompt,
+                            brief=dict(ln.brief) if ln.brief else None, order_index=i, status="draft"))
+    await s.commit()
+    return dup.id
+
+
+async def admin_move_node(s: AsyncSession, kind: str, node_id: str, direction: int) -> bool:
+    """Đổi chỗ order_index với node kề TRONG CÙNG cha (↑↓ — reorder Pha A)."""
+    if kind == "session":
+        node = await s.get(ContentSession, node_id)
+        if not node:
+            return False
+        siblings = (await s.execute(select(ContentSession).where(ContentSession.level_id == node.level_id)
+                                    .order_by(ContentSession.order_index))).scalars().all()
+    elif kind == "lesson":
+        node = await s.get(ContentLesson, node_id)
+        if not node:
+            return False
+        siblings = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == node.session_id)
+                                    .order_by(ContentLesson.order_index))).scalars().all()
+    else:
+        return False
+    idx = next((i for i, x in enumerate(siblings) if x.id == node_id), -1)
+    j = idx + (1 if direction > 0 else -1)
+    if idx < 0 or j < 0 or j >= len(siblings):
+        return False
+    for i, x in enumerate(siblings):  # chuẩn hoá 0..n-1 trước khi hoán vị (dữ liệu cũ có thể trùng index)
+        x.order_index = i
+    siblings[idx].order_index, siblings[j].order_index = j, idx
+    await s.commit()
+    return True
+
+
+# Mock gợi ý theo field — dùng khi không có OPENAI_API_KEY (adapter thật ở dưới)
+_SUGGEST_MOCK = {
+    "objective": "Nói trôi chảy 30 giây, đúng chất thể loại, dưới 2 từ đệm.",
+    "context": "Bạn đang đứng trước khán giả thật, ánh đèn hướng về phía bạn — hãy hình dung cụ thể không gian đó.",
+    "steps": ["Chào và thu hút sự chú ý", "Vào nội dung chính, nhấn điểm quan trọng", "Chốt lại và chuyển tiếp mượt"],
+    "example": "Xin chào tất cả quý vị! Thật vinh dự khi được đồng hành cùng mọi người trong chương trình hôm nay...",
+    "tip": "Hít một hơi sâu trước khi bắt đầu — câu đầu chậm và rõ sẽ kéo cả bài theo.",
+    "prompt": "Hãy dẫn phần mở màn trong 30 giây: chào khán giả, giới thiệu chương trình và tạo không khí.",
+}
+
+
+async def ai_suggest_field(genre: str, lesson_title: str, prompt: str, field: str, openai_key: str) -> dict:
+    """✨ AI gợi ý TỪNG Ô cho admin (plan §1.4). Luôn là gợi ý nháp — người sửa rồi lưu (AD-10)."""
+    if field not in _SUGGEST_MOCK:
+        return {"error": "field không hỗ trợ"}
+    if not openai_key:
+        return {"value": _SUGGEST_MOCK[field], "is_mock": True}
+    import json as _json
+
+    from openai import AsyncOpenAI
+    client = AsyncOpenAI(api_key=openai_key)
+    want_list = field == "steps"
+    ask = {
+        "objective": "mục tiêu học tập 1 câu",
+        "context": "tình huống sân khấu cụ thể 1-2 câu",
+        "steps": "dàn ý 3-4 bước, mỗi bước ngắn gọn",
+        "example": "ví dụ lời dẫn mẫu 2-3 câu, giọng tự nhiên",
+        "tip": "một mẹo ngắn thiết thực",
+        "prompt": "đề bài thực hành 1-2 câu",
+    }[field]
+    resp = await client.chat.completions.create(
+        model="gpt-4o-mini", response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": "Bạn là giáo viên MC tiếng Việt. Trả JSON: {\"value\": ...} — value là "
+             + ("mảng chuỗi" if want_list else "chuỗi") + ". Giọng ấm, cổ vũ, sát nghề."},
+            {"role": "user", "content": f"Thể loại: {genre}. Bài: {lesson_title}. Đề hiện tại: {prompt or '(chưa có)'}. Hãy viết {ask}."},
+        ],
+    )
+    data = _json.loads(resp.choices[0].message.content or "{}")
+    return {"value": data.get("value") or _SUGGEST_MOCK[field], "is_mock": False}
 
 
 async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: str) -> list[dict]:

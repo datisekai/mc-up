@@ -14,6 +14,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .db import init_db
@@ -84,7 +85,22 @@ async def web_prototype():
     return FileResponse(Path(__file__).parent / "web" / "index.html")
 
 
+_ADMIN_DIST = Path(__file__).parent / "web" / "admin-dist"
+
+
 @app.get("/admin-web", include_in_schema=False)
 async def admin_web():
-    """Trang admin — AI chia giáo trình → duyệt → xuất bản (FR-17)."""
+    """SPA admin (Pha A — admin-panel-plan): build từ mcup/admin/ (npm run build).
+    Chưa build → fallback trang legacy 1 file."""
+    idx = _ADMIN_DIST / "index.html"
+    return FileResponse(idx if idx.exists() else Path(__file__).parent / "web" / "admin.html")
+
+
+@app.get("/admin-web-legacy", include_in_schema=False)
+async def admin_web_legacy():
+    """Trang admin cũ (1 file) — giữ tới khi SPA đạt parity rồi xoá."""
     return FileResponse(Path(__file__).parent / "web" / "admin.html")
+
+
+if _ADMIN_DIST.exists():  # assets JS/CSS của SPA
+    app.mount("/admin-web", StaticFiles(directory=_ADMIN_DIST, html=True), name="admin-spa")
