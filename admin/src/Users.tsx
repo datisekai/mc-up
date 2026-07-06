@@ -20,13 +20,13 @@ export default function Users() {
       <div className="card" style={{ marginBottom: 12 }}>
         <div className="row" style={{ justifyContent: "space-between" }}>
           <b>👥 Người dùng</b>
-          <button className="tiny" onClick={() => setShowCreate(!showCreate)}>＋ Tạo MC / admin</button>
+          <button className="tiny" title="Mở form tạo tài khoản MC hoặc admin mới (kèm chức danh hiển thị trên thẻ bảo chứng)" onClick={() => setShowCreate(!showCreate)}>＋ Tạo MC / admin</button>
         </div>
         <div className="row" style={{ marginTop: 8 }}>
           <input placeholder="Tìm theo email hoặc tên…" value={q} style={{ flex: 1 }}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && load()} />
-          <button className="ghost" onClick={() => load()}>Tìm</button>
+          <button className="ghost" title="Tìm theo email hoặc tên hiển thị" onClick={() => load()}>Tìm</button>
         </div>
         {showCreate && <CreateForm onDone={() => { setShowCreate(false); load(); }} onErr={setErr} />}
         {err && <p className="err" style={{ marginTop: 6 }}>{err}</p>}
@@ -55,7 +55,7 @@ function CreateForm({ onDone, onErr }: { onDone: () => void; onErr: (m: string) 
           <option value="mc">mc</option><option value="admin">admin</option><option value="hoc_vien">học viên</option>
         </select>
       </div>
-      <button className="gold" onClick={async () => {
+      <button className="gold" title="Tạo tài khoản với thông tin bên trái — người này đăng nhập được ngay" onClick={async () => {
         try { await Api.createUser({ email, password: pw, display_name: name, role, mc_title: title || undefined }); onDone(); }
         catch (e: any) { onErr(e.message); }
       }}>Tạo</button>
@@ -78,12 +78,12 @@ function UserRow({ u, onChanged }: { u: U; onChanged: () => void }) {
         </div>
         <div className="row">
           <span className="muted">🔥{u.streak} · ⭐{u.xp} · 🎟{u.tickets}</span>
-          <select value={u.role} style={{ width: 110 }}
+          <select value={u.role} style={{ width: 110 }} title="Đổi vai: học viên / MC (nhận review Vé Vàng) / admin (vào trang này)"
             onChange={(e) => act(() => Api.patchUser(u.id, { role: e.target.value }), "Đã đổi vai ✓")}>
             <option value="hoc_vien">học viên</option><option value="mc">mc</option><option value="admin">admin</option>
           </select>
-          <button className="tiny ghost" onClick={() => act(() => Api.grant(u.id, { tickets_delta: 1 }), "+1 vé ✓")}>＋1 🎟</button>
-          <button className="tiny ghost" onClick={() => {
+          <button className="tiny ghost" title="Tặng người này 1 Vé Vàng (gửi clip cho MC thật nhận xét)" onClick={() => act(() => Api.grant(u.id, { tickets_delta: 1 }), "+1 vé ✓")}>＋1 🎟</button>
+          <button className="tiny ghost" title="Đặt mật khẩu mới cho người này (khi họ quên)" onClick={() => {
             const p = window.prompt("Mật khẩu mới cho " + u.email + ":");
             if (p) act(() => Api.patchUser(u.id, { password: p }), "Đã reset mật khẩu ✓");
           }}>Reset MK</button>

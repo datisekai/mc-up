@@ -58,8 +58,8 @@ export default function Content() {
           <div className="row" style={{ justifyContent: "space-between", marginBottom: 8 }}>
             <b>Lộ trình</b>
             <span className="row" style={{ gap: 6 }}>
-              <button className="tiny ghost" onClick={newGenre}>＋ Thể loại</button>
-              <button className="tiny" onClick={newPath}>＋ Lộ trình</button>
+              <button className="tiny ghost" title="Tạo thể loại mới (vd: MC talkshow) — nhóm lớn nhất của nội dung" onClick={newGenre}>＋ Thể loại</button>
+              <button className="tiny" title="Tạo lộ trình học mới trong một thể loại (bắt đầu ở dạng nháp)" onClick={newPath}>＋ Lộ trình</button>
             </span>
           </div>
           {paths.length === 0 && <p className="muted">Chưa có — tạo tay hoặc dùng AI chia bên dưới.</p>}
@@ -77,7 +77,7 @@ export default function Content() {
         <div className="card">
           <div className="row" style={{ justifyContent: "space-between" }}>
             <b>🧠 AI chia giáo trình</b>
-            <button className="tiny ghost" onClick={() => setShowSplit(!showSplit)}>{showSplit ? "Thu gọn" : "Mở"}</button>
+            <button className="tiny ghost" title="Dán tài liệu thô → AI tự chia thành Buổi/Bài kèm Thẻ nhiệm vụ (luôn ra nháp để duyệt)" onClick={() => setShowSplit(!showSplit)}>{showSplit ? "Thu gọn" : "Mở"}</button>
           </div>
           {showSplit && <SplitForm genres={genres} onDone={async (t) => { setTree(t); await loadLists(); }} onErr={setErr} />}
         </div>
@@ -85,7 +85,7 @@ export default function Content() {
         <div className="card">
           <div className="row" style={{ justifyContent: "space-between" }}>
             <b>📦 Sao lưu</b>
-            <button className="tiny ghost" onClick={async () => {
+            <button className="tiny ghost" title="Chọn file JSON (đã xuất bằng nút ⬇ JSON) → tạo lộ trình mới ở dạng nháp" onClick={async () => {
               // Nhập JSON (đúng format export) → cây MỚI luôn draft
               const inp = document.createElement("input");
               inp.type = "file"; inp.accept = "application/json";
@@ -132,7 +132,8 @@ function SplitForm({ genres, onDone, onErr }: { genres: any[]; onDone: (t: Tree)
       <label>Giáo trình thô</label>
       <textarea rows={5} value={raw} onChange={(e) => setRaw(e.target.value)} placeholder="Dán tài liệu thô — AI chia thành Buổi/Bài kèm Thẻ nhiệm vụ (luôn ra NHÁP để duyệt)." />
       <div style={{ marginTop: 8 }}>
-        <button disabled={busy || !raw.trim()} onClick={async () => {
+        <button disabled={busy || !raw.trim()} title="Gửi tài liệu cho AI chia thành cây Buổi/Bài — kết quả là NHÁP, duyệt xong mới xuất bản"
+          onClick={async () => {
           setBusy(true); onErr("");
           try { onDone(await Api.aiSplit(genre, raw)); } catch (e: any) { onErr(e.message); }
           setBusy(false);
@@ -168,7 +169,7 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
           </div>
           <div className="row">
             <span className={"pill " + tree.status}>{tree.status}</span>
-            <button className="tiny ghost" title="Xuất JSON (backup)" onClick={async () => {
+            <button className="tiny ghost" title="Tải cả cây lộ trình này về file JSON — để backup hoặc nhập sang môi trường khác" onClick={async () => {
               const data = await Api.exportPath(tree.id);
               const a = document.createElement("a");
               a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
@@ -176,8 +177,8 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
               a.click();
             }}>⬇ JSON</button>
             {tree.status === "published"
-              ? <button className="ghost" disabled={busy} onClick={() => act(() => Api.unpublish(tree.id))}>Gỡ xuất bản</button>
-              : <button className="gold" disabled={busy} onClick={() => act(() => Api.publish(tree.id))}>✓ Duyệt & Xuất bản</button>}
+              ? <button className="ghost" disabled={busy} title="Đưa cả lộ trình về nháp — học viên lập tức KHÔNG thấy nữa" onClick={() => act(() => Api.unpublish(tree.id))}>Gỡ xuất bản</button>
+              : <button className="gold" disabled={busy} title="Xuất bản cả lộ trình — học viên thấy ngay trong app" onClick={() => act(() => Api.publish(tree.id))}>✓ Duyệt & Xuất bản</button>}
           </div>
         </div>
       </div>
@@ -188,7 +189,7 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
             <div className="kicker" style={{ flex: 1 }}>
               <InlineInput small defaultValue={lv.name} onCommit={(v) => onSave("level", lv.id, { name: v })} />
             </div>
-            <button className="tiny ghost" disabled={busy}
+            <button className="tiny ghost" disabled={busy} title="Thêm một buổi học mới vào cấp độ này (dạng nháp)"
               onClick={() => act(async () => Api.createSession(lv.id, "Buổi mới"))}>＋ Buổi</button>
           </div>
 
@@ -197,16 +198,16 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
               <div className="sess-head">
                 <InlineInput defaultValue={s0.title} onCommit={(v) => onSave("session", s0.id, { title: v })} />
                 <span className={"pill " + s0.status}>{s0.status}</span>
-                <button className="tiny ghost" disabled={busy || si === 0} title="Lên"
+                <button className="tiny ghost" disabled={busy || si === 0} title="Đẩy buổi này LÊN một bậc trong thứ tự học"
                   onClick={() => act(() => Api.move("session", s0.id, -1))}>↑</button>
-                <button className="tiny ghost" disabled={busy || si === lv.sessions.length - 1} title="Xuống"
+                <button className="tiny ghost" disabled={busy || si === lv.sessions.length - 1} title="Đẩy buổi này XUỐNG một bậc trong thứ tự học"
                   onClick={() => act(() => Api.move("session", s0.id, 1))}>↓</button>
-                <button className="tiny ghost" disabled={busy} title="Nhân bản buổi + toàn bộ bài"
+                <button className="tiny ghost" disabled={busy} title="Nhân bản cả buổi kèm toàn bộ bài bên trong (bản sao là nháp) — cách nhập liệu nhanh nhất"
                   onClick={() => act(() => Api.dupSession(s0.id))}>⧉</button>
                 {s0.status !== "archived"
-                  ? <button className="tiny ghost" disabled={busy} title="Lưu trữ (ẩn khỏi app)"
+                  ? <button className="tiny ghost" disabled={busy} title="Lưu trữ buổi này — ẩn khỏi app nhưng không xoá, khôi phục được"
                       onClick={() => act(() => Api.patch("session", s0.id, { status: "archived" }))}>🗄</button>
-                  : <button className="tiny ghost" disabled={busy}
+                  : <button className="tiny ghost" disabled={busy} title="Khôi phục buổi từ lưu trữ về nháp"
                       onClick={() => act(() => Api.patch("session", s0.id, { status: "draft" }))}>Khôi phục</button>}
               </div>
 
@@ -219,7 +220,7 @@ function TreeEditor({ tree, onSave, onReload, onPreview, savedTick }: {
                   onArchive={() => act(() => Api.patch("lesson", l.id, { status: l.status === "archived" ? "draft" : "archived" }))}
                   onPreview={() => onPreview(l)} />
               ))}
-              <button className="tiny ghost" disabled={busy}
+              <button className="tiny ghost" disabled={busy} title="Thêm một bài mới vào buổi này (dạng nháp) — mở ra để điền đề & Thẻ nhiệm vụ"
                 onClick={() => act(() => Api.createLesson(s0.id, "Bài mới"))}>＋ Bài</button>
             </div>
           ))}
@@ -260,14 +261,14 @@ function LessonCard({ lesson, genre, canUp, canDown, busy, onSave, onMove, onDup
   return (
     <div className="les" style={lesson.status === "archived" ? { opacity: .55 } : undefined}>
       <div className="les-head">
-        <button className="tiny ghost" onClick={() => setOpen(!open)}>{open ? "▾" : "▸"}</button>
+        <button className="tiny ghost" title={open ? "Thu gọn bài" : "Mở ra để sửa đề bài, mẹo và Thẻ nhiệm vụ"} onClick={() => setOpen(!open)}>{open ? "▾" : "▸"}</button>
         <InlineInput defaultValue={lesson.title} onCommit={(v) => onSave({ title: v })} />
         <span className={"pill " + lesson.status}>{lesson.status}</span>
-        <button className="tiny ghost" disabled={busy || !canUp} onClick={() => onMove(-1)}>↑</button>
-        <button className="tiny ghost" disabled={busy || !canDown} onClick={() => onMove(1)}>↓</button>
-        <button className="tiny ghost" disabled={busy} title="Nhân bản" onClick={onDup}>⧉</button>
-        <button className="tiny ghost" title="Xem như học viên" onClick={onPreview}>👁</button>
-        <button className="tiny ghost" disabled={busy} title={lesson.status === "archived" ? "Khôi phục" : "Lưu trữ"}
+        <button className="tiny ghost" disabled={busy || !canUp} title="Đẩy bài này LÊN trong thứ tự của buổi" onClick={() => onMove(-1)}>↑</button>
+        <button className="tiny ghost" disabled={busy || !canDown} title="Đẩy bài này XUỐNG trong thứ tự của buổi" onClick={() => onMove(1)}>↓</button>
+        <button className="tiny ghost" disabled={busy} title="Nhân bản bài này (bản sao là nháp) — sửa vài chữ là có bài mới" onClick={onDup}>⧉</button>
+        <button className="tiny ghost" title="Xem bài đúng như học viên thấy trong app (kèm tiêu chí chấm tự sinh)" onClick={onPreview}>👁</button>
+        <button className="tiny ghost" disabled={busy} title={lesson.status === "archived" ? "Khôi phục bài từ lưu trữ về nháp" : "Lưu trữ bài — ẩn khỏi app nhưng không xoá"}
           onClick={onArchive}>{lesson.status === "archived" ? "↩" : "🗄"}</button>
       </div>
 
@@ -276,33 +277,33 @@ function LessonCard({ lesson, genre, canUp, canDown, busy, onSave, onMove, onDup
           <label>Đề bài</label>
           <div className="field-row">
             <InlineArea defaultValue={promptV} onCommit={(v) => { setPromptV(v); onSave({ prompt: v }); }} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("prompt")}>{sparkBusy === "prompt" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý ĐỀ BÀI cho bài này — điền vào ô, bạn sửa tiếp rồi click ra ngoài để lưu" onClick={() => spark("prompt")}>{sparkBusy === "prompt" ? "…" : "✨"}</button>
           </div>
           <label>Mẹo ngắn</label>
           <div className="field-row">
             <InlineArea defaultValue={tipV} onCommit={(v) => { setTipV(v); onSave({ tip: v }); }} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("tip")}>{sparkBusy === "tip" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý MẸO NGẮN — điền vào ô, sửa được trước khi lưu" onClick={() => spark("tip")}>{sparkBusy === "tip" ? "…" : "✨"}</button>
           </div>
           <label>Mục tiêu (Thẻ nhiệm vụ)</label>
           <div className="field-row">
             <InlineArea defaultValue={brief.objective ?? ""} onCommit={(v) => saveBrief({ objective: v })} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("objective")}>{sparkBusy === "objective" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý MỤC TIÊU học của bài" onClick={() => spark("objective")}>{sparkBusy === "objective" ? "…" : "✨"}</button>
           </div>
           <label>Tình huống</label>
           <div className="field-row">
             <InlineArea defaultValue={brief.context ?? ""} onCommit={(v) => saveBrief({ context: v })} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("context")}>{sparkBusy === "context" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý TÌNH HUỐNG sân khấu cho bài" onClick={() => spark("context")}>{sparkBusy === "context" ? "…" : "✨"}</button>
           </div>
           <label>Dàn ý (mỗi dòng một bước)</label>
           <div className="field-row">
             <InlineArea defaultValue={(brief.steps ?? []).join("\n")}
               onCommit={(v) => saveBrief({ steps: v.split("\n").map((x) => x.trim()).filter(Boolean) })} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("steps")}>{sparkBusy === "steps" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý DÀN Ý (mỗi dòng một bước)" onClick={() => spark("steps")}>{sparkBusy === "steps" ? "…" : "✨"}</button>
           </div>
           <label>Ví dụ mẫu (ẩn sau "Bí quá?" trong app)</label>
           <div className="field-row">
             <InlineArea defaultValue={brief.example ?? ""} onCommit={(v) => saveBrief({ example: v })} />
-            <button className="spark" disabled={!!sparkBusy} onClick={() => spark("example")}>{sparkBusy === "example" ? "…" : "✨"}</button>
+            <button className="spark" disabled={!!sparkBusy} title="AI gợi ý VÍ DỤ LỜI DẪN MẪU (học viên thấy sau nút Bí quá?)" onClick={() => spark("example")}>{sparkBusy === "example" ? "…" : "✨"}</button>
           </div>
           <p className="muted" style={{ marginTop: 8 }}>
             Tiêu chí đạt KHÔNG nhập tay — sinh tự động từ rubric thể loại "{genre}" (1 nguồn sự thật, FR-15). Bấm 👁 để xem.

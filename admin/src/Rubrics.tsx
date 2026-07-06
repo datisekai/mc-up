@@ -64,8 +64,8 @@ function RubricCard({ r, onChanged }: { r: Rub; onChanged: () => void }) {
       <div className="row" style={{ justifyContent: "space-between" }}>
         <b>{r.genre} {r.override && <span className="pill draft">đã override</span>}</b>
         <div className="row">
-          {r.override && <button className="tiny ghost" disabled={busy} onClick={reset}>Về mặc định</button>}
-          <button className="tiny gold" disabled={busy} onClick={save}>Lưu rubric</button>
+          {r.override && <button className="tiny ghost" disabled={busy} title="Xoá chỉnh sửa của bạn — quay về rubric mặc định của hệ thống" onClick={reset}>Về mặc định</button>}
+          <button className="tiny gold" disabled={busy} title="Lưu rubric — bộ chấm AI + tiêu chí học viên thấy đổi theo NGAY, không cần deploy" onClick={save}>Lưu rubric</button>
           {msg && <span className="saved">{msg}</span>}
         </div>
       </div>

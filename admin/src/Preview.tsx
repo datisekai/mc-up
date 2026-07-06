@@ -16,7 +16,7 @@ export default function Preview({ lesson, genre, onClose }: {
       <div className="phone" onClick={(e) => e.stopPropagation()}>
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
           <b style={{ color: "var(--primary)" }}>McUp · như học viên thấy</b>
-          <button className="tiny ghost" onClick={onClose}>Đóng</button>
+          <button className="tiny ghost" title="Đóng bản xem trước, quay lại trình soạn" onClick={onClose}>Đóng</button>
         </div>
 
         {lesson.tip && (
@@ -45,7 +45,7 @@ export default function Preview({ lesson, genre, onClose }: {
           </div>
         ) : (
           <div style={{ marginTop: 12 }}>
-            <button className="ghost" onClick={() => setShowEx(true)}>Bí quá? Xem gợi ý mẫu</button>
+            <button className="ghost" title="Trong app, ví dụ mẫu bị giấu sau nút này để chống học vẹt — bấm để xem" onClick={() => setShowEx(true)}>Bí quá? Xem gợi ý mẫu</button>
           </div>
         ))}
 

@@ -22,7 +22,12 @@ export default function Ops() {
           <b>🎤 Vận hành review (SLA 72h)</b>
           <div className="row">
             {["pending", "submitted", "expired", "all"].map((st) => (
-              <button key={st} className={"tiny " + (status === st ? "" : "ghost")} onClick={() => setStatus(st)}>
+              <button key={st} className={"tiny " + (status === st ? "" : "ghost")}
+                title={st === "pending" ? "Yêu cầu MC chưa trả lời — quá 72h sẽ viền đỏ"
+                  : st === "submitted" ? "Đã có nhận xét của MC (nghe được giọng tại đây)"
+                  : st === "expired" ? "Đã hoàn vé cho học viên (quá hạn hoặc hoàn tay)"
+                  : "Xem tất cả yêu cầu"}
+                onClick={() => setStatus(st)}>
                 {st === "pending" ? "Đang chờ" : st === "submitted" ? "Đã nhận xét" : st === "expired" ? "Đã hoàn vé" : "Tất cả"}
               </button>
             ))}
@@ -48,7 +53,8 @@ export default function Ops() {
               {r.clip_url && <span><label style={{ margin: 0 }}>Clip học viên</label><audio controls preload="none" src={r.clip_url} style={{ height: 32, width: 210 }} /></span>}
               {r.voice_url && <span><label style={{ margin: 0 }}>Giọng MC</label><audio controls preload="none" src={r.voice_url} style={{ height: 32, width: 210 }} /></span>}
               {r.status === "pending" && (
-                <button className="tiny gold" onClick={async () => { await Api.refund(r.id); load(); }}>Hoàn vé</button>
+                <button className="tiny gold" title="Đóng yêu cầu này + trả lại 1 Vé Vàng cho học viên (dùng khi MC không kịp trả lời)"
+                  onClick={async () => { await Api.refund(r.id); load(); }}>Hoàn vé</button>
               )}
             </div>
           </div>
