@@ -9,13 +9,16 @@ from ..config import settings
 from ..db import get_session
 from ..deps import current_user
 from ..models import User
-from ..rubrics import criteria_for, get_rubric
+from ..rubrics import criteria_for
 from ..schemas import AiSplitIn
 from ..services import (admin_create_genre, admin_create_lesson, admin_create_path,
-                        admin_create_session, admin_duplicate_lesson, admin_duplicate_session,
-                        admin_list_genres, admin_move_node, admin_update_node,
-                        ai_split_and_persist, ai_suggest_field, get_path_tree, list_paths,
-                        publish_path, unpublish_path)
+                        admin_create_session, admin_create_user, admin_delete_rubric,
+                        admin_duplicate_lesson, admin_duplicate_session, admin_grant,
+                        admin_list_genres, admin_list_reviews, admin_list_rubrics,
+                        admin_list_users, admin_metrics, admin_move_node, admin_patch_user,
+                        admin_refund_review, admin_update_node, admin_upsert_rubric,
+                        ai_split_and_persist, ai_suggest_field, effective_rubric,
+                        get_path_tree, list_paths, publish_path, unpublish_path)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -203,7 +206,114 @@ async def move_node(kind: str, node_id: str, body: MoveIn,
 # ===== Preview =====
 
 @router.get("/criteria")
-async def criteria(genre: str = "", user: User = Depends(current_user)):
-    """Tiêu chí đạt SINH TỪ RUBRIC — cho preview 'xem như học viên' (1 nguồn sự thật, FR-15)."""
+async def criteria(genre: str = "", user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Tiêu chí đạt SINH TỪ RUBRIC HIỆU LỰC (kể cả override DB) — 1 nguồn sự thật (FR-15)."""
     _require_admin(user)
-    return {"criteria": criteria_for(get_rubric(genre or None))}
+    return {"criteria": criteria_for(await effective_rubric(session, genre or None))}
+
+
+# ===== Pha B — Rubric editor =====
+
+@router.get("/rubrics")
+async def rubrics(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    _require_admin(user)
+    return await admin_list_rubrics(session)
+
+
+@router.put("/rubrics/{genre_id}")
+async def upsert_rubric(genre_id: str, body: PatchIn,
+                        user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Ghi override rubric xuống DB — bộ chấm + tiêu chí học viên đổi theo, KHÔNG deploy."""
+    _require_admin(user)
+    if not await admin_upsert_rubric(session, genre_id, body.fields):
+        _404("Không tìm thấy thể loại")
+    return {"ok": True}
+
+
+@router.delete("/rubrics/{genre_id}")
+async def delete_rubric(genre_id: str, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Xoá override → quay về mặc định trong code."""
+    _require_admin(user)
+    if not await admin_delete_rubric(session, genre_id):
+        _404("Thể loại này chưa có override")
+    return {"ok": True}
+
+
+# ===== Pha B — Người dùng =====
+
+class UserCreateIn(BaseModel):
+    email: str
+    password: str
+    display_name: str
+    role: str = "mc"
+    mc_title: str | None = None
+
+
+@router.get("/users")
+async def users(q: str = "", limit: int = 50, offset: int = 0,
+                user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    _require_admin(user)
+    return await admin_list_users(session, q, min(limit, 200), offset)
+
+
+@router.post("/users")
+async def create_user(body: UserCreateIn, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Tạo tài khoản MC/admin từ trang quản trị."""
+    _require_admin(user)
+    out = await admin_create_user(session, body.email.strip().lower(), body.password,
+                                  body.display_name.strip(), body.role, body.mc_title)
+    if not out:
+        raise HTTPException(409, {"error": {"code": "email_taken", "message": "Email đã được dùng"}})
+    return out
+
+
+@router.patch("/users/{user_id}")
+async def patch_user(user_id: str, body: PatchIn,
+                     user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Đổi vai / tên / chức danh MC / reset mật khẩu (fields.password)."""
+    _require_admin(user)
+    if not await admin_patch_user(session, user_id, body.fields):
+        _404("Không tìm thấy người dùng")
+    return {"ok": True}
+
+
+class GrantIn(BaseModel):
+    tickets_delta: int = 0
+    xp_delta: int = 0
+    streak_set: int | None = None
+
+
+@router.post("/users/{user_id}/grant")
+async def grant(user_id: str, body: GrantIn,
+                user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Pha C — tặng/trừ vé, chỉnh XP/streak (CSKH)."""
+    _require_admin(user)
+    out = await admin_grant(session, user_id, body.tickets_delta, body.xp_delta, body.streak_set)
+    if out is None:
+        _404("Không tìm thấy tiến độ người dùng")
+    return out
+
+
+# ===== Pha C — Vận hành review + Dashboard =====
+
+@router.get("/reviews")
+async def reviews(status: str = "all", user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Hàng đợi Vé Vàng + tuổi yêu cầu (SLA 72h — AD-6). Kèm link nghe clip/giọng MC."""
+    _require_admin(user)
+    return await admin_list_reviews(session, status)
+
+
+@router.post("/reviews/{request_id}/refund")
+async def refund(request_id: str, user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Hoàn vé thủ công: pending → expired + học viên nhận lại 1 Vé Vàng."""
+    _require_admin(user)
+    if not await admin_refund_review(session, request_id):
+        raise HTTPException(400, {"error": {"code": "cant_refund", "message": "Chỉ hoàn được yêu cầu đang chờ"}})
+    return {"ok": True}
+
+
+@router.get("/metrics")
+async def metrics(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    """Dashboard: tổng quan + chuỗi 14 ngày."""
+    _require_admin(user)
+    return await admin_metrics(session)

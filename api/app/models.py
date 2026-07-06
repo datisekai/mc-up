@@ -155,6 +155,20 @@ class ContentLesson(Base):
     status: Mapped[str] = mapped_column(String, default="draft")
 
 
+class RubricModule(Base):
+    """Rubric override theo thể loại (Pha B admin-plan): admin sửa ngưỡng/tip trên web,
+    KHÔNG deploy. Không có dòng → dùng registry code (rubrics.py) làm mặc định.
+    tips = {"fast":[...], "slow":[...], "filler":[...], "good":[...]} — mảng = pool đa dạng."""
+    __tablename__ = "rubric_module"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    genre_id: Mapped[str] = mapped_column(ForeignKey("genre.id"), unique=True)
+    wpm_min: Mapped[int] = mapped_column(default=110)
+    wpm_max: Mapped[int] = mapped_column(default=160)
+    focus: Mapped[str] = mapped_column(String, default="rõ ràng, tự tin")
+    tips: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class BadgeCard(Base):
     """Thẻ MC bảo chứng — tự sinh sau khi có MCReview (FR-11)."""
     __tablename__ = "badge_card"

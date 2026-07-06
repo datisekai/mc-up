@@ -44,6 +44,20 @@ export const Api = {
   dupLesson: (id: string) => req(`/admin/lessons/${id}/duplicate`, { method: "POST" }),
   dupSession: (id: string) => req(`/admin/sessions/${id}/duplicate`, { method: "POST" }),
   aiSplit: (genre: string, raw_text: string) => req("/admin/ai-split", { method: "POST", body: { genre, raw_text } }),
+  rubrics: () => req("/admin/rubrics"),
+  saveRubric: (genre_id: string, fields: Record<string, unknown>) =>
+    req(`/admin/rubrics/${genre_id}`, { method: "PUT", body: { fields } }),
+  resetRubric: (genre_id: string) => req(`/admin/rubrics/${genre_id}`, { method: "DELETE" }),
+  users: (q = "") => req("/admin/users?q=" + encodeURIComponent(q)),
+  createUser: (b: { email: string; password: string; display_name: string; role: string; mc_title?: string }) =>
+    req("/admin/users", { method: "POST", body: b }),
+  patchUser: (id: string, fields: Record<string, unknown>) =>
+    req(`/admin/users/${id}`, { method: "PATCH", body: { fields } }),
+  grant: (id: string, b: { tickets_delta?: number; xp_delta?: number; streak_set?: number }) =>
+    req(`/admin/users/${id}/grant`, { method: "POST", body: b }),
+  reviews: (status = "all") => req("/admin/reviews?status=" + status),
+  refund: (id: string) => req(`/admin/reviews/${id}/refund`, { method: "POST" }),
+  metrics: () => req("/admin/metrics"),
   aiSuggest: (body: { genre: string; lesson_title: string; prompt: string; field: string }) =>
     req("/admin/ai-suggest", { method: "POST", body }),
   criteria: (genre: string) => req("/admin/criteria?genre=" + encodeURIComponent(genre)),

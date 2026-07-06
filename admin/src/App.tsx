@@ -2,14 +2,18 @@
 import { useState } from "react";
 import { Api, hasToken, setToken } from "./api";
 import Content from "./Content";
+import Metrics from "./Metrics";
+import Ops from "./Ops";
+import Rubrics from "./Rubrics";
+import Users from "./Users";
 
+// Vé & tiến độ gộp vào khu Người dùng (nút +1 vé / grant ở từng dòng)
 const AREAS = [
   { key: "content", label: "📚 Nội dung", ready: true },
-  { key: "rubrics", label: "🎯 Rubric chấm", ready: false, phase: "B" },
-  { key: "users", label: "👥 Người dùng", ready: false, phase: "B" },
-  { key: "reviews", label: "🎤 Vận hành review", ready: false, phase: "C" },
-  { key: "economy", label: "🎟 Vé & tiến độ", ready: false, phase: "C" },
-  { key: "metrics", label: "📈 Số liệu", ready: false, phase: "C" },
+  { key: "rubrics", label: "🎯 Rubric chấm", ready: true },
+  { key: "users", label: "👥 Người dùng & vé", ready: true },
+  { key: "reviews", label: "🎤 Vận hành review", ready: true },
+  { key: "metrics", label: "📈 Số liệu", ready: true },
 ];
 
 export default function App() {
@@ -27,7 +31,6 @@ export default function App() {
             <button key={a.key} className={area === a.key ? "on" : ""} disabled={!a.ready}
               onClick={() => setArea(a.key)}>
               {a.label}
-              {!a.ready && <span className="soon">Pha {a.phase}</span>}
             </button>
           ))}
           <button style={{ marginTop: 18 }} onClick={() => { setToken(null); setAuthed(false); }}>
@@ -36,6 +39,10 @@ export default function App() {
         </nav>
       </aside>
       {area === "content" && <Content />}
+      {area === "rubrics" && <Rubrics />}
+      {area === "users" && <Users />}
+      {area === "reviews" && <Ops />}
+      {area === "metrics" && <Metrics />}
     </div>
   );
 }

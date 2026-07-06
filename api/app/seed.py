@@ -88,12 +88,34 @@ _LESSONS = [
 
 
 async def seed_lessons() -> None:
+    """Pha B admin-plan: bài v1 'Kỹ năng nói' seed THẲNG VÀO CÂY nội dung (published) —
+    admin sửa được như mọi bài, hết dữ liệu cứng. Bảng Lesson cũ giữ cho clip lịch sử,
+    KHÔNG seed nữa. Idempotent theo tên thể loại."""
     async with SessionLocal() as s:
-        existing = (await s.execute(select(Lesson).limit(1))).first()
-        if existing:
+        exists = (await s.execute(select(Genre).where(Genre.name == "Kỹ năng nói"))).scalar_one_or_none()
+        if exists:
             return
-        for i, (buoi, title, tip, prompt, brief) in enumerate(_LESSONS):
-            s.add(Lesson(buoi=buoi, order_index=i, title=title, tip=tip, prompt=prompt, brief=brief, xp=10))
+        genre = Genre(name="Kỹ năng nói", status="published")
+        s.add(genre)
+        await s.flush()
+        path = LearningPath(genre_id=genre.id, title="Lộ trình: Kỹ năng nói", status="published")
+        s.add(path)
+        await s.flush()
+        level = Level(path_id=path.id, name="Cơ bản", order_index=0, status="published")
+        s.add(level)
+        await s.flush()
+        sessions: dict[int, ContentSession] = {}
+        counters: dict[int, int] = {}
+        for buoi, title, tip, prompt, brief in _LESSONS:
+            if buoi not in sessions:
+                cs = ContentSession(level_id=level.id, title=f"Buổi {buoi}", order_index=buoi - 1, status="published")
+                s.add(cs)
+                await s.flush()
+                sessions[buoi] = cs
+                counters[buoi] = 0
+            s.add(ContentLesson(session_id=sessions[buoi].id, title=title, tip=tip, prompt=prompt,
+                                brief=brief, order_index=counters[buoi], status="published"))
+            counters[buoi] += 1
         await s.commit()
 
 

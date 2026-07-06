@@ -170,6 +170,30 @@ Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build *
 - **Còn lại của plan:** Pha B (migrate bài v1 vào cây + rubric editor DB + user mgmt — CÓ đổi
   schema, reset DB 1 lần) · Pha C (review ops/vé/dashboard) · Pha D (import/export, audit).
 
+### Đợt 5 phiên 2 — Admin Pha B + C (hoàn tất plan trừ Pha D)
+**Schema mới:** bảng `rubric_module` (genre_id UNIQUE, wpm_min/max, focus, tips JSON pool
+{fast/slow/filler/good: [biến thể...]}). **ĐÃ RESET mcup_dev.db.**
+- **v1 hết dữ liệu cứng:** `seed_lessons()` giờ seed 11 bài "Kỹ năng nói" THẲNG VÀO CÂY
+  (genre+path published, buổi theo `buoi`) — admin sửa được như mọi bài. Bảng `Lesson` cũ giữ
+  cho clip lịch sử, không seed. Client: bỏ pill cứng, mặc định chọn path "Kỹ năng nói" từ cây
+  (sau goal-match onboarding); `/lessons` legacy còn đó làm fallback.
+- **Rubric editor (DB):** `effective_rubric()` = override DB > registry code > CORE; tips là
+  POOL (mảng) — chấm điểm rút 1 biến thể (`_pick_tips`), khớp triết lý variety. Đổi ngưỡng
+  trên admin → tiêu chí học viên + bộ chấm đổi NGAY không deploy (verify: 150→145 ✓, xoá
+  override hồi mặc định ✓). API: GET/PUT/DELETE `/admin/rubrics(/{genre_id})`.
+- **Người dùng & vé:** GET `/admin/users?q=` (kèm xp/streak/vé, cờ khách) · POST tạo MC/admin ·
+  PATCH đổi vai/tên/chức danh/reset mật khẩu · POST `/{id}/grant` (vé/XP/streak — CSKH).
+- **Vận hành review:** GET `/admin/reviews?status=` (tuổi giờ + cờ QUÁ HẠN 72h + link nghe
+  clip học viên & giọng MC qua /media) · POST `/{id}/refund` (pending→expired + hoàn 1 vé).
+- **Dashboard:** GET `/admin/metrics` — học viên/khách/MC, clip tổng/hôm nay, review chờ/quá hạn,
+  vé lưu hành, từ đệm TB 7 ngày, tỉ lệ ASR thật 7 ngày, chuỗi 14 ngày (clip + user mới/ngày).
+- **SPA:** 5 khu sáng đèn — Nội dung · Rubric (editor pool tips + preview criteria) ·
+  Người dùng & vé (tìm/tạo/vai/reset MK/+1 vé) · Vận hành review (filter, audio player, hoàn vé,
+  viền đỏ quá hạn) · Số liệu (metric cards + bar chart 14 ngày).
+- Verify: backend smoke B+C ✓ (rubric propagate học viên, MC mới login lại sau reset MK,
+  refund hoàn vé đúng, metrics đếm đúng) · SPA build 170KB · client tsc + bundle 969 modules ✓.
+- **Plan admin còn:** Pha D (import/export JSON, audit log, thùng rác) — khi cần.
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)

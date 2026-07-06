@@ -170,6 +170,11 @@ export default function App() {
       const match = ps.find((p: any) => (p.genre || "").toLowerCase().includes(goal));
       if (match) { pid = match.id; setSelPath(match.id); setGoalPref(""); await AsyncStorage.removeItem("goal"); }
     }
+    // Pha B: bài v1 đã nằm trong cây — mặc định là lộ trình "Kỹ năng nói" (admin sửa được)
+    if (!pid) {
+      const kn = ps.find((p: any) => (p.genre || "").toLowerCase().includes("kỹ năng nói")) || ps[0];
+      if (kn) { pid = kn.id; setSelPath(kn.id); }
+    }
     setLessons(pid ? await Api.contentLessons(t, pid) : await Api.lessons(t));
     setReviews(await Api.myReviews(t));
     setBoard(await Api.leaderboard(t));
@@ -347,7 +352,6 @@ export default function App() {
           {paths.length > 0 && (
             <View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
-                <PathPill active={!selPath} label="Kỹ năng nói" color={C.primary} onPress={() => pickPath(null)} />
                 {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
               </ScrollView>
               {/* giảm nhiễu: tagline chỉ hiện khi đã chọn thể loại */}
