@@ -71,6 +71,11 @@ export function setMusicScene(wanted: boolean) {
 /** RecordScreen/ReelsPager gọi quanh lúc thu — chặn nhạc tuyệt đối khi mic mở. */
 export function setRecording(v: boolean) {
   recording = v;
+  if (!v) {
+    // Thu xong: trả audio mode về mặc định — TÔN TRỌNG công tắc im lặng iOS trở lại
+    // (lúc thu buộc phải bật playsInSilentModeIOS; không reset thì nhạc nền kêu cả khi máy gạt im lặng)
+    Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: false }).catch(() => {});
+  }
   syncMusic();
 }
 

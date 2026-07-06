@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Alert, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Alert, Linking, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
@@ -515,6 +515,11 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
       <Btn ghost label={soundOn ? "Âm thanh: Bật 🔊" : "Âm thanh: Tắt 🔇"} onPress={onToggleSound} />
+      {/* kênh góp ý cho bản test — mở mail có sẵn tiêu đề */}
+      <Btn ghost label="Góp ý cho McUp 💌" onPress={() =>
+        Linking.openURL("mailto:datly3494@gmail.com?subject=" + encodeURIComponent("Góp ý McUp beta")
+          + "&body=" + encodeURIComponent("Mình thấy...")).catch(() => {})
+      } />
       {/* Credit BẮT BUỘC theo CC-BY 4.0 (assets/CREDITS.md) — giữ khi phát hành */}
       <Text style={{ color: "#BFB4C4", fontSize: 10.5, textAlign: "center", marginTop: 8 }}>
         Nhạc: "Wholesome" — Kevin MacLeod (incompetech.com) · CC BY 4.0

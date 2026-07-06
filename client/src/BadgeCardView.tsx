@@ -50,6 +50,8 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
     if (!badge.audio_url) return;
     try {
       if (playing) { await soundRef.current?.stopAsync(); setPlaying(false); return; }
+      // Người dùng CHỦ ĐỘNG bấm nghe → phát được cả khi máy gạt im lặng (chuẩn app nghe audio)
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
       const { sound } = await Audio.Sound.createAsync({ uri: audioBase + badge.audio_url });
       soundRef.current = sound;
       sound.setOnPlaybackStatusUpdate((s: any) => { if (s.didJustFinish) setPlaying(false); });
