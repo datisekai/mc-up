@@ -1,5 +1,10 @@
-// App.tsx — khung admin: đăng nhập + sidebar 7 khu (Pha A: khu Nội dung).
+// App.tsx — khung admin trên Ant Design: Sider mận sâu + Menu icon thật, login Card.
 import { useState } from "react";
+import {
+  BarChartOutlined, BookOutlined, CustomerServiceOutlined, HistoryOutlined,
+  LogoutOutlined, TeamOutlined, AimOutlined,
+} from "@ant-design/icons";
+import { Button, Card, Form, Input, Layout, Menu, Typography } from "antd";
 import { Api, hasToken, setToken } from "./api";
 import Audit from "./Audit";
 import Content from "./Content";
@@ -8,14 +13,13 @@ import Ops from "./Ops";
 import Rubrics from "./Rubrics";
 import Users from "./Users";
 
-// Vé & tiến độ gộp vào khu Người dùng (nút +1 vé / grant ở từng dòng)
 const AREAS = [
-  { key: "content", label: "📚 Nội dung", ready: true, tip: "Soạn/sửa giáo trình: thể loại, lộ trình, buổi, bài — sửa tại chỗ, duyệt rồi xuất bản" },
-  { key: "rubrics", label: "🎯 Rubric chấm", ready: true, tip: "Chỉnh ngưỡng tốc độ & lời khen/nhắc theo thể loại — lưu là app đổi theo ngay" },
-  { key: "users", label: "👥 Người dùng & vé", ready: true, tip: "Tìm người dùng, tạo tài khoản MC, đổi vai, reset mật khẩu, tặng Vé Vàng" },
-  { key: "reviews", label: "🎤 Vận hành review", ready: true, tip: "Hàng đợi Vé Vàng: nghe clip, theo dõi hạn 72h, hoàn vé" },
-  { key: "metrics", label: "📈 Số liệu", ready: true, tip: "Dashboard: người luyện, clip/ngày, % giọng thật, review đúng hạn" },
-  { key: "audit", label: "🗂 Nhật ký", ready: true, tip: "Lịch sử thao tác admin — ai sửa gì, lúc nào" },
+  { key: "content", icon: <BookOutlined />, label: "Nội dung", tip: "Soạn/sửa giáo trình — sửa tại chỗ, duyệt rồi xuất bản" },
+  { key: "rubrics", icon: <AimOutlined />, label: "Rubric chấm", tip: "Ngưỡng tốc độ & lời khen/nhắc theo thể loại — lưu là app đổi ngay" },
+  { key: "users", icon: <TeamOutlined />, label: "Người dùng & vé", tip: "Tạo MC, đổi vai, reset mật khẩu, tặng Vé Vàng" },
+  { key: "reviews", icon: <CustomerServiceOutlined />, label: "Vận hành review", tip: "Hàng đợi Vé Vàng: nghe clip, hạn 72h, hoàn vé" },
+  { key: "metrics", icon: <BarChartOutlined />, label: "Số liệu", tip: "Người luyện, clip/ngày, % giọng thật, review đúng hạn" },
+  { key: "audit", icon: <HistoryOutlined />, label: "Nhật ký", tip: "Ai sửa gì, lúc nào" },
 ];
 
 export default function App() {
@@ -25,42 +29,46 @@ export default function App() {
   if (!authed) return <Login onOk={() => setAuthed(true)} />;
 
   return (
-    <div className="shell">
-      <aside className="side">
-        <h1>McUp · Admin</h1>
-        <nav className="nav">
-          {AREAS.map((a) => (
-            <button key={a.key} className={area === a.key ? "on" : ""} disabled={!a.ready}
-              title={a.tip} onClick={() => setArea(a.key)}>
-              {a.label}
-            </button>
-          ))}
-          <button style={{ marginTop: 18 }} title="Thoát phiên admin — quay về màn đăng nhập"
+    <Layout style={{ minHeight: "100vh" }}>
+      <Layout.Sider width={220}>
+        <div style={{ padding: "20px 20px 12px" }}>
+          <Typography.Title level={4} style={{ color: "#FF6B5B", margin: 0, fontWeight: 800 }}>
+            McUp <span style={{ color: "#C9BBD6", fontWeight: 500, fontSize: 13 }}>· Admin</span>
+          </Typography.Title>
+        </div>
+        <Menu
+          theme="dark" mode="inline" selectedKeys={[area]}
+          onClick={(e) => setArea(e.key)}
+          items={AREAS.map((a) => ({ key: a.key, icon: a.icon, label: a.label, title: a.tip }))}
+        />
+        <div style={{ padding: 14, position: "absolute", bottom: 0, width: "100%" }}>
+          <Button block icon={<LogoutOutlined />} title="Thoát phiên admin"
             onClick={() => { setToken(null); setAuthed(false); }}>
             Đăng xuất
-          </button>
-        </nav>
-      </aside>
-      {area === "content" && <Content />}
-      {area === "rubrics" && <Rubrics />}
-      {area === "users" && <Users />}
-      {area === "reviews" && <Ops />}
-      {area === "metrics" && <Metrics />}
-      {area === "audit" && <Audit />}
-    </div>
+          </Button>
+        </div>
+      </Layout.Sider>
+
+      <Layout.Content style={{ padding: 20, overflow: "auto" }}>
+        {area === "content" && <Content />}
+        {area === "rubrics" && <Rubrics />}
+        {area === "users" && <Users />}
+        {area === "reviews" && <Ops />}
+        {area === "metrics" && <Metrics />}
+        {area === "audit" && <Audit />}
+      </Layout.Content>
+    </Layout>
   );
 }
 
 function Login({ onOk }: { onOk: () => void }) {
-  const [email, setEmail] = useState("admin@test.vn");
-  const [pw, setPw] = useState("123456");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function go() {
+  async function go(values: { email: string; pw: string }) {
     setBusy(true); setErr("");
     try {
-      const r = await Api.login(email.trim(), pw);
+      const r = await Api.login(values.email.trim(), values.pw);
       if (r.role !== "admin") { setErr("Tài khoản này không phải admin."); setBusy(false); return; }
       setToken(r.access_token);
       onOk();
@@ -69,20 +77,27 @@ function Login({ onOk }: { onOk: () => void }) {
   }
 
   return (
-    <div className="login-wrap">
-      <div className="card" style={{ width: 340 }}>
-        <h2 style={{ color: "var(--primary)", marginBottom: 4 }}>McUp · Admin</h2>
-        <p className="muted" style={{ marginBottom: 10 }}>Quản lý nội dung — sửa tại chỗ, nháp trước, xuất bản sau.</p>
-        <label>Email</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} />
-        <label>Mật khẩu</label>
-        <input type="password" value={pw} onChange={(e) => setPw(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && go()} />
-        {err && <p className="err" style={{ marginTop: 8 }}>{err}</p>}
-        <div style={{ marginTop: 12 }}>
-          <button onClick={go} disabled={busy} title="Đăng nhập bằng tài khoản có vai admin">{busy ? "Đang vào..." : "Đăng nhập"}</button>
-        </div>
-      </div>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F6EDE2" }}>
+      <Card style={{ width: 360 }} title={
+        <span style={{ color: "#FF6B5B", fontWeight: 800, fontSize: 18 }}>McUp · Admin</span>
+      }>
+        <Typography.Paragraph type="secondary" style={{ marginTop: -6 }}>
+          Quản lý nội dung — sửa tại chỗ, nháp trước, xuất bản sau.
+        </Typography.Paragraph>
+        <Form layout="vertical" onFinish={go} initialValues={{ email: "admin@test.vn", pw: "123456" }}>
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: "Nhập email" }]}>
+            <Input autoComplete="username" />
+          </Form.Item>
+          <Form.Item name="pw" label="Mật khẩu" rules={[{ required: true, message: "Nhập mật khẩu" }]}>
+            <Input.Password autoComplete="current-password" />
+          </Form.Item>
+          {err && <Typography.Text type="danger">{err}</Typography.Text>}
+          <Button type="primary" htmlType="submit" block loading={busy} style={{ marginTop: 8 }}
+            title="Đăng nhập bằng tài khoản có vai admin">
+            Đăng nhập
+          </Button>
+        </Form>
+      </Card>
     </div>
   );
 }

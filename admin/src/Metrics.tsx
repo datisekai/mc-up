@@ -1,5 +1,6 @@
-// Metrics.tsx — khu ⑦ (Pha C): dashboard số liệu vận hành + chuỗi 14 ngày.
+// Metrics.tsx — dashboard trên Ant Design: Statistic cards + bar chart 14 ngày.
 import { useEffect, useState } from "react";
+import { App as AntApp, Card, Col, Row, Statistic, Tooltip, Typography } from "antd";
 import { Api } from "./api";
 
 type M = {
@@ -10,52 +11,51 @@ type M = {
 };
 
 export default function Metrics() {
+  const { message } = AntApp.useApp();
   const [m, setM] = useState<M | null>(null);
-  const [err, setErr] = useState("");
-  useEffect(() => { Api.metrics().then(setM).catch((e) => setErr(e.message)); }, []);
-  if (err) return <main className="main"><p className="err">{err}</p></main>;
-  if (!m) return <main className="main"><p className="muted">Đang tải…</p></main>;
+  useEffect(() => { Api.metrics().then(setM).catch((e) => message.error(e.message)); }, []);
+  if (!m) return <Card loading />;
 
-  const cards = [
+  const cards: [string, string | number, string?][] = [
     ["Học viên", m.hoc_vien, `${m.guests} là khách`],
-    ["MC", m.mcs, ""],
+    ["MC", m.mcs],
     ["Clip đã nộp", m.clips_total, `${m.clips_today} hôm nay`],
     ["Review đang chờ", m.reviews_pending, m.reviews_overdue ? `⚠ ${m.reviews_overdue} quá hạn 72h` : "đúng SLA"],
-    ["Vé Vàng đang lưu hành", m.tickets_outstanding, ""],
+    ["Vé Vàng lưu hành", m.tickets_outstanding],
     ["Từ đệm TB (7 ngày)", m.filler_avg_7d ?? "—", "thấp hơn = tốt"],
-    ["Tỉ lệ ASR thật (7 ngày)", m.real_asr_ratio_7d != null ? Math.round(m.real_asr_ratio_7d * 100) + "%" : "—", "còn lại là giả lập"],
-  ] as const;
+    ["ASR thật (7 ngày)", m.real_asr_ratio_7d != null ? Math.round(m.real_asr_ratio_7d * 100) + "%" : "—", "còn lại là giả lập"],
+  ];
   const maxClips = Math.max(1, ...m.by_day.map((d) => d.clips));
 
   return (
-    <main className="main" style={{ display: "block" }}>
-      <div className="row" style={{ alignItems: "stretch", marginBottom: 12 }}>
+    <>
+      <Row gutter={[12, 12]}>
         {cards.map(([label, val, sub]) => (
-          <div key={label} className="card" style={{ flex: 1, minWidth: 150 }}>
-            <div className="muted" style={{ fontSize: 11.5 }}>{label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, margin: "2px 0" }}>{val}</div>
-            {sub && <div className="muted" style={{ fontSize: 11 }}>{sub}</div>}
-          </div>
+          <Col key={label} xs={12} md={8} lg={6} xl={6}>
+            <Card size="small">
+              <Statistic title={label} value={val} />
+              {sub && <Typography.Text type="secondary" style={{ fontSize: 11.5 }}>{sub}</Typography.Text>}
+            </Card>
+          </Col>
         ))}
-      </div>
+      </Row>
 
-      <div className="card">
-        <b>Clip nộp theo ngày (14 ngày)</b>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120, marginTop: 12 }}>
+      <Card size="small" title="Clip nộp theo ngày (14 ngày)" style={{ marginTop: 12 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 130 }}>
           {m.by_day.map((d) => (
-            <div key={d.d} style={{ flex: 1, textAlign: "center" }} title={`${d.d}: ${d.clips} clip · ${d.users} user mới`}>
-              <div style={{
-                height: Math.round((d.clips / maxClips) * 100) + "%",
-                minHeight: d.clips ? 6 : 2,
-                background: d.clips ? "var(--primary)" : "var(--hair)",
-                borderRadius: 6,
-              }} />
-              <div className="muted" style={{ fontSize: 9, marginTop: 4 }}>{d.d.slice(8)}</div>
-            </div>
+            <Tooltip key={d.d} title={`${d.d}: ${d.clips} clip · ${d.users} người dùng mới`}>
+              <div style={{ flex: 1, textAlign: "center", cursor: "default" }}>
+                <div style={{
+                  height: Math.max(d.clips ? 8 : 2, Math.round((d.clips / maxClips) * 100)),
+                  background: d.clips ? "#FF6B5B" : "#EDE3D6",
+                  borderRadius: 6,
+                }} />
+                <Typography.Text type="secondary" style={{ fontSize: 10 }}>{d.d.slice(8)}</Typography.Text>
+              </div>
+            </Tooltip>
           ))}
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>Di chuột lên cột để xem chi tiết (kèm số người dùng mới).</p>
-      </div>
-    </main>
+      </Card>
+    </>
   );
 }

@@ -1,5 +1,6 @@
-// Ops.tsx — khu ⑤ (Pha C): hàng đợi Vé Vàng + SLA 72h, nghe clip/giọng MC, hoàn vé.
+// Ops.tsx — vận hành review trên Ant Design: Segmented filter, cảnh báo SLA, audio, hoàn vé.
 import { useEffect, useState } from "react";
+import { App as AntApp, Button, Card, Empty, Popconfirm, Segmented, Space, Tag, Tooltip, Typography } from "antd";
 import { Api } from "./api";
 
 type Rv = {
@@ -8,59 +9,78 @@ type Rv = {
   note: string | null; speed_wpm: number | null; filler_count: number | null;
 };
 
+const FILTERS = [
+  { value: "pending", label: "Đang chờ" },
+  { value: "submitted", label: "Đã nhận xét" },
+  { value: "expired", label: "Đã hoàn vé" },
+  { value: "all", label: "Tất cả" },
+];
+
 export default function Ops() {
+  const { message } = AntApp.useApp();
   const [status, setStatus] = useState("pending");
   const [rows, setRows] = useState<Rv[]>([]);
-  const [err, setErr] = useState("");
-  const load = (st = status) => Api.reviews(st).then(setRows).catch((e) => setErr(e.message));
+  const load = (st = status) => Api.reviews(st).then(setRows).catch((e) => message.error(e.message));
   useEffect(() => { load(); }, [status]);
 
   return (
-    <main className="main" style={{ display: "block" }}>
-      <div className="card" style={{ marginBottom: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <b>🎤 Vận hành review (SLA 72h)</b>
-          <div className="row">
-            {["pending", "submitted", "expired", "all"].map((st) => (
-              <button key={st} className={"tiny " + (status === st ? "" : "ghost")}
-                title={st === "pending" ? "Yêu cầu MC chưa trả lời — quá 72h sẽ viền đỏ"
-                  : st === "submitted" ? "Đã có nhận xét của MC (nghe được giọng tại đây)"
-                  : st === "expired" ? "Đã hoàn vé cho học viên (quá hạn hoặc hoàn tay)"
-                  : "Xem tất cả yêu cầu"}
-                onClick={() => setStatus(st)}>
-                {st === "pending" ? "Đang chờ" : st === "submitted" ? "Đã nhận xét" : st === "expired" ? "Đã hoàn vé" : "Tất cả"}
-              </button>
-            ))}
-          </div>
-        </div>
-        {err && <p className="err">{err}</p>}
-      </div>
+    <Space direction="vertical" style={{ width: "100%" }} size={12}>
+      <Card size="small">
+        <Space style={{ width: "100%", justifyContent: "space-between" }} wrap>
+          <b>Vận hành review — SLA 72h</b>
+          <Tooltip title="Đang chờ: MC chưa trả lời (quá 72h viền đỏ) · Đã nhận xét: nghe được giọng MC · Đã hoàn vé: quá hạn hoặc hoàn tay">
+            <Segmented options={FILTERS} value={status} onChange={(v) => setStatus(v as string)} />
+          </Tooltip>
+        </Space>
+      </Card>
 
+      {rows.length === 0 && <Card><Empty description="Không có yêu cầu nào" /></Card>}
       {rows.map((r) => (
-        <div key={r.id} className="card" style={{ marginBottom: 8, ...(r.overdue ? { outline: "2px solid var(--primary)" } : {}) }}>
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <div>
-              <b>{r.hoc_vien}</b>
-              {" "}<span className={"pill " + (r.status === "submitted" ? "published" : r.status === "expired" ? "archived" : "draft")}>{r.status}</span>
-              {r.overdue && <span className="pill" style={{ background: "#FFE3DE", color: "#B3271B", marginLeft: 6 }}>QUÁ HẠN {r.age_hours}h</span>}
-              <div className="muted">
-                {r.age_hours}h trước · {r.speed_wpm != null ? `${r.speed_wpm} wpm · ${r.filler_count} từ đệm` : "chưa có điểm"}
-                {r.mc ? ` · MC: ${r.mc}` : ""}
+        <Card key={r.id} size="small"
+          style={r.overdue ? { borderColor: "#E5484D", borderWidth: 2 } : undefined}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ minWidth: 220 }}>
+              <Space size={6} wrap>
+                <b>{r.hoc_vien}</b>
+                <Tag color={r.status === "submitted" ? "green" : r.status === "expired" ? "default" : "gold"}>
+                  {r.status === "submitted" ? "đã nhận xét" : r.status === "expired" ? "đã hoàn vé" : "đang chờ"}
+                </Tag>
+                {r.overdue && <Tag color="red">QUÁ HẠN {r.age_hours}h</Tag>}
+              </Space>
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12.5 }}>
+                  {r.age_hours}h trước · {r.speed_wpm != null ? `${r.speed_wpm} chữ/phút · ${r.filler_count} từ đệm` : "chưa có điểm"}
+                  {r.mc ? ` · MC: ${r.mc}` : ""}
+                </Typography.Text>
               </div>
-              {r.note && <div className="muted" style={{ fontStyle: "italic" }}>“{r.note}”</div>}
+              {r.note && <Typography.Text italic type="secondary">"{r.note}"</Typography.Text>}
             </div>
-            <div className="row">
-              {r.clip_url && <span><label style={{ margin: 0 }}>Clip học viên</label><audio controls preload="none" src={r.clip_url} style={{ height: 32, width: 210 }} /></span>}
-              {r.voice_url && <span><label style={{ margin: 0 }}>Giọng MC</label><audio controls preload="none" src={r.voice_url} style={{ height: 32, width: 210 }} /></span>}
-              {r.status === "pending" && (
-                <button className="tiny gold" title="Đóng yêu cầu này + trả lại 1 Vé Vàng cho học viên (dùng khi MC không kịp trả lời)"
-                  onClick={async () => { await Api.refund(r.id); load(); }}>Hoàn vé</button>
+            <Space wrap align="center">
+              {r.clip_url && (
+                <div>
+                  <Typography.Text type="secondary" style={{ fontSize: 11, display: "block" }}>Clip học viên</Typography.Text>
+                  <audio controls preload="none" src={r.clip_url} style={{ height: 32, width: 220 }} />
+                </div>
               )}
-            </div>
+              {r.voice_url && (
+                <div>
+                  <Typography.Text type="secondary" style={{ fontSize: 11, display: "block" }}>Giọng MC</Typography.Text>
+                  <audio controls preload="none" src={r.voice_url} style={{ height: 32, width: 220 }} />
+                </div>
+              )}
+              {r.status === "pending" && (
+                <Popconfirm title="Hoàn vé cho học viên?" description="Yêu cầu đóng lại + học viên nhận lại 1 Vé Vàng."
+                  okText="Hoàn vé" cancelText="Thôi"
+                  onConfirm={async () => { await Api.refund(r.id); message.success("Đã hoàn vé"); load(); }}>
+                  <Tooltip title="Dùng khi MC không kịp trả lời trong 72h">
+                    <Button type="primary">Hoàn vé</Button>
+                  </Tooltip>
+                </Popconfirm>
+              )}
+            </Space>
           </div>
-        </div>
+        </Card>
       ))}
-      {rows.length === 0 && <div className="card"><p className="muted">Không có yêu cầu nào.</p></div>}
-    </main>
+    </Space>
   );
 }

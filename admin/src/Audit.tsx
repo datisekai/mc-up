@@ -1,40 +1,51 @@
-// Audit.tsx — khu Nhật ký (Pha D): ai sửa gì, lúc nào. Append-only, chỉ đọc.
+// Audit.tsx — nhật ký thao tác trên Ant Design Table (chỉ đọc).
 import { useEffect, useState } from "react";
+import { App as AntApp, Card, Table, Tag, Typography } from "antd";
 import { Api } from "./api";
 
 type Row = { id: string; admin: string; action: string; entity: string; entity_id: string; detail: any; at: string };
 
-const ACTION_LABEL: Record<string, string> = {
-  patch: "✏️ Sửa", publish: "✅ Xuất bản", unpublish: "↩️ Gỡ xuất bản", "ai-split": "🧠 AI chia",
-  rubric: "🎯 Rubric", user: "👤 Tạo user", grant: "🎁 Grant", refund: "🎟 Hoàn vé", import: "⬆ Nhập JSON",
+const ACTION_META: Record<string, { label: string; color: string }> = {
+  patch: { label: "Sửa", color: "blue" },
+  publish: { label: "Xuất bản", color: "green" },
+  unpublish: { label: "Gỡ xuất bản", color: "orange" },
+  "ai-split": { label: "AI chia", color: "purple" },
+  rubric: { label: "Rubric", color: "magenta" },
+  user: { label: "Tạo user", color: "cyan" },
+  grant: { label: "Grant", color: "gold" },
+  refund: { label: "Hoàn vé", color: "volcano" },
+  import: { label: "Nhập JSON", color: "geekblue" },
 };
 
 export default function Audit() {
+  const { message } = AntApp.useApp();
   const [rows, setRows] = useState<Row[]>([]);
-  const [err, setErr] = useState("");
-  useEffect(() => { Api.audit(200).then(setRows).catch((e) => setErr(e.message)); }, []);
+  useEffect(() => { Api.audit(200).then(setRows).catch((e) => message.error(e.message)); }, []);
 
   return (
-    <main className="main" style={{ display: "block" }}>
-      <div className="card" style={{ marginBottom: 12 }}>
-        <b>🗂 Nhật ký thao tác</b>
-        <p className="muted" style={{ marginTop: 4 }}>200 thao tác gần nhất — ai sửa gì, lúc nào. Không xoá/sửa được.</p>
-        {err && <p className="err">{err}</p>}
-      </div>
-      <div className="card">
-        {rows.length === 0 && <p className="muted">Chưa có thao tác nào.</p>}
-        {rows.map((r) => (
-          <div key={r.id} className="row" style={{ padding: "7px 0", borderBottom: "1px solid var(--hair)", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 13 }}>
-              <b>{ACTION_LABEL[r.action] ?? r.action}</b> · {r.entity}
-              {r.detail && <span className="muted"> — {JSON.stringify(r.detail)}</span>}
-            </span>
-            <span className="muted" style={{ whiteSpace: "nowrap" }}>
-              {r.admin} · {new Date(r.at).toLocaleString("vi-VN")}
-            </span>
-          </div>
-        ))}
-      </div>
-    </main>
+    <Card size="small" title="Nhật ký thao tác" extra={
+      <Typography.Text type="secondary" style={{ fontSize: 12.5 }}>200 gần nhất · append-only, không sửa được</Typography.Text>
+    }>
+      <Table rowKey="id" dataSource={rows} size="small" pagination={{ pageSize: 25 }}
+        columns={[
+          {
+            title: "Lúc", dataIndex: "at", width: 160,
+            render: (v: string) => new Date(v).toLocaleString("vi-VN"),
+          },
+          { title: "Admin", dataIndex: "admin", width: 140 },
+          {
+            title: "Thao tác", dataIndex: "action", width: 130,
+            render: (a: string) => {
+              const meta = ACTION_META[a] ?? { label: a, color: "default" };
+              return <Tag color={meta.color}>{meta.label}</Tag>;
+            },
+          },
+          { title: "Đối tượng", dataIndex: "entity", width: 100 },
+          {
+            title: "Chi tiết", dataIndex: "detail",
+            render: (d: any) => d ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>{JSON.stringify(d)}</Typography.Text> : null,
+          },
+        ]} />
+    </Card>
   );
 }

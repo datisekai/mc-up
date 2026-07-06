@@ -1,5 +1,9 @@
-// Users.tsx — khu ④ (Pha B): tìm kiếm, đổi vai, tạo MC, reset mật khẩu + tặng vé (Pha C).
+// Users.tsx — người dùng & vé trên Ant Design (Table + Modal tạo MC).
 import { useEffect, useState } from "react";
+import { FireOutlined, GiftOutlined, KeyOutlined, PlusOutlined, StarOutlined, TagOutlined } from "@ant-design/icons";
+import {
+  App as AntApp, Button, Card, Form, Input, Modal, Select, Space, Table, Tag, Tooltip, Typography,
+} from "antd";
 import { Api } from "./api";
 
 type U = {
@@ -8,88 +12,110 @@ type U = {
 };
 
 export default function Users() {
-  const [q, setQ] = useState("");
+  const { message, modal } = AntApp.useApp();
   const [users, setUsers] = useState<U[]>([]);
-  const [err, setErr] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const load = (query = q) => Api.users(query).then(setUsers).catch((e) => setErr(e.message));
-  useEffect(() => { load(""); }, []);
+  const [form] = Form.useForm();
+  const load = (q = "") => Api.users(q).then(setUsers).catch((e) => message.error(e.message));
+  useEffect(() => { load(); }, []);
+
+  const columns = [
+    {
+      title: "Người dùng", key: "u",
+      render: (_: unknown, u: U) => (
+        <div>
+          <Space size={6}>
+            <b>{u.display_name || "(chưa đặt tên)"}</b>
+            {u.is_guest && <Tag color="gold">khách</Tag>}
+            {u.role !== "hoc_vien" && <Tag color={u.role === "admin" ? "red" : "blue"}>{u.role}</Tag>}
+          </Space>
+          <div><Typography.Text type="secondary" style={{ fontSize: 12 }}>{u.email}</Typography.Text></div>
+          {u.mc_title && <Typography.Text type="secondary" style={{ fontSize: 12 }}><TagOutlined /> {u.mc_title}</Typography.Text>}
+        </div>
+      ),
+    },
+    {
+      title: "Tiến độ", key: "p", width: 190,
+      render: (_: unknown, u: U) => (
+        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+          <FireOutlined style={{ color: "#F5A623" }} /> {u.streak} · <StarOutlined style={{ color: "#FF6B5B" }} /> {u.xp} · 🎟 {u.tickets}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: "Vai", key: "role", width: 130,
+      render: (_: unknown, u: U) => (
+        <Tooltip title="Đổi vai: học viên / MC (nhận review Vé Vàng) / admin (vào trang này)">
+          <Select size="small" value={u.role} style={{ width: 110 }}
+            options={[{ value: "hoc_vien", label: "học viên" }, { value: "mc", label: "mc" }, { value: "admin", label: "admin" }]}
+            onChange={async (v) => { try { await Api.patchUser(u.id, { role: v }); message.success("Đã đổi vai"); load(); } catch (e: any) { message.error(e.message); } }} />
+        </Tooltip>
+      ),
+    },
+    {
+      title: "", key: "act", width: 110,
+      render: (_: unknown, u: U) => (
+        <Space size={4}>
+          <Tooltip title="Tặng người này 1 Vé Vàng (gửi clip cho MC thật nhận xét)">
+            <Button size="small" type="text" icon={<GiftOutlined />} onClick={async () => {
+              try { await Api.grant(u.id, { tickets_delta: 1 }); message.success("+1 Vé Vàng"); load(); }
+              catch (e: any) { message.error(e.message); }
+            }} />
+          </Tooltip>
+          <Tooltip title="Đặt mật khẩu mới cho người này (khi họ quên)">
+            <Button size="small" type="text" icon={<KeyOutlined />} onClick={() => {
+              let pw = "";
+              modal.confirm({
+                title: `Mật khẩu mới cho ${u.email}`,
+                content: <Input.Password placeholder="Mật khẩu mới" onChange={(e) => { pw = e.target.value; }} />,
+                okText: "Đặt lại", cancelText: "Thôi",
+                onOk: async () => {
+                  if (!pw) return;
+                  await Api.patchUser(u.id, { password: pw });
+                  message.success("Đã reset mật khẩu");
+                },
+              });
+            }} />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <main className="main" style={{ display: "block" }}>
-      <div className="card" style={{ marginBottom: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <b>👥 Người dùng</b>
-          <button className="tiny" title="Mở form tạo tài khoản MC hoặc admin mới (kèm chức danh hiển thị trên thẻ bảo chứng)" onClick={() => setShowCreate(!showCreate)}>＋ Tạo MC / admin</button>
-        </div>
-        <div className="row" style={{ marginTop: 8 }}>
-          <input placeholder="Tìm theo email hoặc tên…" value={q} style={{ flex: 1 }}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && load()} />
-          <button className="ghost" title="Tìm theo email hoặc tên hiển thị" onClick={() => load()}>Tìm</button>
-        </div>
-        {showCreate && <CreateForm onDone={() => { setShowCreate(false); load(); }} onErr={setErr} />}
-        {err && <p className="err" style={{ marginTop: 6 }}>{err}</p>}
-      </div>
+    <Space direction="vertical" style={{ width: "100%" }} size={12}>
+      <Card size="small">
+        <Space style={{ width: "100%", justifyContent: "space-between" }} wrap>
+          <Input.Search placeholder="Tìm theo email hoặc tên…" allowClear style={{ width: 320 }}
+            onSearch={(q) => load(q)} />
+          <Tooltip title="Tạo tài khoản MC hoặc admin mới (kèm chức danh hiển thị trên thẻ bảo chứng)">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreate(true)}>Tạo MC / admin</Button>
+          </Tooltip>
+        </Space>
+      </Card>
 
-      {users.map((u) => <UserRow key={u.id} u={u} onChanged={() => load()} />)}
-      {users.length === 0 && <div className="card"><p className="muted">Không có kết quả.</p></div>}
-    </main>
-  );
-}
+      <Table rowKey="id" dataSource={users} columns={columns} size="middle" pagination={{ pageSize: 20 }} />
 
-function CreateForm({ onDone, onErr }: { onDone: () => void; onErr: (m: string) => void }) {
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
-  const [role, setRole] = useState("mc");
-  return (
-    <div className="row" style={{ marginTop: 10, alignItems: "flex-end" }}>
-      <div style={{ flex: 1, minWidth: 160 }}><label>Email</label><input value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-      <div style={{ width: 110 }}><label>Mật khẩu</label><input value={pw} onChange={(e) => setPw(e.target.value)} /></div>
-      <div style={{ flex: 1, minWidth: 130 }}><label>Tên hiển thị</label><input value={name} onChange={(e) => setName(e.target.value)} /></div>
-      <div style={{ flex: 1, minWidth: 150 }}><label>Chức danh MC</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="vd: Dẫn 500+ sự kiện" /></div>
-      <div style={{ width: 110 }}><label>Vai</label>
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="mc">mc</option><option value="admin">admin</option><option value="hoc_vien">học viên</option>
-        </select>
-      </div>
-      <button className="gold" title="Tạo tài khoản với thông tin bên trái — người này đăng nhập được ngay" onClick={async () => {
-        try { await Api.createUser({ email, password: pw, display_name: name, role, mc_title: title || undefined }); onDone(); }
-        catch (e: any) { onErr(e.message); }
-      }}>Tạo</button>
-    </div>
-  );
-}
-
-function UserRow({ u, onChanged }: { u: U; onChanged: () => void }) {
-  const [msg, setMsg] = useState("");
-  async function act(fn: () => Promise<unknown>, ok: string) {
-    try { await fn(); setMsg(ok); onChanged(); } catch (e: any) { setMsg(e.message); }
-  }
-  return (
-    <div className="card" style={{ marginBottom: 8 }}>
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <div style={{ minWidth: 220 }}>
-          <b>{u.display_name || "(chưa đặt tên)"}</b> {u.is_guest && <span className="pill draft">khách</span>}
-          <div className="muted">{u.email}</div>
-          {u.mc_title && <div className="muted">🎤 {u.mc_title}</div>}
-        </div>
-        <div className="row">
-          <span className="muted">🔥{u.streak} · ⭐{u.xp} · 🎟{u.tickets}</span>
-          <select value={u.role} style={{ width: 110 }} title="Đổi vai: học viên / MC (nhận review Vé Vàng) / admin (vào trang này)"
-            onChange={(e) => act(() => Api.patchUser(u.id, { role: e.target.value }), "Đã đổi vai ✓")}>
-            <option value="hoc_vien">học viên</option><option value="mc">mc</option><option value="admin">admin</option>
-          </select>
-          <button className="tiny ghost" title="Tặng người này 1 Vé Vàng (gửi clip cho MC thật nhận xét)" onClick={() => act(() => Api.grant(u.id, { tickets_delta: 1 }), "+1 vé ✓")}>＋1 🎟</button>
-          <button className="tiny ghost" title="Đặt mật khẩu mới cho người này (khi họ quên)" onClick={() => {
-            const p = window.prompt("Mật khẩu mới cho " + u.email + ":");
-            if (p) act(() => Api.patchUser(u.id, { password: p }), "Đã reset mật khẩu ✓");
-          }}>Reset MK</button>
-          {msg && <span className="saved">{msg}</span>}
-        </div>
-      </div>
-    </div>
+      <Modal open={showCreate} title="Tạo tài khoản" okText="Tạo" cancelText="Huỷ"
+        onCancel={() => setShowCreate(false)}
+        onOk={() => form.submit()}>
+        <Form form={form} layout="vertical" initialValues={{ role: "mc" }}
+          onFinish={async (v) => {
+            try {
+              await Api.createUser({ email: v.email, password: v.password, display_name: v.display_name, role: v.role, mc_title: v.mc_title || undefined });
+              message.success("Đã tạo — người này đăng nhập được ngay");
+              setShowCreate(false); form.resetFields(); load();
+            } catch (e: any) { message.error(e.message); }
+          }}>
+          <Form.Item name="email" label="Email" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="password" label="Mật khẩu" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="display_name" label="Tên hiển thị" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="mc_title" label="Chức danh MC (hiện trên thẻ bảo chứng)"><Input placeholder="vd: Dẫn 500+ sự kiện" /></Form.Item>
+          <Form.Item name="role" label="Vai">
+            <Select options={[{ value: "mc", label: "mc" }, { value: "admin", label: "admin" }, { value: "hoc_vien", label: "học viên" }]} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </Space>
   );
 }
