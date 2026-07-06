@@ -25,7 +25,10 @@ import { STREAK_GREET, fill, pick } from "./src/variety";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
-type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
+type Score = {
+  volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
+  transcript?: string | null; unclear?: boolean;
+};
 
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
 
