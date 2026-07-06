@@ -422,9 +422,14 @@ export default function App() {
           )}
           {tab === "hv" && screen === "score" && score && (
             <View>
-              <Kicker>Kết quả của bạn</Kicker>
+              <Kicker>{score.unclear ? "Chưa chấm được" : "Kết quả của bạn"}</Kicker>
               <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
-              <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
+              {score.unclear ? (
+                // không nghe được → mời thu lại ngay, KHÔNG mời gửi MC (phí vé vô ích)
+                <Btn label="Thử lại ngay 🎙" onPress={() => setScreen("practice")} />
+              ) : (
+                <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
+              )}
               <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>

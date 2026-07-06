@@ -46,6 +46,7 @@ class ScoreOut(BaseModel):
     tip: str
     is_mock: bool
     transcript: str | None = None  # lời user nói (chỉ ASR thật) — client tô từ đệm
+    unclear: bool = False          # ASR thật nhưng không nghe được → app hiện trạng thái riêng, KHÔNG hiện số
 
 
 class ClipOut(BaseModel):

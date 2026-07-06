@@ -71,13 +71,17 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
         result = await score_clip(clip_id, duration, audio_path=clip.audio_path, rubric=rubric)
         s.add(Score(clip_id=clip_id, **result))  # phần Xác, tách khỏi MCReview (AD-5)
 
-        prog = await s.get(Progress, user_id)
-        today = date.today()
-        if prog.last_day != today:  # idempotent theo ngày (AD-3)
-            prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
-            prog.last_day = today
-        prog.xp += lesson_xp
-        prog.tickets += 1  # [DEMO] tặng 1 Vé Vàng mỗi lần hoàn thành; thật = theo mốc XP
+        # "Chưa nghe rõ" (ASR thật, wpm=0) = KHÔNG phải bài hoàn thành → không XP/streak/vé
+        # (vừa đúng logic, vừa chặn farm vé bằng clip im lặng)
+        unclear = (not result["is_mock"]) and result["speed_wpm"] == 0
+        if not unclear:
+            prog = await s.get(Progress, user_id)
+            today = date.today()
+            if prog.last_day != today:  # idempotent theo ngày (AD-3)
+                prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
+                prog.last_day = today
+            prog.xp += lesson_xp
+            prog.tickets += 1  # [DEMO] tặng 1 Vé Vàng mỗi lần hoàn thành; thật = theo mốc XP
 
         clip.status = "done"
         await s.commit()

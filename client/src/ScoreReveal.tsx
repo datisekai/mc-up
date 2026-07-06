@@ -10,6 +10,7 @@ import { COMPARE_WORSE, pick, tipFor } from "./variety";
 export type ScoreData = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
+  unclear?: boolean;           // ASR thật nhưng không nghe được → trạng thái riêng, không hiện số
 };
 export type PrevPoint = { speed_wpm: number; filler_count: number } | null;
 
@@ -54,6 +55,22 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
 
   const [showTranscript, setShowTranscript] = useState(false);
   const volOk = score.volume_label === "tốt";
+
+  // "Chưa nghe rõ" = trạng thái riêng — hiện số 0 như một bảng điểm là chấm bừa
+  if (score.unclear) {
+    return (
+      <View style={st.card}>
+        <View style={st.unclearWrap}>
+          <Text style={st.unclearIcon}>🎙</Text>
+          <Text style={st.unclearTitle}>Mình chưa nghe rõ giọng bạn</Text>
+          <Text style={st.unclearSub}>
+            Có thể mic hơi xa hoặc tiếng hơi nhỏ.{"\n"}
+            Thử lại gần mic hơn, nói to rõ một chút nhé — lần này chưa tính điểm đâu.
+          </Text>
+        </View>
+      </View>
+    );
+  }
   const delta = prev ? score.filler_count - prev.filler_count : null;
   const better = delta !== null && delta < 0;
   const worse = delta !== null && delta > 0;
@@ -161,4 +178,8 @@ const st = StyleSheet.create({
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
+  unclearWrap: { alignItems: "center", paddingVertical: 18 },
+  unclearIcon: { fontSize: 40 },
+  unclearTitle: { fontFamily: F.display, fontSize: 18, color: C.ink, marginTop: 10 },
+  unclearSub: { fontFamily: F.body, fontSize: 13.5, color: C.ink2, textAlign: "center", lineHeight: 20, marginTop: 8 },
 });
