@@ -83,7 +83,8 @@ export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPic
   const solid = toPath(pts.slice(climbedStart));
 
   return (
-    <ScrollView ref={scroll} showsVerticalScrollIndicator={false}>
+    // paddingBottom: chừa chỗ cho FAB "▲ Luyện liên tục" — không che thẻ MẶT ĐẤT ở đáy
+    <ScrollView ref={scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 96 }}>
       <View style={{ height: totalH }}>
         {/* trail */}
         <Svg width={width} height={totalH} style={StyleSheet.absoluteFill}>
