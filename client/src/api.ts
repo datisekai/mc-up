@@ -5,17 +5,35 @@
 //  - Thiết bị thật (Expo Go): http://<IP-máy-bạn>:8000  (vd http://192.168.1.10:8000)
 export const API_BASE = "http://192.168.1.215:8000"; // IP LAN máy Mac // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
 
+// Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
+// Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".
+export class ApiError extends Error {
+  status: number;
+  isNetwork: boolean;
+  constructor(message: string, status = 0, isNetwork = false) {
+    super(message);
+    this.status = status;
+    this.isNetwork = isNetwork;
+  }
+  get isAuth() { return this.status === 401 || this.status === 403; }
+}
+
 async function req(path: string, opts: { method?: string; token?: string; body?: any } = {}) {
-  const r = await fetch(API_BASE + path, {
-    method: opts.method || "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(opts.token ? { Authorization: "Bearer " + opts.token } : {}),
-    },
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
+  let r: Response;
+  try {
+    r = await fetch(API_BASE + path, {
+      method: opts.method || "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(opts.token ? { Authorization: "Bearer " + opts.token } : {}),
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+  } catch {
+    throw new ApiError("Không kết nối được máy chủ — kiểm tra mạng giúp mình nhé.", 0, true);
+  }
   const data = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(data?.detail?.error?.message || data?.error?.message || "HTTP " + r.status);
+  if (!r.ok) throw new ApiError(data?.detail?.error?.message || data?.error?.message || "HTTP " + r.status, r.status);
   return data;
 }
 

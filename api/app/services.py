@@ -145,21 +145,28 @@ def tier_of(xp: int) -> str:
 
 async def get_achievements(s: AsyncSession, user: User) -> list[dict]:
     prog = await s.get(Progress, user.id)
+    # Đếm CẢ bài v1 (lesson_id) LẪN bài nội dung v2 (content_lesson_id) — trước đây chỉ đếm v1
+    # nên học viên học giáo trình mới không bao giờ mở khoá huy hiệu (bug).
     lessons_done = (await s.execute(
-        select(func.count(func.distinct(Clip.lesson_id)))
+        select(func.count(func.distinct(func.coalesce(Clip.lesson_id, Clip.content_lesson_id))))
         .join(Score, Score.clip_id == Clip.id).where(Clip.user_id == user.id)
     )).scalar() or 0
     badges = (await s.execute(
         select(func.count(BadgeCard.id)).where(BadgeCard.hoc_vien_id == user.id)
     )).scalar() or 0
+    # (code, tên, mô tả, giá trị hiện tại, mốc) — trả kèm progress/target để app vẽ "còn N nữa"
     defs = [
-        ("first_step", "Bước đầu tiên", "Hoàn thành bài học đầu tiên", lessons_done >= 1),
-        ("five_lessons", "MC tương lai", "Hoàn thành 5 bài học", lessons_done >= 5),
-        ("streak7", "Chuỗi 7 ngày", "Giữ streak 7 ngày liên tục", prog.streak >= 7),
-        ("xp50", "Chăm chỉ", "Đạt 50 XP", prog.xp >= 50),
-        ("first_badge", "Được MC công nhận", "Nhận nhận xét đầu tiên từ MC thật", badges >= 1),
+        ("first_step", "Bước đầu tiên", "Hoàn thành bài đầu tiên", lessons_done, 1),
+        ("streak3", "Nhen lửa", "Giữ chuỗi 3 ngày", prog.streak, 3),
+        ("five_lessons", "MC tương lai", "Hoàn thành 5 bài", lessons_done, 5),
+        ("xp50", "Chăm chỉ", "Đạt 50 XP", prog.xp, 50),
+        ("ten_lessons", "Bền bỉ", "Hoàn thành 10 bài", lessons_done, 10),
+        ("streak7", "Chuỗi 7 ngày", "Giữ chuỗi 7 ngày", prog.streak, 7),
+        ("first_badge", "Được MC công nhận", "Nhận nhận xét đầu tiên từ MC thật", badges, 1),
+        ("xp150", "Lên tay", "Đạt 150 XP", prog.xp, 150),
     ]
-    return [{"code": c, "title": t, "desc": d, "earned": e} for c, t, d, e in defs]
+    return [{"code": c, "title": t, "desc": d, "progress": min(p, tg), "target": tg, "earned": p >= tg}
+            for c, t, d, p, tg in defs]
 
 
 async def get_score_history(s: AsyncSession, user: User, limit: int = 20) -> list[dict]:

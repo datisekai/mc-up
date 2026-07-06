@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Animated, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { C, F } from "./theme";
 import { Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
@@ -39,7 +39,9 @@ function buildItems(lessons: Lesson[]): Item[] {
   return ordered;
 }
 
-export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPick: (l: Lesson) => void }) {
+export default function StageMap({ lessons, onPick, onRefresh, refreshing }: {
+  lessons: Lesson[]; onPick: (l: Lesson) => void; onRefresh?: () => void; refreshing?: boolean;
+}) {
   const { width, height } = useWindowDimensions();
   const cx = width / 2;
   const scroll = useRef<ScrollView>(null);
@@ -84,7 +86,8 @@ export default function StageMap({ lessons, onPick }: { lessons: Lesson[]; onPic
 
   return (
     // paddingBottom: chừa chỗ cho FAB "▲ Luyện liên tục" — không che thẻ MẶT ĐẤT ở đáy
-    <ScrollView ref={scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 96 }}>
+    <ScrollView ref={scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 96 }}
+      refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={C.primary} colors={[C.primary]} /> : undefined}>
       <View style={{ height: totalH }}>
         {/* trail */}
         <Svg width={width} height={totalH} style={StyleSheet.absoluteFill}>

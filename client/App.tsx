@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Alert, Linking, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Alert, Linking, PanResponder, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
@@ -10,7 +10,7 @@ import {
   BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold,
 } from "@expo-google-fonts/be-vietnam-pro";
 import { C, F } from "./src/theme";
-import { Api, API_BASE, submitAudio, submitMcVoice } from "./src/api";
+import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
@@ -69,6 +69,8 @@ export default function App() {
   const [lastClip, setLastClip] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<any[]>([]);
+  const [loadError, setLoadError] = useState(false);  // mạng/máy chủ lỗi → banner "Thử lại", KHÔNG đá ra
+  const [refreshing, setRefreshing] = useState(false);
 
   // Khoảnh khắc thưởng + toast trong app (P0 — thay Alert hệ thống)
   const [celeb, setCeleb] = useState<{ kind: CelebKind; value?: number | string } | null>(null);
@@ -121,23 +123,39 @@ export default function App() {
   }, [token, role, tab, screen]);
 
   async function restore() {
+    await initSound().catch(() => {});
+    setSoundOn(soundEnabled());
+    let t: string | null = null, r = "hoc_vien", g = "";
     try {
-      await initSound();
-      setSoundOn(soundEnabled());
-      const ob = await AsyncStorage.getItem("onboarded");
-      const g = (await AsyncStorage.getItem("goal")) || "";
+      g = (await AsyncStorage.getItem("goal")) || "";
+      t = await AsyncStorage.getItem("token");
+      r = (await AsyncStorage.getItem("role")) || "hoc_vien";
       setGoalPref(g);
-      const t = await AsyncStorage.getItem("token");
-      const r = (await AsyncStorage.getItem("role")) || "hoc_vien";
       setIsGuest((await AsyncStorage.getItem("guest")) === "true");
-      if (t) { setToken(t); setRole(r); setOnboarded(true); await loadFor(t, r, g); }
-      else setOnboarded(ob === "true");
-    } catch { await AsyncStorage.multiRemove(["token", "role"]); setToken(null); }
+      setOnboarded((await AsyncStorage.getItem("onboarded")) === "true" || !!t);
+    } catch { /* storage lỗi hiếm gặp — bỏ qua, coi như người mới */ }
+    if (t) {
+      setToken(t); setRole(r); setOnboarded(true);
+      await loadFor(t, r, g);  // tự xử lý lỗi bên trong — KHÔNG đá ra khi mạng down
+    }
     setBooting(false);
   }
+  // Phân loại lỗi API: token hỏng → về đăng nhập (dịu); mạng/máy chủ → giữ phiên, cho thử lại.
+  async function handleApiError(e: any): Promise<"auth" | "net"> {
+    if (e instanceof ApiError && e.isAuth) {
+      await AsyncStorage.multiRemove(["token", "role", "guest"]);
+      setToken(null); setIsGuest(false); setTab("hv"); setScreen("feed");
+      showToast("Phiên đăng nhập đã hết hạn — vào lại nhé.");
+      return "auth";
+    }
+    setLoadError(true);
+    return "net";
+  }
   async function loadFor(t: string, r: string, goal = goalPref) {
-    if (r === "mc") setQueue(await Api.mcQueue(t));
-    else await refresh(t, goal);
+    try {
+      if (r === "mc") setQueue(await Api.mcQueue(t));
+      else await refresh(t, goal);
+    } catch (e) { await handleApiError(e); }
   }
   async function finishOnboard(prefs: OnboardPrefs) {
     await AsyncStorage.setItem("onboarded", "true");
@@ -189,9 +207,8 @@ export default function App() {
   }
 
   async function refresh(t = token!, goal = "") {
-    setProg(await Api.progress(t));
-    const ps = await Api.contentPaths(t);
-    setPaths(ps);
+    const [progR, ps] = await Promise.all([Api.progress(t), Api.contentPaths(t)]);
+    setProg(progR); setPaths(ps);
     // Onboarding "trả công": tự chọn lộ trình khớp mục tiêu đã chọn (P2 §B3)
     let pid = selPath;
     if (!pid && goal) {
@@ -203,12 +220,19 @@ export default function App() {
       const kn = ps.find((p: any) => (p.genre || "").toLowerCase().includes("kỹ năng nói")) || ps[0];
       if (kn) { pid = kn.id; setSelPath(kn.id); }
     }
-    setLessons(pid ? await Api.contentLessons(t, pid) : await Api.lessons(t));
-    setReviews(await Api.myReviews(t));
-    setBoard(await Api.leaderboard(t));
-    setAchs(await Api.achievements(t));
-    setScores(await Api.scores(t));
-    setScreen("feed");
+    const [lessR, rv, bd, ac, sc] = await Promise.all([
+      pid ? Api.contentLessons(t, pid) : Api.lessons(t),
+      Api.myReviews(t), Api.leaderboard(t), Api.achievements(t), Api.scores(t),
+    ]);
+    setLessons(lessR); setReviews(rv); setBoard(bd); setAchs(ac); setScores(sc);
+    setLoadError(false); setScreen("feed");
+  }
+  // Kéo-để-tải-lại + nút "Thử lại" dùng chung: an toàn, không ném lỗi ra ngoài
+  async function safeRefresh() {
+    setRefreshing(true);
+    try { await refresh(); setLoadError(false); }
+    catch (e) { await handleApiError(e); }
+    setRefreshing(false);
   }
   async function pickPath(pid: string | null) {
     setSelPath(pid);
@@ -375,7 +399,7 @@ export default function App() {
           startIndex={Math.max(0, lessons.findIndex((l) => l.unlocked && !l.done))}
           streak={prog.streak}
           onRun={runReelsLesson}
-          onExit={() => refresh()}
+          onExit={() => safeRefresh()}
         />
       ) : (
       <View style={{ flex: 1, marginBottom: 62 }} {...(swipeEnabled ? tabSwipe.panHandlers : {})}>
@@ -390,6 +414,13 @@ export default function App() {
                 {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : ""; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
               </View>
             )}
+            {/* mạng/máy chủ lỗi → banner giữ phiên + thử lại (không đá ra) */}
+            {loadError && (
+              <TouchableOpacity style={s.errorBanner} onPress={safeRefresh} accessibilityLabel="Thử tải lại">
+                <Text style={{ flex: 1, color: "#8a3d33", fontWeight: "700", fontSize: 13 }}>Chưa tải được dữ liệu — chạm để thử lại</Text>
+                <Text style={{ color: "#8a3d33", fontWeight: "800" }}>↻</Text>
+              </TouchableOpacity>
+            )}
             {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
             {prog.practiced_today === false && new Date().getHours() >= 17 && (
               <View style={s.reminder}>
@@ -397,7 +428,16 @@ export default function App() {
                 <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
               </View>
             )}
-            <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+            {lessons.length === 0 && !loadError ? (
+              <View style={s.emptyFeed}>
+                <MapIcon size={40} color="#D8C8BE" />
+                <Text style={s.emptyTitle}>Lộ trình đang được chuẩn bị</Text>
+                <Text style={s.emptySub}>Kéo xuống để tải lại, hoặc thử chọn thể loại khác ở trên nhé.</Text>
+              </View>
+            ) : (
+              <StageMap lessons={lessons} refreshing={refreshing} onRefresh={safeRefresh}
+                onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+            )}
             {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
             <TouchableOpacity style={s.reelsFab} onPress={() => setScreen("reels")} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
               <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
@@ -406,9 +446,10 @@ export default function App() {
         ) : (
         <ScrollView
           contentContainerStyle={{ padding: 16 }}
+          refreshControl={tab === "hs" ? <RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} /> : undefined}
           onScrollEndDrag={(e) => {
             // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
-            if (screen === "score" && e.nativeEvent.contentOffset.y < -70) refresh();
+            if (screen === "score" && e.nativeEvent.contentOffset.y < -70) safeRefresh();
           }}
         >
           {tab === "hv" && screen === "practice" && curLesson && (
@@ -419,7 +460,7 @@ export default function App() {
                 busy={busy}
                 onSubmit={submitReal}
                 onMock={doSubmitMock}
-                onBack={() => refresh()}
+                onBack={() => safeRefresh()}
               />
             </View>
           )}
@@ -433,7 +474,7 @@ export default function App() {
               ) : (
                 <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
               )}
-              <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
+              <Btn ghost label="Tiếp tục lộ trình" onPress={() => safeRefresh()} />
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
@@ -491,19 +532,49 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
         <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
       </View>
       {prog.tier && <View style={s.tierBadge}><Trophy size={14} color="#5a3d00" /><Text style={{ fontWeight: "800", color: "#5a3d00", fontSize: 13 }}>Hạng {prog.tier}</Text></View>}
-      <Kicker>Huy hiệu</Kicker>
+
+      {/* "Sắp mở khoá" — huy hiệu gần nhất chưa đạt, hiện tiến độ để tạo động lực (Gen Z collectible) */}
+      {(() => {
+        const next = achs.filter((a) => !a.earned).sort((a, b) => (b.progress / b.target) - (a.progress / a.target))[0];
+        if (!next) return null;
+        const pct = Math.min(1, (next.progress ?? 0) / (next.target || 1));
+        return (
+          <>
+            <Kicker>Sắp mở khoá</Kicker>
+            <View style={s.card}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={s.achIcon}><Trophy size={18} color={C.ink2} /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink }}>{next.title}</Text>
+                  <Text style={{ color: C.ink2, fontSize: 12 }}>{next.desc} · còn {Math.max(0, (next.target ?? 0) - (next.progress ?? 0))}</Text>
+                </View>
+                <Text style={{ fontFamily: F.display, color: C.primary }}>{next.progress}/{next.target}</Text>
+              </View>
+              <View style={s.achTrack}><View style={[s.achFill, { width: `${pct * 100}%` }]} /></View>
+            </View>
+          </>
+        );
+      })()}
+
+      <Kicker>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</Kicker>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {achs.map((a) => (
-          <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.4 }]}>
+          <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.45 }]}>
             <View style={[s.achIcon, a.earned && { backgroundColor: C.spot }]}><Trophy size={18} color={a.earned ? "#5a3d00" : C.ink2} /></View>
             <Text style={{ fontSize: 11, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
+            {!a.earned && a.target > 1 && <Text style={{ fontSize: 9.5, color: C.ink2, fontFamily: F.med }}>{a.progress}/{a.target}</Text>}
           </View>
         ))}
       </View>
+
       <Kicker>Tiến bộ từ đệm</Kicker>
-      <MiniChart data={scores.map((p: any) => p.filler_count)} label="Số từ đệm mỗi lần luyện (thấp hơn = tốt hơn)" />
+      {scores.length >= 2 ? (
+        <MiniChart data={scores.map((p: any) => p.filler_count)} label="Số từ đệm mỗi lần luyện (thấp hơn = tốt hơn)" />
+      ) : (
+        <Text style={s.emptyHint}>Luyện thêm vài bài để xem đường tiến bộ từ đệm của bạn nhé 📉</Text>
+      )}
       <Kicker>Bảng xếp hạng</Kicker>
-      {board.length === 0 && <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có dữ liệu.</Text>}
+      {board.length === 0 && <Text style={s.emptyHint}>Chưa có ai trên bảng — luyện một bài là bạn có tên ngay 🏆</Text>}
       {board.map((e) => (
         <View key={e.rank} style={[s.rankRow, e.is_me && { borderColor: C.spot, borderWidth: 1.5 }]}>
           <Text style={[s.rankNum, e.rank <= 3 && { color: C.primary }]}>{e.rank}</Text>
@@ -636,6 +707,13 @@ const s = StyleSheet.create({
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
   achIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center" },
+  achTrack: { height: 6, backgroundColor: C.sunken, borderRadius: 999, marginTop: 10, overflow: "hidden" },
+  achFill: { height: "100%", backgroundColor: C.spot, borderRadius: 999 },
+  errorBanner: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FBE3DE", marginHorizontal: 16, marginTop: 6, padding: 12, borderRadius: 14 },
+  emptyFeed: { alignItems: "center", paddingTop: 60, paddingHorizontal: 32 },
+  emptyTitle: { fontFamily: F.display, fontSize: 16, color: C.ink, marginTop: 12 },
+  emptySub: { fontFamily: F.body, fontSize: 13, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 19 },
+  emptyHint: { color: C.ink2, fontSize: 12.5, paddingHorizontal: 4, lineHeight: 18 },
   reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF3DA", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },

@@ -69,6 +69,8 @@ class Achievement(BaseModel):
     title: str
     desc: str
     earned: bool
+    progress: int = 0   # giá trị hiện tại (vd 3 bài)
+    target: int = 1     # mốc để mở khoá (vd 5 bài) → app vẽ "3/5"
 
 
 class ScorePoint(BaseModel):
