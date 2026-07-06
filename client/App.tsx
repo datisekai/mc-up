@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
@@ -10,15 +10,25 @@ import { Api, API_BASE, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
+import Onboarding, { OnboardPrefs } from "./src/Onboarding";
+import RecordScreen from "./src/RecordScreen";
+import ScoreReveal from "./src/ScoreReveal";
+import Celebration, { CelebKind } from "./src/Celebration";
+import BadgeCardView from "./src/BadgeCardView";
+import { STREAK_GREET, fill, pick } from "./src/variety";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
 
+const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
+
 export default function App() {
   const [booting, setBooting] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string>("hoc_vien");
+  const [onboarded, setOnboarded] = useState(true);
+  const [goalPref, setGoalPref] = useState("");
 
   // form đăng nhập / đăng ký
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -40,27 +50,52 @@ export default function App() {
   const [selPath, setSelPath] = useState<string | null>(null);
   const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
   const [curLesson, setCur] = useState<Lesson | null>(null);
-  const [showEx, setShowEx] = useState(false);  // ẩn/hiện Ví dụ mẫu (thử trước đã)
   const [score, setScore] = useState<Score | null>(null);
   const [lastClip, setLastClip] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [recStart, setRecStart] = useState(0);
   const [queue, setQueue] = useState<any[]>([]);
+
+  // Khoảnh khắc thưởng + toast trong app (P0 — thay Alert hệ thống)
+  const [celeb, setCeleb] = useState<{ kind: CelebKind; value?: number | string } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2800);
+  }
+
+  // câu chào streak lấy từ pool — đổi theo ngày, không lặp mỗi render (P0 §3.7)
+  const streakGreet = useMemo(
+    () => fill(pick(STREAK_GREET, "greet"), { n: prog.streak }),
+    [prog.streak]
+  );
 
   useEffect(() => { restore(); }, []);
 
   async function restore() {
     try {
+      const ob = await AsyncStorage.getItem("onboarded");
+      const g = (await AsyncStorage.getItem("goal")) || "";
+      setGoalPref(g);
       const t = await AsyncStorage.getItem("token");
       const r = (await AsyncStorage.getItem("role")) || "hoc_vien";
-      if (t) { setToken(t); setRole(r); await loadFor(t, r); }
+      if (t) { setToken(t); setRole(r); setOnboarded(true); await loadFor(t, r, g); }
+      else setOnboarded(ob === "true");
     } catch { await AsyncStorage.multiRemove(["token", "role"]); setToken(null); }
     setBooting(false);
   }
-  async function loadFor(t: string, r: string) {
+  async function loadFor(t: string, r: string, goal = goalPref) {
     if (r === "mc") setQueue(await Api.mcQueue(t));
-    else await refresh(t);
+    else await refresh(t, goal);
+  }
+  async function finishOnboard(prefs: OnboardPrefs) {
+    await AsyncStorage.setItem("onboarded", "true");
+    if (prefs.goal) await AsyncStorage.setItem("goal", prefs.goal);
+    await AsyncStorage.setItem("habit", JSON.stringify({ mins: prefs.minsPerDay, remind: prefs.remindSlot }));
+    setGoalPref(prefs.goal);
+    setOnboarded(true);
   }
   async function doAuth() {
     setAuthBusy(true); setAuthErr(null);
@@ -81,10 +116,17 @@ export default function App() {
     setEmail(""); setPw(""); setName("");
   }
 
-  async function refresh(t = token!) {
+  async function refresh(t = token!, goal = "") {
     setProg(await Api.progress(t));
-    setPaths(await Api.contentPaths(t));
-    setLessons(selPath ? await Api.contentLessons(t, selPath) : await Api.lessons(t));
+    const ps = await Api.contentPaths(t);
+    setPaths(ps);
+    // Onboarding "trả công": tự chọn lộ trình khớp mục tiêu đã chọn (P2 §B3)
+    let pid = selPath;
+    if (!pid && goal) {
+      const match = ps.find((p: any) => (p.genre || "").toLowerCase().includes(goal));
+      if (match) { pid = match.id; setSelPath(match.id); setGoalPref(""); await AsyncStorage.removeItem("goal"); }
+    }
+    setLessons(pid ? await Api.contentLessons(t, pid) : await Api.lessons(t));
     setReviews(await Api.myReviews(t));
     setBoard(await Api.leaderboard(t));
     setAchs(await Api.achievements(t));
@@ -97,22 +139,11 @@ export default function App() {
     setScreen("feed");
   }
 
-  async function startRec() {
-    try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      setRecording(recording); setRecStart(Date.now());
-    } catch { Alert.alert("Micro", "Không vào được micro — nộp giả lập nhé."); doSubmitMock(); }
-  }
-  async function stopRec() {
-    if (!recording || !curLesson) return;
+  async function submitReal(uri: string, dur: number) {
+    if (!curLesson) return;
     setBusy(true);
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI(); const dur = Math.max(1, Math.round((Date.now() - recStart) / 1000));
-    setRecording(null);
     try {
-      const clip = await submitAudio(token!, curLesson.id, uri!, dur, selPath ? curLesson.id : undefined);
+      const clip = await submitAudio(token!, curLesson.id, uri, dur, selPath ? curLesson.id : undefined);
       await pollScore(clip.id);
     } catch (e: any) { Alert.alert("Lỗi", e.message); setBusy(false); }
   }
@@ -124,31 +155,52 @@ export default function App() {
   }
   async function pollScore(clipId: string) {
     let s: any = null;
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 25; i++) {  // ~12.5s — ASR thật có lúc chậm hơn 6s
       const c = await Api.clip(token!, clipId);
       if (c.status === "done") { s = c; break; }
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 500));
     }
-    setLastClip(clipId); setScore(s.score); setProg(await Api.progress(token!));
-    setBusy(false); setScreen("score");
+    const prev = prog;
+    const np = await Api.progress(token!);
+    setProg(np); setBusy(false);
+    if (!s || !s.score) {
+      // mạng/chấm chậm — không vỡ, không mất bài (EXPERIENCE.md State Patterns)
+      showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
+      setScreen("feed");
+      return;
+    }
+    setLastClip(clipId); setScore(s.score); setScreen("score");
+    // Khoảnh khắc thưởng — chỉ ở MỐC, giữ vàng đèn "đắt" (P0 §1.1)
+    if (np.tier && prev.tier && np.tier !== prev.tier) setCeleb({ kind: "tier", value: np.tier });
+    else if (np.streak !== prev.streak && STREAK_MILESTONES.includes(np.streak)) setCeleb({ kind: "streak", value: np.streak });
+    else if (Math.floor(np.xp / 50) > Math.floor(prev.xp / 50)) setCeleb({ kind: "xp", value: Math.floor(np.xp / 50) * 50 });
+    else if (prev.tickets === 0 && np.tickets > 0) setCeleb({ kind: "ticket" });
   }
   async function sendVeVang() {
-    try { await Api.sendTicket(token!, lastClip!); Alert.alert("Đã gửi", "Chờ MC nhận xét"); await refresh(); }
-    catch (e: any) { Alert.alert("Lỗi", e.message); }
+    try {
+      await Api.sendTicket(token!, lastClip!);
+      showToast("Đã gửi cho MC thật 🎤 — chờ nhận xét nhé!");
+      await refresh();
+    } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
   async function loadQueue() { setQueue(await Api.mcQueue(token!)); }
   async function doReview(reqId: string, note: string) {
     await Api.mcReview(token!, reqId, note || "Giọng em có màu, giữ nhịp tốt!");
-    Alert.alert("Đã gửi", "Thẻ bảo chứng đã tạo"); await loadQueue();
+    showToast("Đã gửi — Thẻ bảo chứng đã tạo cho học viên.");
+    await loadQueue();
   }
   async function doReviewVoice(reqId: string, uri: string, note: string) {
     try {
       await submitMcVoice(token!, reqId, uri, note);
-      Alert.alert("Đã gửi", "Giọng nhận xét đã gửi tới học viên"); await loadQueue();
+      showToast("Giọng nhận xét đã gửi tới học viên.");
+      await loadQueue();
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
 
   if (booting) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
+
+  // ---- Người mới → onboarding ấm (P2) ----
+  if (!token && !onboarded) return <Onboarding onDone={finishOnboard} />;
 
   // ---- Chưa đăng nhập → màn Auth ----
   if (!token) {
@@ -193,6 +245,7 @@ export default function App() {
         <ScrollView contentContainerStyle={{ padding: 16 }}>
           <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} />
         </ScrollView>
+        {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
       </View>
     );
   }
@@ -228,58 +281,29 @@ export default function App() {
           {prog.practiced_today === false && (
             <View style={s.reminder}>
               <Fire size={18} color="#F5A623" />
-              <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>Hôm nay chưa luyện — giữ chuỗi {prog.streak} ngày nào!</Text>
+              <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
             </View>
           )}
-          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setShowEx(false); setScreen("practice"); } }} />
+          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
         </View>
       ) : (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {tab === "hv" && screen === "practice" && curLesson && (
           <View>
             <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
-            <View style={s.card}>
-              {curLesson.tip ? <View style={s.tip}><Text>{curLesson.tip}</Text></View> : null}
-
-              <Text style={s.taskLabel}>Đề bài</Text>
-              <Text style={s.taskPrompt}>{curLesson.prompt}</Text>
-
-              {curLesson.brief?.objective ? (<><Text style={s.taskLabel}>Mục tiêu</Text><Text style={s.taskText}>{curLesson.brief.objective}</Text></>) : null}
-              {curLesson.brief?.context ? (<><Text style={s.taskLabel}>Tình huống</Text><Text style={s.taskText}>{curLesson.brief.context}</Text></>) : null}
-              {curLesson.brief?.steps?.length ? (<><Text style={s.taskLabel}>Gợi ý dàn ý</Text>{curLesson.brief.steps.map((st, i) => <Text key={i} style={s.taskBullet}>{i + 1}.  {st}</Text>)}</>) : null}
-              {curLesson.criteria?.length ? (<><Text style={s.taskLabel}>Tiêu chí đạt</Text>{curLesson.criteria.map((c, i) => <View key={i} style={s.critRow}><View style={s.critDot} /><Text style={s.taskText}>{c}</Text></View>)}</>) : null}
-
-              {curLesson.brief?.example ? (showEx ? (
-                <View style={s.exampleBox}>
-                  <Text style={s.exampleLabel}>VÍ DỤ MẪU · tham khảo cách làm, đừng đọc nguyên văn</Text>
-                  <Text style={s.exampleText}>“{curLesson.brief.example}”</Text>
-                </View>
-              ) : (
-                <Btn ghost label="Bí quá? Xem gợi ý mẫu" onPress={() => setShowEx(true)} />
-              )) : null}
-
-              <View style={{ height: 6 }} />
-              {busy ? <ActivityIndicator color={C.primary} /> : recording ? (
-                <Btn label="Dừng & nộp" onPress={stopRec} />
-              ) : (
-                <>
-                  <Btn label="Bắt đầu quay (nói vào mic)" onPress={startRec} />
-                  <Btn ghost label="Bỏ qua — nộp giả lập" onPress={doSubmitMock} />
-                </>
-              )}
-              <Btn ghost label="Quay lại lộ trình" onPress={() => refresh()} />
-            </View>
+            <RecordScreen
+              lesson={curLesson}
+              busy={busy}
+              onSubmit={submitReal}
+              onMock={doSubmitMock}
+              onBack={() => refresh()}
+            />
           </View>
         )}
         {tab === "hv" && screen === "score" && score && (
           <View>
-            <Kicker>Kết quả · phần Xác {score.is_mock ? "(giả lập)" : "(ASR thật)"}</Kicker>
-            <View style={s.card}>
-              <Row k="Âm lượng" v={score.volume_label} ok={score.volume_label === "tốt"} />
-              <Row k="Tốc độ" v={`${score.speed_wpm} chữ/phút`} />
-              <Row k="Từ đệm 'ừm/à'" v={`${score.filler_count} lần`} />
-              <View style={[s.tip, { marginTop: 10 }]}><Text>{score.tip}</Text></View>
-            </View>
+            <Kicker>Kết quả của bạn</Kicker>
+            <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
             <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
             <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
           </View>
@@ -287,6 +311,9 @@ export default function App() {
         {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} onLogout={logout} />}
       </ScrollView>
       )}
+
+      {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
+      {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
     </View>
   );
 }
@@ -331,17 +358,7 @@ function ProfileView({ prog, reviews, board, achs, scores, onLogout }: { prog: {
         <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
       )}
       {badges.map((r) => (
-        <View key={r.id} style={[s.card, { borderWidth: 1, borderColor: "#F3E4CE" }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <View style={s.avatar}><Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>{(r.badge.mc_name || "M").replace(/^MC /, "")[0]}</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: "800", fontSize: 15 }}>{r.badge.mc_name}</Text>
-              <Text style={{ color: C.ink2, fontSize: 12 }}>{r.badge.mc_title}</Text>
-            </View>
-          </View>
-          <Text style={{ fontStyle: "italic", marginTop: 10, lineHeight: 20 }}>"{r.badge.note}"</Text>
-          {r.badge.audio_url && <PlayButton url={API_BASE + r.badge.audio_url} />}
-        </View>
+        <BadgeCardView key={r.id} badge={r.badge} audioBase={API_BASE} />
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
       <Btn ghost label="Đăng xuất" onPress={onLogout} />
@@ -400,27 +417,11 @@ function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; on
   );
 }
 
-function PlayButton({ url }: { url: string }) {
-  const [playing, setPlaying] = useState(false);
-  const soundRef = useRef<Audio.Sound | null>(null);
-  async function toggle() {
-    try {
-      if (playing) { await soundRef.current?.stopAsync(); setPlaying(false); return; }
-      const { sound } = await Audio.Sound.createAsync({ uri: url });
-      soundRef.current = sound;
-      sound.setOnPlaybackStatusUpdate((st: any) => { if (st.didJustFinish) setPlaying(false); });
-      await sound.playAsync(); setPlaying(true);
-    } catch (e: any) { Alert.alert("Lỗi", "Không phát được: " + e.message); }
-  }
-  return <Btn gold label={playing ? "Đang phát... (chạm để dừng)" : "Nghe giọng MC"} onPress={toggle} />;
-}
-
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
 const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontWeight: "800" }}>{label}</Text></TouchableOpacity>;
-const Row = ({ k, v, ok }: any) => <View style={s.row}><Text>{k}</Text><View style={[s.pill, ok ? s.pillOk : s.pillMid]}><Text style={{ fontWeight: "800", fontSize: 12, color: ok ? "#1f8f63" : "#9a6b00" }}>{v}</Text></View></View>;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },
@@ -436,12 +437,7 @@ const s = StyleSheet.create({
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
-  tip: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.hair },
-  pill: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999 },
-  pillOk: { backgroundColor: "#E6F7EF" }, pillMid: { backgroundColor: "#FFF3DA" },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
   rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
@@ -450,13 +446,10 @@ const s = StyleSheet.create({
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
   pathTagline: { paddingHorizontal: 18, paddingBottom: 4, color: C.ink2, fontSize: 12, fontWeight: "600" },
-  taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 11, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
-  taskPrompt: { fontWeight: "800", fontSize: 16, color: C.ink, lineHeight: 22 },
-  taskText: { color: C.ink, fontSize: 14, lineHeight: 20, flex: 1 },
-  taskBullet: { color: C.ink, fontSize: 14, lineHeight: 22 },
-  critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
-  critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
-  exampleBox: { backgroundColor: C.sunken, borderRadius: 14, padding: 14, marginTop: 12, borderLeftWidth: 3, borderLeftColor: C.primary },
-  exampleLabel: { fontWeight: "800", fontSize: 10, color: C.ink2, marginBottom: 6, letterSpacing: 0.4 },
-  exampleText: { color: C.ink, fontSize: 14, lineHeight: 21, fontStyle: "italic" },
+  toast: {
+    position: "absolute", left: 20, right: 20, bottom: 34, backgroundColor: "#3B2A4A",
+    borderRadius: 14, padding: 14, alignItems: "center", zIndex: 98,
+    shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8,
+  },
+  toastT: { color: "#FFF8F0", fontWeight: "700", fontSize: 13, textAlign: "center" },
 });

@@ -1,4 +1,4 @@
-# McUp — Context phiên làm việc (cập nhật 2026-07-06)
+# McUp — Context phiên làm việc (cập nhật 2026-07-06 · phiên 2)
 
 > Tài liệu bàn giao / nối phiên. Ghi lại toàn bộ bối cảnh dự án McUp, trạng thái
 > build, các quyết định thiết kế, cách chạy/test, và việc còn lại. Đọc file này
@@ -80,6 +80,31 @@ Lộ trình nói/thuyết trình (10 buổi), quay clip + AI chấm async, strea
 - App: màn luyện render Thẻ nhiệm vụ (Đề → Mục tiêu → Tình huống → Dàn ý → Tiêu chí đạt), **ẩn Ví dụ mẫu sau nút "Bí quá? Xem gợi ý"** (chống học vẹt — quyết định của Finn).
 - AI-split nâng cấp: prompt OpenAI + mock **xuất `brief`**; persist brief; **admin review hiện brief** để duyệt.
 
+### Gói UX Gen Z (phiên 2 — specs của Sally, build bởi Amelia)
+Bộ spec: `_bmad-output/planning-artifacts/ux-designs/ux-mc-training-2026-07-03/P0-cam-xuc-spec.md`
++ `P1-the-bao-chung-spec.md` + `P1-man-quay-clip-spec.md` + `P2-onboarding-spec.md`.
+
+- **P0 Cảm xúc:** `src/variety.ts` (pool lời khen/tiêu đề ngẫu nhiên, chống lặp 2 lần liên tiếp),
+  `src/Confetti.tsx` (3 biến thể A/B/C), `src/Celebration.tsx` (overlay thưởng: spotlight +
+  confetti + haptic + ting.wav, auto-dismiss 2.6s, tôn trọng Giảm chuyển động),
+  `src/ScoreReveal.tsx` (màn điểm "diễn": stagger 140ms, wpm count-up, chip so sánh lần trước
+  từ `/me/scores`, ĐÃ BỎ nhãn "(giả lập)"). Trigger celebration trong `pollScore`:
+  tier đổi > streak mốc (3/7/14/30/50/100) > XP mốc 50 > vé đầu tiên (giữ vàng "đắt").
+- **P1 Màn quay "Reels ấm":** `src/RecordScreen.tsx` — ready (vòng thở + microcopy trấn an)
+  → đếm 3-2-1 (huỷ được) → thu (waveform sống từ metering expo-av, đồng hồ + vòng tiến độ 60s,
+  teleprompter dàn ý từ `brief.steps` tự trôi 4s/bước) → processing "Đang nghe bạn dẫn…".
+  Chỉ báo thu = SAN HÔ + chữ (không đỏ). Haptic Light/Medium theo spec.
+- **P2 Onboarding ấm:** `src/Onboarding.tsx` — 5 bước (trấn an → giá trị → mục tiêu → thói quen
+  → priming mic). Gate ở App: chưa có token + chưa `onboarded` → hiện. Mục tiêu lưu AsyncStorage
+  `goal` → sau đăng nhập `refresh()` tự chọn lộ trình khớp genre (trả công cá nhân hoá).
+- **P1 Thẻ bảo chứng khoe được:** `src/BadgeCardView.tsx` — 3 skin (cream/night/coral), con dấu
+  ĐÃ XÁC THỰC, waveform giọng MC (phát qua expo-av), nút Chia sẻ = `react-native-view-shot`
+  chụp thẻ → `expo-sharing` share-sheet. Suy biến duyên dáng khi thiếu dữ liệu.
+- **Khác:** `pollScore` tăng 25×500ms (~12.5s) + không crash khi chậm (toast dịu, không mất bài);
+  Alert thành công → toast in-app; câu nhắc streak lấy từ pool. Deps mới: `expo-haptics`,
+  `expo-sharing`, `react-native-view-shot`. Asset mới: `client/assets/ting.wav` (chuông sinh bằng script).
+- Verify: `npx tsc --noEmit` sạch + `npx expo export --platform ios` bundle OK (730 modules).
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)
@@ -106,7 +131,13 @@ Lộ trình nói/thuyết trình (10 buổi), quay clip + AI chấm async, strea
 ### Client `mcup/client/`
 | File | Vai trò |
 |---|---|
-| `App.tsx` | App chính. Auth, phân màn theo vai. Tab Lộ trình (pill chọn thể loại + StageMap), màn luyện (**Thẻ nhiệm vụ** + thu âm), màn kết quả, tab Hồ sơ. `type Lesson` có `brief?` + `criteria?` |
+| `App.tsx` | App chính. Onboarding gate → Auth → phân màn theo vai. Tab Lộ trình (pill + StageMap), màn luyện = `RecordScreen`, màn kết quả = `ScoreReveal`, overlay `Celebration` + toast in-app |
+| `src/variety.ts` | Pool ngẫu nhiên chống lặp: lời khen/nhắc, tiêu đề thưởng, câu chào streak (P0) |
+| `src/Celebration.tsx` `src/Confetti.tsx` | Overlay khoảnh khắc thưởng + 3 kiểu confetti + haptic + ting (P0) |
+| `src/ScoreReveal.tsx` | Màn điểm "diễn": stagger, count-up, chip so sánh, bỏ "(giả lập)" (P0) |
+| `src/RecordScreen.tsx` | Màn quay "Reels ấm": 3-2-1, waveform metering, teleprompter, processing (P1) |
+| `src/Onboarding.tsx` | Onboarding ấm 5 bước, priming mic, prefs → AsyncStorage (P2) |
+| `src/BadgeCardView.tsx` | Thẻ bảo chứng 3 skin + share ảnh view-shot (P1) |
 | `src/StageMap.tsx` | Bản đồ leo "sân khấu" (Duolingo-style) |
 | `src/api.ts` | API client. `API_BASE` = IP LAN (hiện `http://192.168.1.215:8000`). `submitMock/submitMockContent/contentPaths/contentLessons`, `submitAudio(...,content_lesson_id?)` |
 | `src/theme.ts`, `src/icons.tsx`, `src/MiniChart.tsx` | Tokens, icon SVG tự vẽ, biểu đồ |
@@ -174,6 +205,10 @@ Trình tự phiên này:
 4. **"c đi" → Pha C** seed 3 thể loại published + meta màu/tagline. Commit `08fa54c`.
 5. **Finn:** "phần nhiệm vụ chưa đủ chi tiết…" → gọi **`/bmad-agent-analyst` (Mary)** phân tích → đề xuất **Thẻ nhiệm vụ**. Finn chốt: *ẩn ví dụ sau "Xem gợi ý"* + *làm hết + nâng AI-split*. → Build xong, verify đầu-cuối, commit `1d82e45`.
 6. Finn: "ghi hết context phiên thành 1 file md" → chính file này.
+7. **Phiên 2 (06/07):** Finn yêu cầu enhance UX/UI cho Gen Z → **Mary** phân tích khoảng cách
+   spec-vs-code (spec hứa spotlight/confetti/haptic nhưng code chỉ có Alert) → **Sally** viết
+   4 spec (P0 cảm xúc · P1 thẻ khoe · P1 màn quay · P2 onboarding) + demo tương tác →
+   Finn: "làm hết luôn" → **Amelia** build cả 4 gói (7 file mới + App.tsx tích hợp, xem §3).
 
 **Lịch sử commit (mới → cũ):**
 ```
