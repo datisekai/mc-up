@@ -5,13 +5,14 @@
 import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// SFX: Kenney "Interface Sounds" (kenney.nl, CC0 1.0 — public domain). Xem assets/CREDITS.md
 const SFX_FILES = {
-  tap: require("../assets/tap.wav"),        // chạm nút
-  pop: require("../assets/pop.wav"),        // đổi tab / pill
-  start: require("../assets/start.wav"),    // bắt đầu thu (2 nốt lên)
-  stop: require("../assets/stop.wav"),      // dừng thu (2 nốt xuống)
-  success: require("../assets/success.wav"),// màn điểm hiện
-  ting: require("../assets/ting.wav"),      // khoảnh khắc thưởng
+  tap: require("../assets/tap.wav"),        // chạm nút (click_001)
+  pop: require("../assets/pop.wav"),        // đổi tab / pill (select_002)
+  start: require("../assets/start.wav"),    // bắt đầu thu — sweep đi lên (maximize_003)
+  stop: require("../assets/stop.wav"),      // dừng thu — sweep đi xuống (minimize_003)
+  success: require("../assets/success.wav"),// màn điểm hiện (confirmation_001)
+  ting: require("../assets/ting.wav"),      // khoảnh khắc thưởng (confirmation_002)
 } as const;
 export type SfxName = keyof typeof SFX_FILES;
 
@@ -42,8 +43,10 @@ export function sfx(name: SfxName) {
 async function ensureMusic(): Promise<Audio.Sound | null> {
   if (music) return music;
   try {
+    // Nhạc nền: "Wholesome" — Kevin MacLeod (incompetech.com), CC BY 4.0.
+    // Đoạn 76s fade mượt để loop. Credit bắt buộc: xem assets/CREDITS.md + màn Hồ sơ.
     const { sound } = await Audio.Sound.createAsync(
-      require("../assets/ambient.wav"), { isLooping: true, volume: 0.2, shouldPlay: false });
+      require("../assets/ambient.m4a"), { isLooping: true, volume: 0.2, shouldPlay: false });
     music = sound;
     return music;
   } catch { return null; }

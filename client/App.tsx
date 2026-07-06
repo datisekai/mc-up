@@ -515,6 +515,10 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
       <Btn ghost label={soundOn ? "Âm thanh: Bật 🔊" : "Âm thanh: Tắt 🔇"} onPress={onToggleSound} />
+      {/* Credit BẮT BUỘC theo CC-BY 4.0 (assets/CREDITS.md) — giữ khi phát hành */}
+      <Text style={{ color: "#BFB4C4", fontSize: 10.5, textAlign: "center", marginTop: 8 }}>
+        Nhạc: "Wholesome" — Kevin MacLeod (incompetech.com) · CC BY 4.0
+      </Text>
       <Btn ghost label="Đăng xuất" onPress={onLogout} />
       <View style={{ height: 20 }} />
     </View>
