@@ -26,6 +26,8 @@
   .les{background:#fff;border-radius:10px;padding:10px;margin-bottom:6px}
   .les .t{font-weight:700;font-size:14px}
   .les .tip{color:var(--ink2);font-size:12px;margin-top:2px}
+.brief{background:#faf7f2;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:12px;line-height:1.5}
+.brief b{color:var(--ink)} .brief ul{margin:2px 0 2px 18px;padding:0}
   .les .p{font-size:13px;margin-top:4px}
   .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px}
   .draft{background:#FFF3DA;color:#9a6b00}.pub{background:#E6F7EF;color:#1f8f63}
@@ -109,7 +111,19 @@ function renderTree(tree, isNew){
     h+=`<div class="kicker">${lv.name}</div>`;
     (lv.sessions||[]).forEach(s=>{
       h+=`<div class="sess"><h3>${s.title}</h3>`;
-      (s.lessons||[]).forEach(l=>{ h+=`<div class="les"><div class="t">${l.title}</div><div class="tip">💡 ${l.tip}</div><div class="p">🎬 ${l.prompt}</div></div>`; });
+      (s.lessons||[]).forEach(l=>{
+        let b='';
+        if(l.brief){
+          const st=(l.brief.steps||[]).map(x=>`<li>${x}</li>`).join('');
+          b=`<div class="brief">`
+           +(l.brief.objective?`<div><b>Mục tiêu:</b> ${l.brief.objective}</div>`:'')
+           +(l.brief.context?`<div><b>Tình huống:</b> ${l.brief.context}</div>`:'')
+           +(st?`<div><b>Dàn ý:</b><ul>${st}</ul></div>`:'')
+           +(l.brief.example?`<div><b>Ví dụ mẫu:</b> <i>${l.brief.example}</i></div>`:'')
+           +`</div>`;
+        }
+        h+=`<div class="les"><div class="t">${l.title}</div><div class="tip">💡 ${l.tip}</div><div class="p">🎬 ${l.prompt}</div>${b}</div>`;
+      });
       h+=`</div>`;
     });
   });

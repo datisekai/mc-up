@@ -11,7 +11,8 @@ import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
 
-type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; unlocked: boolean; done: boolean };
+type Brief = { objective: string; context: string; steps: string[]; example: string };
+type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
 type Score = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
   const [selPath, setSelPath] = useState<string | null>(null);
   const [screen, setScreen] = useState<"feed" | "practice" | "score">("feed");
   const [curLesson, setCur] = useState<Lesson | null>(null);
+  const [showEx, setShowEx] = useState(false);  // ẩn/hiện Ví dụ mẫu (thử trước đã)
   const [score, setScore] = useState<Score | null>(null);
   const [lastClip, setLastClip] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -229,7 +231,7 @@ export default function App() {
               <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>Hôm nay chưa luyện — giữ chuỗi {prog.streak} ngày nào!</Text>
             </View>
           )}
-          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setShowEx(false); setScreen("practice"); } }} />
         </View>
       ) : (
       <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -237,8 +239,26 @@ export default function App() {
           <View>
             <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
             <View style={s.card}>
-              <View style={s.tip}><Text>{curLesson.tip}</Text></View>
-              <Text style={{ fontWeight: "700", marginVertical: 12 }}>Đề: {curLesson.prompt}</Text>
+              {curLesson.tip ? <View style={s.tip}><Text>{curLesson.tip}</Text></View> : null}
+
+              <Text style={s.taskLabel}>Đề bài</Text>
+              <Text style={s.taskPrompt}>{curLesson.prompt}</Text>
+
+              {curLesson.brief?.objective ? (<><Text style={s.taskLabel}>Mục tiêu</Text><Text style={s.taskText}>{curLesson.brief.objective}</Text></>) : null}
+              {curLesson.brief?.context ? (<><Text style={s.taskLabel}>Tình huống</Text><Text style={s.taskText}>{curLesson.brief.context}</Text></>) : null}
+              {curLesson.brief?.steps?.length ? (<><Text style={s.taskLabel}>Gợi ý dàn ý</Text>{curLesson.brief.steps.map((st, i) => <Text key={i} style={s.taskBullet}>{i + 1}.  {st}</Text>)}</>) : null}
+              {curLesson.criteria?.length ? (<><Text style={s.taskLabel}>Tiêu chí đạt</Text>{curLesson.criteria.map((c, i) => <View key={i} style={s.critRow}><View style={s.critDot} /><Text style={s.taskText}>{c}</Text></View>)}</>) : null}
+
+              {curLesson.brief?.example ? (showEx ? (
+                <View style={s.exampleBox}>
+                  <Text style={s.exampleLabel}>VÍ DỤ MẪU · tham khảo cách làm, đừng đọc nguyên văn</Text>
+                  <Text style={s.exampleText}>“{curLesson.brief.example}”</Text>
+                </View>
+              ) : (
+                <Btn ghost label="Bí quá? Xem gợi ý mẫu" onPress={() => setShowEx(true)} />
+              )) : null}
+
+              <View style={{ height: 6 }} />
               {busy ? <ActivityIndicator color={C.primary} /> : recording ? (
                 <Btn label="Dừng & nộp" onPress={stopRec} />
               ) : (
@@ -430,4 +450,13 @@ const s = StyleSheet.create({
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
   pathTagline: { paddingHorizontal: 18, paddingBottom: 4, color: C.ink2, fontSize: 12, fontWeight: "600" },
+  taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 11, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
+  taskPrompt: { fontWeight: "800", fontSize: 16, color: C.ink, lineHeight: 22 },
+  taskText: { color: C.ink, fontSize: 14, lineHeight: 20, flex: 1 },
+  taskBullet: { color: C.ink, fontSize: 14, lineHeight: 22 },
+  critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
+  critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
+  exampleBox: { backgroundColor: C.sunken, borderRadius: 14, padding: 14, marginTop: 12, borderLeftWidth: 3, borderLeftColor: C.primary },
+  exampleLabel: { fontWeight: "800", fontSize: 10, color: C.ink2, marginBottom: 6, letterSpacing: 0.4 },
+  exampleText: { color: C.ink, fontSize: 14, lineHeight: 21, fontStyle: "italic" },
 });

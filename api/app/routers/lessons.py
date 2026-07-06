@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_session
 from ..deps import current_user
 from ..models import Clip, Lesson, Score, User
+from ..rubrics import criteria_for, get_rubric
 from ..schemas import LessonOut
 
 router = APIRouter(tags=["lessons"])
@@ -20,6 +21,7 @@ async def list_lessons(user: User = Depends(current_user), session: AsyncSession
     )).scalars().all()
     done_ids = set(done_rows)
 
+    criteria = criteria_for(get_rubric(None))  # bài v1 dùng rubric lõi (FR-15)
     out: list[LessonOut] = []
     prev_done = True  # bài đầu luôn mở
     for les in lessons:
@@ -27,7 +29,8 @@ async def list_lessons(user: User = Depends(current_user), session: AsyncSession
         is_done = les.id in done_ids
         out.append(LessonOut(
             id=les.id, buoi=les.buoi, order_index=les.order_index, title=les.title,
-            tip=les.tip, prompt=les.prompt, xp=les.xp, unlocked=unlocked, done=is_done,
+            tip=les.tip, prompt=les.prompt, brief=les.brief, criteria=criteria,
+            xp=les.xp, unlocked=unlocked, done=is_done,
         ))
         prev_done = is_done  # bài kế mở khi bài này xong
     return out

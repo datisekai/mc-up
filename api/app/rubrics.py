@@ -53,6 +53,17 @@ MODULES: dict = {
 }
 
 
+def criteria_for(rubric: dict) -> list[str]:
+    """Sinh 'tiêu chí đạt' từ CHÍNH rubric chấm → học viên thấy trước đúng thứ AI chấm.
+    Một nguồn sự thật: đổi rubric là tiêu chí tự đổi theo (FR-15)."""
+    return [
+        f"Tốc độ {rubric['wpm_min']}–{rubric['wpm_max']} chữ/phút",
+        "Âm lượng rõ, đều — không quá nhỏ/quá to",
+        "Dưới 2 từ đệm 'ừm/à' trong cả bài",
+        f"Giữ đúng chất: {rubric['focus']}",
+    ]
+
+
 def get_rubric(genre_name: str | None) -> dict:
     """Rubric hiệu lực = CORE trộn MODULE theo thể loại (khớp chính xác rồi khớp mờ)."""
     if not genre_name:

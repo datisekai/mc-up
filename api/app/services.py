@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .db import SessionLocal
 from .models import (BadgeCard, Clip, ContentLesson, ContentSession, Genre, LearningPath, Level,
                      MCReview, Progress, ReviewRequest, Score, User)
-from .rubrics import get_rubric
+from .rubrics import criteria_for, get_rubric
 from .scoring import score_clip
 
 
@@ -140,9 +140,10 @@ async def ai_split_and_persist(s: AsyncSession, raw_text: str, genre_name: str, 
         s.add(cs)
         await s.flush()
         for li, les in enumerate(sess.get("lessons", [])):
+            brief = les.get("brief") if isinstance(les.get("brief"), dict) else None
             s.add(ContentLesson(session_id=cs.id, title=les.get("title", "Bài"),
                                 tip=les.get("tip", ""), prompt=les.get("prompt", ""),
-                                order_index=li, status="draft"))
+                                brief=brief, order_index=li, status="draft"))
     await s.commit()
     return {"path_id": path.id, "is_mock": bool(draft.get("is_mock", False))}
 
@@ -160,7 +161,8 @@ async def get_path_tree(s: AsyncSession, path_id: str) -> dict | None:
         for cs in sessions:
             lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id).order_by(ContentLesson.order_index))).scalars().all()
             out_sessions.append({"id": cs.id, "title": cs.title,
-                                 "lessons": [{"id": ln.id, "title": ln.title, "tip": ln.tip, "prompt": ln.prompt} for ln in lessons]})
+                                 "lessons": [{"id": ln.id, "title": ln.title, "tip": ln.tip,
+                                              "prompt": ln.prompt, "brief": ln.brief} for ln in lessons]})
         out_levels.append({"id": lv.id, "name": lv.name, "sessions": out_sessions})
     return {"id": path.id, "title": path.title, "genre": genre.name if genre else "", "status": path.status, "levels": out_levels}
 
@@ -194,7 +196,11 @@ async def publish_path(s: AsyncSession, path_id: str) -> bool:
 
 
 async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: str) -> list[dict]:
-    """Bài PUBLISHED của một lộ trình, phẳng + unlocked/done theo user (FR-19)."""
+    """Bài PUBLISHED của một lộ trình, phẳng + unlocked/done theo user (FR-19).
+    Kèm Thẻ nhiệm vụ (brief) + tiêu chí đạt sinh từ rubric thể loại (FR-15)."""
+    path = await s.get(LearningPath, path_id)
+    genre = await s.get(Genre, path.genre_id) if path else None
+    criteria = criteria_for(get_rubric(genre.name if genre else None))
     levels = (await s.execute(select(Level).where(Level.path_id == path_id, Level.status == "published").order_by(Level.order_index))).scalars().all()
     flat = []
     for lv in levels:
@@ -215,6 +221,7 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
     for i, (ln, buoi) in enumerate(flat):
         is_done = ln.id in done
         out.append({"id": ln.id, "buoi": buoi, "order_index": i, "title": ln.title,
-                    "tip": ln.tip, "prompt": ln.prompt, "unlocked": prev_done, "done": is_done})
+                    "tip": ln.tip, "prompt": ln.prompt, "brief": ln.brief, "criteria": criteria,
+                    "unlocked": prev_done, "done": is_done})
         prev_done = is_done
     return out

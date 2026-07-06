@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -36,6 +36,7 @@ class Lesson(Base):
     title: Mapped[str] = mapped_column(String)
     tip: Mapped[str] = mapped_column(String)     # mẹo ngắn
     prompt: Mapped[str] = mapped_column(String)  # đề thực hành
+    brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # Thẻ nhiệm vụ: mục tiêu/bối cảnh/dàn ý/ví dụ
     xp: Mapped[int] = mapped_column(default=10)
 
 
@@ -149,6 +150,7 @@ class ContentLesson(Base):
     title: Mapped[str] = mapped_column(String)
     tip: Mapped[str] = mapped_column(String, default="")
     prompt: Mapped[str] = mapped_column(String, default="")
+    brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # Thẻ nhiệm vụ (Pha C+)
     order_index: Mapped[int] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String, default="draft")
 

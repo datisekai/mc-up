@@ -26,6 +26,8 @@ class LessonOut(BaseModel):
     title: str
     tip: str
     prompt: str
+    brief: dict | None = None      # Thẻ nhiệm vụ: mục tiêu/bối cảnh/dàn ý/ví dụ
+    criteria: list[str] = []       # Tiêu chí đạt (sinh từ rubric — FR-15)
     xp: int
     unlocked: bool
     done: bool
