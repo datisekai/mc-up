@@ -14,12 +14,27 @@ services:
     volumes:
       - clipdata:/data/uploads
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"   # chỉ localhost — ra ngoài đi qua Caddy (HTTPS)
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+
+  # HTTPS tự động (Let's Encrypt) — đặt DOMAIN trong .env, trỏ DNS A record về IP VPS trước
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-:80}    # chưa có domain → serve HTTP cổng 80 (chỉ để thử)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    depends_on:
+      - api
 
   postgres:
     image: postgres:16
@@ -58,3 +73,4 @@ volumes:
   pgdata:
   miniodata:
   clipdata:
+  caddydata:

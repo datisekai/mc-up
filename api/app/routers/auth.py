@@ -1,9 +1,11 @@
 import uuid
+from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import settings
 from ..db import get_session
 from ..deps import current_user
 from ..models import Progress, User
@@ -15,6 +17,17 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 # Khách trước, đăng ký sau (giá trị trước cam kết — phân tích Mary 2026-07-06).
 # Nhận diện khách bằng domain email nội bộ — không cần đổi schema.
 _GUEST_DOMAIN = "@guest.mcup"
+
+# Chống farm tài khoản khách (beta hardening): đếm theo IP trong ngày (in-memory,
+# đủ cho 1 process beta) + van tổng theo DB. Sau Caddy thì IP thật ở X-Forwarded-For.
+_guest_ip: dict[str, tuple[str, int]] = {}
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "?"
 
 
 @router.post("/register", response_model=TokenOut)
@@ -33,9 +46,25 @@ async def register(body: RegisterIn, session: AsyncSession = Depends(get_session
 
 
 @router.post("/guest", response_model=TokenOut)
-async def guest(session: AsyncSession = Depends(get_session)):
+async def guest(request: Request, session: AsyncSession = Depends(get_session)):
     """Tạo tài khoản khách ẩn danh — luyện ngay, không cần email/mật khẩu.
     password_hash rỗng → không thể login bằng mật khẩu; nâng cấp qua /auth/upgrade."""
+    today = date.today().isoformat()
+    ip = _client_ip(request)
+    day, cnt = _guest_ip.get(ip, (today, 0))
+    if day != today:
+        cnt = 0
+    if settings.guest_per_ip_daily > 0 and cnt >= settings.guest_per_ip_daily:
+        raise HTTPException(429, {"error": {"code": "guest_limit",
+            "message": "Bạn thử nhiều rồi đó — tạo tài khoản email để giữ tiến độ nhé!"}})
+    if settings.guest_daily_total > 0:
+        total = (await session.execute(select(func.count(User.id)).where(
+            User.email.like(f"%{_GUEST_DOMAIN}"),
+            func.date(User.created_at) == today))).scalar() or 0
+        if total >= settings.guest_daily_total:
+            raise HTTPException(429, {"error": {"code": "guest_limit",
+                "message": "Hôm nay đông khách quá — đăng ký email để vào ngay nhé!"}})
+    _guest_ip[ip] = (today, cnt + 1)
     user = User(email=f"khach-{uuid.uuid4().hex[:10]}{_GUEST_DOMAIN}",
                 password_hash="", role="hoc_vien", display_name="Khách")
     session.add(user)

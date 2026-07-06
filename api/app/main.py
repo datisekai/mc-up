@@ -33,6 +33,9 @@ async def lifespan(_: FastAPI):
     await seed_genres()  # Pha C: thể loại đám cưới/sự kiện/livestream
     await seed_mc()
     await seed_admin()
+    # Chống quên đổi secret khi lên prod (Postgres = dấu hiệu prod)
+    if settings.jwt_secret.startswith("doi-secret") and "postgresql" in settings.database_url:
+        log.error("⚠️⚠️ JWT_SECRET đang là giá trị mặc định trên Postgres — ĐỔI NGAY trong .env!")
     log.info("McUp API sẵn sàng (DB=%s) — mở http://localhost:8000/app",
              settings.database_url.split("://")[0])
     yield
@@ -40,9 +43,12 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="McUp API", version=settings.app_version, lifespan=lifespan)
 
-# CORS mở cho dev (prototype web) — siết lại khi deploy VPS
+# CORS: dev = "*"; prod đặt env ALLOWED_ORIGINS về đúng domain (app mobile không cần CORS,
+# đây là cho web admin/prototype khi khác origin)
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in settings.allowed_origins.split(",") if o.strip()],
+    allow_methods=["*"], allow_headers=["*"],
 )
 
 

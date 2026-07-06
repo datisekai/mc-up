@@ -3,6 +3,9 @@ FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
+# ffmpeg BẮT BUỘC: scoring._rms_volume decode audio đo âm lượng thật (FR-13)
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app/mcup
 
 # Cài deps trước để tận dụng cache

@@ -6,12 +6,19 @@ Yêu cầu VPS: đã cài **Docker** + **Docker Compose** (Ubuntu: `curl -fsSL h
 ```bash
 git clone <repo-của-bạn> mcup && cd mcup
 cp .env.example .env
-nano .env            # ĐỔI JWT_SECRET + POSTGRES_PASSWORD; điền OPENAI_API_KEY nếu muốn ASR thật
+nano .env            # BẮT BUỘC: JWT_SECRET + POSTGRES_PASSWORD + DOMAIN; OPENAI_API_KEY cho ASR thật
 docker compose -f docker-compose.prod.yml up -d --build
 ```
-→ API chạy ở `http://<IP-VPS>:8000` · kiểm tra: `curl http://localhost:8000/health`
+→ Có domain (DNS A record → IP VPS): API tự có **HTTPS** tại `https://<DOMAIN>` (Caddy + Let's Encrypt).
+→ Kiểm tra: `curl https://<DOMAIN>/health` · admin: `https://<DOMAIN>/admin-web`
 
-Stack gồm: **api** (FastAPI) + **postgres** + **redis** + **minio** (object storage clip). Postgres/clip/minio đều có volume nên dữ liệu bền qua các lần restart.
+Stack gồm: **caddy** (HTTPS) + **api** (FastAPI, chỉ bind localhost) + **postgres** + **redis** + **minio**.
+Postgres/clip/minio/cert đều có volume nên dữ liệu bền qua restart.
+
+**App mobile trỏ về server:** sửa `API_BASE` trong `client/src/api.ts` thành `https://<DOMAIN>` rồi build lại app.
+
+**Beta hardening có sẵn** (chỉnh trong `.env`): quota 30 lượt chấm/user/ngày ·
+5 tài khoản khách/IP/ngày · van tổng 300 khách/ngày · CORS theo `ALLOWED_ORIGINS`.
 
 ## Cập nhật khi có code mới
 ```bash

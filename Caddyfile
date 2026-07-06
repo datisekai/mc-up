@@ -1,0 +1,6 @@
+# Caddy reverse proxy — HTTPS tự động (Let's Encrypt) khi DOMAIN là tên miền thật.
+# DOMAIN đặt trong .env (vd DOMAIN=api.mcup.vn, DNS A record trỏ về IP VPS trước).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy api:8000
+}

@@ -2,7 +2,7 @@ from datetime import date
 
 from adapters.media_local import LocalMediaStore
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
@@ -17,9 +17,24 @@ _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi 
 router = APIRouter(tags=["practice"])
 
 
+async def _check_quota(session: AsyncSession, user: User) -> None:
+    """Quota chấm/ngày (beta hardening): mỗi lần chấm = 1 call ASR trả tiền.
+    Giọng nhắc dịu — nghỉ giọng cũng là một phần của luyện."""
+    if settings.daily_clip_limit <= 0:
+        return
+    n = (await session.execute(select(func.count(Clip.id)).where(
+        Clip.user_id == user.id,
+        func.date(Clip.created_at) == date.today().isoformat(),
+    ))).scalar() or 0
+    if n >= settings.daily_clip_limit:
+        raise HTTPException(429, {"error": {"code": "quota", "message":
+            f"Hôm nay bạn luyện {n} lượt rồi — nghỉ giọng cho khoẻ, mai leo tiếp nhé! 💪"}})
+
+
 @router.post("/practice/submit", response_model=ClipOut)
 async def submit(body: SubmitClipIn, bg: BackgroundTasks,
                  user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    await _check_quota(session, user)
     if body.content_lesson_id:  # v2: bài nội dung published (FR-19)
         cl = await session.get(ContentLesson, body.content_lesson_id)
         if not cl:
@@ -45,6 +60,7 @@ async def submit_audio(bg: BackgroundTasks, lesson_id: str = Form(None), content
                        user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
     """Nộp bài KÈM clip audio thật (Story 3.2). Lưu qua MediaStore rồi chấm.
     Nhận bài v1 (lesson_id) hoặc bài nội dung published (content_lesson_id — FR-19)."""
+    await _check_quota(session, user)
     if content_lesson_id:
         cl = await session.get(ContentLesson, content_lesson_id)
         if not cl:
