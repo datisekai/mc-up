@@ -77,7 +77,8 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }
 
-  // cử chỉ: vuốt ngang đổi tab (accelerator — tab vẫn chạm được, Accessibility Floor)
+  // cử chỉ: vuốt ngang đổi tab TỪ MỌI MÀN (accelerator — tab đáy vẫn chạm được).
+  // Không capture nên pill ngang/pager Reels vẫn thắng khi chúng là responder.
   const tabSwipe = useRef(PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 28 && Math.abs(g.dx) > Math.abs(g.dy) * 2.2,
     onPanResponderRelease: (_, g) => {
@@ -85,6 +86,16 @@ export default function App() {
       else if (g.dx > 50) setTab("hv");
     },
   })).current;
+
+  // dạy cử chỉ đúng 1 lần (discoverability — không ai đoán được gesture vô hình)
+  useEffect(() => {
+    if (!token || role !== "hoc_vien") return;
+    AsyncStorage.getItem("hint_swipe").then((v) => {
+      if (v) return;
+      AsyncStorage.setItem("hint_swipe", "1");
+      setTimeout(() => showToast("Mẹo: vuốt ngang để đổi Lộ trình ↔ Hồ sơ"), 1200);
+    });
+  }, [token, role]);
 
   // câu chào streak lấy từ pool — đổi theo ngày, không lặp mỗi render (P0 §3.7)
   const streakGreet = useMemo(
@@ -323,20 +334,22 @@ export default function App() {
   }
 
   // ---- Học viên ----
+  // Minimal UI: header 1 dòng (logo + 1 cụm chip) · KHÔNG tab trên đầu ·
+  // tab bar icon ở ĐÁY (chuẩn native, EXPERIENCE.md IA) · vuốt ngang đổi tab từ mọi màn
+  // (trừ đang luyện/Reels để không vuốt nhầm).
+  const swipeEnabled = screen === "feed" || screen === "score" || tab === "hs";
   return (
     <View style={s.app}>
       <StatusBar style="dark" />
       <View style={s.header}>
         <Text style={s.brand}>McUp</Text>
-        <View style={{ flexDirection: "row", gap: 6 }}>
-          <Chip icon={<Fire size={15} color="#F5A623" />}>{prog.streak}</Chip>
-          <Chip icon={<Star size={14} color={C.primary} />}>{prog.xp}</Chip>
-          <Chip icon={<Ticket size={15} color="#E0A62F" />}>{prog.tickets}</Chip>
+        <View style={s.chipCluster}>
+          <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
+          <View style={s.chipDiv} />
+          <Star size={13} color={C.primary} /><Text style={s.chipT}>{prog.xp}</Text>
+          <View style={s.chipDiv} />
+          <Ticket size={14} color="#E0A62F" /><Text style={s.chipT}>{prog.tickets}</Text>
         </View>
-      </View>
-      <View style={s.tabs}>
-        <Tab on={tab === "hv"} icon={<MapIcon size={16} color={tab === "hv" ? "#fff" : C.ink2} />} label="Lộ trình" onPress={() => setTab("hv")} />
-        <Tab on={tab === "hs"} icon={<User size={16} color={tab === "hs" ? "#fff" : C.ink2} />} label="Hồ sơ" onPress={() => setTab("hs")} />
       </View>
 
       {tab === "hv" && screen === "reels" ? (
@@ -347,62 +360,80 @@ export default function App() {
           onRun={runReelsLesson}
           onExit={() => refresh()}
         />
-      ) : tab === "hv" && screen === "feed" ? (
-        <View style={{ flex: 1 }}>
-          {paths.length > 0 && (
+      ) : (
+      <View style={{ flex: 1, marginBottom: 62 }} {...(swipeEnabled ? tabSwipe.panHandlers : {})}>
+        {tab === "hv" && screen === "feed" ? (
+          <View style={{ flex: 1 }}>
+            {paths.length > 0 && (
+              <View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
+                  {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
+                </ScrollView>
+                {/* giảm nhiễu: tagline chỉ hiện khi đã chọn thể loại */}
+                {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : ""; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
+              </View>
+            )}
+            {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
+            {prog.practiced_today === false && new Date().getHours() >= 17 && (
+              <View style={s.reminder}>
+                <Fire size={18} color="#F5A623" />
+                <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
+              </View>
+            )}
+            <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+            {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
+            <TouchableOpacity style={s.reelsFab} onPress={() => setScreen("reels")} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
+              <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+        <ScrollView
+          contentContainerStyle={{ padding: 16 }}
+          onScrollEndDrag={(e) => {
+            // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
+            if (screen === "score" && e.nativeEvent.contentOffset.y < -70) refresh();
+          }}
+        >
+          {tab === "hv" && screen === "practice" && curLesson && (
             <View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
-                {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
-              </ScrollView>
-              {/* giảm nhiễu: tagline chỉ hiện khi đã chọn thể loại */}
-              {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : ""; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
+              <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
+              <RecordScreen
+                lesson={curLesson}
+                busy={busy}
+                onSubmit={submitReal}
+                onMock={doSubmitMock}
+                onBack={() => refresh()}
+              />
             </View>
           )}
-          {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
-          {prog.practiced_today === false && new Date().getHours() >= 17 && (
-            <View style={s.reminder}>
-              <Fire size={18} color="#F5A623" />
-              <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
+          {tab === "hv" && screen === "score" && score && (
+            <View>
+              <Kicker>Kết quả của bạn</Kicker>
+              <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
+              <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
+              <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
+              <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
-          <StageMap lessons={lessons} onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
-          {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
-          <TouchableOpacity style={s.reelsFab} onPress={() => setScreen("reels")} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
-            <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
+          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onLogout={logout} />}
+        </ScrollView>
+        )}
+      </View>
+      )}
+
+      {/* tab bar đáy — icon, chuẩn native */}
+      {screen !== "reels" && (
+        <View style={s.bottomBar}>
+          <TouchableOpacity style={s.bTab} onPress={() => { setTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
+            accessibilityLabel="Tab Lộ trình">
+            <MapIcon size={22} color={tab === "hv" ? C.primary : C.ink2} />
+            <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.bTab} onPress={() => setTab("hs")} accessibilityLabel="Tab Hồ sơ">
+            <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
+            <Text style={[s.bTabT, tab === "hs" && { color: C.primary }]}>Hồ sơ</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-      <View style={{ flex: 1 }} {...tabSwipe.panHandlers}>
-      <ScrollView
-        contentContainerStyle={{ padding: 16 }}
-        onScrollEndDrag={(e) => {
-          // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
-          if (screen === "score" && e.nativeEvent.contentOffset.y < -70) refresh();
-        }}
-      >
-        {tab === "hv" && screen === "practice" && curLesson && (
-          <View>
-            <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
-            <RecordScreen
-              lesson={curLesson}
-              busy={busy}
-              onSubmit={submitReal}
-              onMock={doSubmitMock}
-              onBack={() => refresh()}
-            />
-          </View>
-        )}
-        {tab === "hv" && screen === "score" && score && (
-          <View>
-            <Kicker>Kết quả của bạn</Kicker>
-            <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
-            <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
-            <Btn ghost label="Tiếp tục lộ trình" onPress={() => refresh()} />
-          </View>
-        )}
-        {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onLogout={logout} />}
-      </ScrollView>
-      </View>
       )}
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
@@ -537,9 +568,25 @@ const s = StyleSheet.create({
   header: { paddingTop: 54, paddingHorizontal: 18, paddingBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   brand: { fontSize: 24, fontFamily: F.displayX, color: C.primary, letterSpacing: -0.5 },
   chip: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: C.sunken, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  // header gọn: 3 chỉ số trong MỘT cụm (giảm nhiễu thị giác)
+  chipCluster: {
+    flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.sunken,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999,
+  },
+  chipT: { color: C.ink, fontFamily: F.display, fontSize: 13 },
+  chipDiv: { width: 1, height: 12, backgroundColor: C.hair, marginHorizontal: 3 },
   tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
   tabOn: { backgroundColor: C.primary },
+  // tab bar đáy — chuẩn native (EXPERIENCE.md IA)
+  bottomBar: {
+    position: "absolute", bottom: 0, left: 0, right: 0, flexDirection: "row",
+    backgroundColor: C.raised, borderTopWidth: 1, borderTopColor: C.hair,
+    paddingTop: 8, paddingBottom: 26,
+  },
+  bTab: { flex: 1, alignItems: "center", gap: 2 },
+  bTabT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 11.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
   reelsFab: {
@@ -562,7 +609,7 @@ const s = StyleSheet.create({
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
   pathTagline: { paddingHorizontal: 18, paddingBottom: 4, color: C.ink2, fontSize: 12, fontWeight: "600" },
   toast: {
-    position: "absolute", left: 20, right: 20, bottom: 34, backgroundColor: "#3B2A4A",
+    position: "absolute", left: 20, right: 20, bottom: 86, backgroundColor: "#3B2A4A",
     borderRadius: 14, padding: 14, alignItems: "center", zIndex: 98,
     shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8,
   },
