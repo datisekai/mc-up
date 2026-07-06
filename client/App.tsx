@@ -5,7 +5,11 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { C } from "./src/theme";
+import { Baloo2_700Bold, Baloo2_800ExtraBold, useFonts } from "@expo-google-fonts/baloo-2";
+import {
+  BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold,
+} from "@expo-google-fonts/be-vietnam-pro";
+import { C, F } from "./src/theme";
 import { Api, API_BASE, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
@@ -24,6 +28,11 @@ type Score = { volume_label: string; speed_wpm: number; filler_count: number; ti
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
 
 export default function App() {
+  // Font thương hiệu (DESIGN.md): Baloo 2 (display) + Be Vietnam Pro (title/body)
+  const [fontsLoaded] = useFonts({
+    Baloo2_700Bold, Baloo2_800ExtraBold,
+    BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold,
+  });
   const [booting, setBooting] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string>("hoc_vien");
@@ -197,7 +206,7 @@ export default function App() {
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
 
-  if (booting) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
+  if (booting || !fontsLoaded) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
 
   // ---- Người mới → onboarding ấm (P2) ----
   if (!token && !onboarded) return <Onboarding onDone={finishOnboard} />;
@@ -206,7 +215,7 @@ export default function App() {
   if (!token) {
     return (
       <View style={s.center}>
-        <Text style={{ fontSize: 34, fontWeight: "800", color: C.primary, letterSpacing: -0.5 }}>McUp</Text>
+        <Text style={{ fontSize: 34, fontFamily: F.displayX, color: C.primary, letterSpacing: -0.5 }}>McUp</Text>
         <Text style={{ color: C.ink2, marginTop: 4, marginBottom: 26 }}>Luyện MC mỗi ngày</Text>
         <View style={{ width: "100%", maxWidth: 340 }}>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
@@ -370,7 +379,7 @@ function StatCard({ icon, value, label }: any) {
   return (
     <View style={[s.card, { flex: 1, alignItems: "center", marginBottom: 0 }]}>
       {icon}
-      <Text style={{ fontWeight: "900", fontSize: 22, color: C.ink, marginTop: 4 }}>{value}</Text>
+      <Text style={{ fontFamily: F.displayX, fontSize: 22, color: C.ink, marginTop: 4 }}>{value}</Text>
       <Text style={{ color: C.ink2, fontSize: 11, fontWeight: "700" }}>{label}</Text>
     </View>
   );
@@ -417,23 +426,23 @@ function MCView({ queue, onReview, onReviewVoice, onReload }: { queue: any[]; on
   );
 }
 
-const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontWeight: "800", fontSize: 13 }}>{children}</Text></View>;
+const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontFamily: F.display, fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={onPress} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
-const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontWeight: "800" }}>{label}</Text></TouchableOpacity>;
+const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={onPress} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },
   center: { flex: 1, backgroundColor: C.base, alignItems: "center", justifyContent: "center", padding: 24 },
   header: { paddingTop: 54, paddingHorizontal: 18, paddingBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brand: { fontSize: 24, fontWeight: "800", color: C.primary, letterSpacing: -0.5 },
+  brand: { fontSize: 24, fontFamily: F.displayX, color: C.primary, letterSpacing: -0.5 },
   chip: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: C.sunken, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
   tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
   tabOn: { backgroundColor: C.primary },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
-  kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontWeight: "800", marginVertical: 10 },
+  kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
@@ -451,5 +460,5 @@ const s = StyleSheet.create({
     borderRadius: 14, padding: 14, alignItems: "center", zIndex: 98,
     shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8,
   },
-  toastT: { color: "#FFF8F0", fontWeight: "700", fontSize: 13, textAlign: "center" },
+  toastT: { color: "#FFF8F0", fontFamily: F.semi, fontSize: 13, textAlign: "center" },
 });

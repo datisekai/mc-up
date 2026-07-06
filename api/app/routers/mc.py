@@ -45,7 +45,7 @@ async def submit_review(body: SubmitReviewIn, user: User = Depends(current_user)
         raise HTTPException(404, {"error": {"code": "no_request", "message": "Yêu cầu không hợp lệ"}})
 
     badge = await submit_mc_review(session, user, req, body.note)  # phần Hồn + Thẻ bảo chứng (FR-11)
-    return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note)
+    return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note, stats=badge.stats)
 
 
 @router.post("/review-audio", response_model=BadgeOut)
@@ -64,4 +64,5 @@ async def submit_review_audio(request_id: str = Form(...), note: str = Form("Nh�
     key = f"review-{req.id}.{ext}"
     await media.put(key, data, file.content_type or "audio/m4a")  # AD-4
     badge = await submit_mc_review(session, user, req, note, audio_path=key)
-    return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note, audio_url=f"/media/{key}")
+    return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note,
+                    audio_url=f"/media/{key}", stats=badge.stats)

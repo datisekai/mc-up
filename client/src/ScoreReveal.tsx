@@ -3,7 +3,7 @@
 // KHÔNG hiển thị "(giả lập)" cho học viên (§2.5). KHÔNG đỏ khi luyện.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from "react-native";
-import { C } from "./theme";
+import { C, F } from "./theme";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
 export type ScoreData = { volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean };
@@ -105,8 +105,8 @@ const st = StyleSheet.create({
     paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.hair,
   },
   k: { color: C.ink, fontSize: 14 },
-  big: { fontWeight: "900", fontSize: 17, color: C.ink },
-  unit: { fontWeight: "600", fontSize: 12, color: C.ink2 },
+  big: { fontFamily: F.display, fontSize: 17, color: C.ink },
+  unit: { fontFamily: F.semi, fontSize: 12, color: C.ink2 },
   pill: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999 },
   pillOk: { backgroundColor: "#E6F7EF" },
   pillMid: { backgroundColor: "#FFF3DA" },

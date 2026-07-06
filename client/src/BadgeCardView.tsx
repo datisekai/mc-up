@@ -6,18 +6,23 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Audio } from "expo-av";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
-import { C } from "./theme";
-import { Check, Mic, Ticket } from "./icons";
+import QRCode from "react-native-qrcode-svg";
+import { C, F } from "./theme";
+import { Check, Mic } from "./icons";
 
+type StatPoint = { speed_wpm: number; filler_count: number };
 export type BadgeData = {
   mc_name: string; mc_title?: string | null; note: string; audio_url?: string | null;
+  stats?: { before: StatPoint; after: StatPoint } | null;
 };
 
+const APP_URL = "https://mcup.vn"; // landing/deep-link — đổi khi có domain thật
+
 type Skin = "cream" | "night" | "coral";
-const SKINS: Record<Skin, { bg: string; raised: string; text: string; sub: string; quote: string; accent: string; hair: string }> = {
-  cream: { bg: "#FFF8F0", raised: "#FFFFFF", text: "#3B2A4A", sub: "#7A6E82", quote: "#3B2A4A", accent: "#FF6B5B", hair: "#EDE3D6" },
-  night: { bg: "#2E2239", raised: "#3A2C48", text: "#F5EEFA", sub: "#C9BBD6", quote: "#FFE9C7", accent: "#FFC24B", hair: "#4A3A5C" },
-  coral: { bg: "#FF6B5B", raised: "#FF8073", text: "#FFF3E9", sub: "#FFE0D6", quote: "#FFFFFF", accent: "#FFC24B", hair: "#FF8073" },
+const SKINS: Record<Skin, { bg: string; raised: string; text: string; sub: string; quote: string; accent: string; hair: string; ok: string }> = {
+  cream: { bg: "#FFF8F0", raised: "#FFFFFF", text: "#3B2A4A", sub: "#7A6E82", quote: "#3B2A4A", accent: "#FF6B5B", hair: "#EDE3D6", ok: "#1f8f63" },
+  night: { bg: "#2E2239", raised: "#3A2C48", text: "#F5EEFA", sub: "#C9BBD6", quote: "#FFE9C7", accent: "#FFC24B", hair: "#4A3A5C", ok: "#7FE3B8" },
+  coral: { bg: "#FF6B5B", raised: "#FF8073", text: "#FFF3E9", sub: "#FFE0D6", quote: "#FFFFFF", accent: "#FFC24B", hair: "#FF8073", ok: "#FFFFFF" },
 };
 const SKIN_LABEL: Record<Skin, string> = { cream: "Kem sân khấu", night: "Đèn đêm", coral: "San hô rực" };
 
@@ -92,6 +97,30 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
 
         <Text style={[st.quote, { color: k.quote }]}>“{badge.note}”</Text>
 
+        {badge.stats?.before && badge.stats?.after ? (
+          <View style={[st.statsBox, { backgroundColor: k.raised }]}>
+            <Text style={[st.statsLabel, { color: k.sub }]}>TIẾN BỘ SAU KHI LUYỆN</Text>
+            <View style={st.statRow}>
+              <Text style={[st.statK, { color: k.sub }]}>Tốc độ</Text>
+              <Text style={[st.statV, { color: k.text }]}>
+                <Text style={{ color: k.sub, textDecorationLine: "line-through" }}>{badge.stats.before.speed_wpm}</Text>
+                {"  →  "}
+                <Text style={{ color: k.ok, fontFamily: F.title }}>{badge.stats.after.speed_wpm}</Text>
+                {" chữ/phút"}
+              </Text>
+            </View>
+            <View style={st.statRow}>
+              <Text style={[st.statK, { color: k.sub }]}>Từ đệm 'ừm/à'</Text>
+              <Text style={[st.statV, { color: k.text }]}>
+                <Text style={{ color: k.sub, textDecorationLine: "line-through" }}>{badge.stats.before.filler_count}</Text>
+                {"  →  "}
+                <Text style={{ color: k.ok, fontFamily: F.title }}>{badge.stats.after.filler_count}</Text>
+                {" lần"}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         {badge.audio_url ? (
           <View style={[st.voiceBox, { backgroundColor: k.raised }]}>
             <TouchableOpacity style={[st.playBtn, { backgroundColor: k.accent }]} onPress={togglePlay}
@@ -108,8 +137,8 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
 
         <View style={[st.footer, { borderTopColor: k.hair }]}>
           <Text style={[st.watermark, { color: k.accent }]}>Luyện MC cùng McUp · @mcup</Text>
-          <View style={[st.qr, { backgroundColor: k.raised }]}>
-            <Ticket size={20} color={k.text} />
+          <View style={st.qr}>
+            <QRCode value={APP_URL} size={32} backgroundColor="#FFFFFF" color="#3B2A4A" />
           </View>
         </View>
       </View>
@@ -131,17 +160,22 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
 const st = StyleSheet.create({
   card: { borderRadius: 22, padding: 18 },
   brandRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brand: { fontSize: 18, fontWeight: "900", letterSpacing: -0.5 },
-  cardLabel: { fontSize: 10, fontWeight: "800", letterSpacing: 1.5 },
+  brand: { fontSize: 18, fontFamily: F.displayX, letterSpacing: -0.5 },
+  cardLabel: { fontSize: 10, fontFamily: F.title, letterSpacing: 1.5 },
   seal: { width: 32, height: 32, borderRadius: 16, backgroundColor: "#FFC24B", alignItems: "center", justifyContent: "center" },
   sealT: { fontSize: 7.5, fontWeight: "800", letterSpacing: 0.5, marginTop: 2 },
   mcRow: { flexDirection: "row", alignItems: "center", gap: 11, marginTop: 16 },
   avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#FFC24B", alignItems: "center", justifyContent: "center" },
   avatarT: { fontSize: 20, fontWeight: "800", color: "#5a3d00" },
-  mcName: { fontSize: 16, fontWeight: "800" },
-  mcTitle: { fontSize: 12 },
-  heard: { fontSize: 11, fontWeight: "700" },
-  quote: { fontSize: 16, lineHeight: 24, fontStyle: "italic", marginTop: 14 },
+  mcName: { fontSize: 16, fontFamily: F.title },
+  mcTitle: { fontSize: 12, fontFamily: F.body },
+  heard: { fontSize: 11, fontFamily: F.semi },
+  quote: { fontSize: 16, lineHeight: 24, fontFamily: F.body, fontStyle: "italic", marginTop: 14 },
+  statsBox: { borderRadius: 14, padding: 12, marginTop: 12 },
+  statsLabel: { fontSize: 9.5, fontFamily: F.title, letterSpacing: 1, marginBottom: 6 },
+  statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 3 },
+  statK: { fontSize: 13, fontFamily: F.body },
+  statV: { fontSize: 13, fontFamily: F.med },
   voiceBox: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, padding: 10, marginTop: 12 },
   playBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
   playT: { color: "#fff", fontSize: 13, fontWeight: "800" },
@@ -151,8 +185,9 @@ const st = StyleSheet.create({
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     marginTop: 15, paddingTop: 12, borderTopWidth: 1,
   },
-  watermark: { fontSize: 11, fontWeight: "700" },
-  qr: { width: 40, height: 40, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  watermark: { fontSize: 11, fontFamily: F.semi },
+  // QR luôn nền TRẮNG để quét được trên mọi skin
+  qr: { width: 42, height: 42, borderRadius: 8, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
   skinRow: { flexDirection: "row", gap: 7, marginTop: 10, justifyContent: "center" },
   skinChip: { backgroundColor: C.sunken, paddingHorizontal: 13, paddingVertical: 7, borderRadius: 999 },
   skinChipOn: { backgroundColor: C.primary },

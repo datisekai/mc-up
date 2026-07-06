@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { C } from "./theme";
+import { C, F } from "./theme";
 import { Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
 
 export type Lesson = { id: string; buoi: number; order_index: number; title: string; unlocked: boolean; done: boolean };
@@ -164,7 +164,7 @@ const st = StyleSheet.create({
     backgroundColor: "#FFF4DA", borderRadius: 20, borderWidth: 1, borderColor: "#F2E1C4", ...shadow },
   cap: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#FFE1A6", alignItems: "center", justifyContent: "center",
     borderWidth: 4, borderColor: "rgba(255,194,75,.4)" },
-  stageTitle: { marginTop: 8, fontSize: 19, fontWeight: "900", letterSpacing: 1.5, color: C.ink },
+  stageTitle: { marginTop: 8, fontSize: 19, fontFamily: F.displayX, letterSpacing: 1.5, color: C.ink },
   stageSub: { marginTop: 2, fontSize: 11, fontWeight: "700", color: "#6b4f2a" },
   stageTag: { marginTop: 6, backgroundColor: "rgba(255,255,255,.7)", borderWidth: 1, borderColor: "rgba(224,166,47,.5)",
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },

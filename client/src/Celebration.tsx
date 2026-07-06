@@ -6,7 +6,7 @@ import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View }
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import Confetti from "./Confetti";
-import { C } from "./theme";
+import { C, F } from "./theme";
 import { Fire, Star, Ticket, Trophy } from "./icons";
 import {
   CELEB_STREAK, CELEB_SUB, CELEB_TICKET, CELEB_TIER, CELEB_XP,
@@ -123,8 +123,8 @@ const st = StyleSheet.create({
     alignItems: "center", justifyContent: "center", marginBottom: 16,
     shadowColor: "#F5A623", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 8,
   },
-  title: { fontSize: 26, fontWeight: "900", color: "#FFF8F0", textAlign: "center", paddingHorizontal: 24 },
-  sub: { fontSize: 13, color: "#F3E4CE", marginTop: 6, textAlign: "center" },
+  title: { fontSize: 27, fontFamily: F.displayX, color: "#FFF8F0", textAlign: "center", paddingHorizontal: 24 },
+  sub: { fontSize: 13, fontFamily: F.med, color: "#F3E4CE", marginTop: 6, textAlign: "center" },
   btn: { marginTop: 22, backgroundColor: C.primary, paddingHorizontal: 28, paddingVertical: 12, borderRadius: 999 },
-  btnT: { color: "#fff", fontWeight: "800", fontSize: 14 },
+  btnT: { color: "#fff", fontFamily: F.title, fontSize: 14 },
 });

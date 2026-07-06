@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
-import { C } from "./theme";
+import { C, F } from "./theme";
 import { Mic } from "./icons";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -256,7 +256,7 @@ const st = StyleSheet.create({
   tipBox: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
   tipT: { color: C.ink, fontSize: 13.5 },
   taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 11, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
-  taskPrompt: { fontWeight: "800", fontSize: 16, color: C.ink, lineHeight: 22 },
+  taskPrompt: { fontFamily: F.title, fontSize: 16, color: C.ink, lineHeight: 22 },
   taskText: { color: C.ink, fontSize: 14, lineHeight: 20, flex: 1 },
   taskBullet: { color: C.ink, fontSize: 14, lineHeight: 22 },
   critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
@@ -279,8 +279,8 @@ const st = StyleSheet.create({
 
   recHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 4 },
   recDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary },
-  recLabel: { fontSize: 12, fontWeight: "800", letterSpacing: 1, color: C.primary },
-  clock: { fontSize: 16, fontWeight: "900", color: C.ink },
+  recLabel: { fontSize: 12, fontFamily: F.title, letterSpacing: 1, color: C.primary },
+  clock: { fontSize: 17, fontFamily: F.display, color: C.ink },
   progTrack: { height: 5, backgroundColor: "#F0E6D8", borderRadius: 999, marginTop: 8, overflow: "hidden" },
   progFill: { height: "100%", backgroundColor: C.primary, borderRadius: 999 },
   progHint: { fontSize: 10.5, color: "#BFB4C4", marginTop: 5 },
@@ -304,7 +304,7 @@ const st = StyleSheet.create({
     ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,248,240,0.95)",
     alignItems: "center", justifyContent: "center", zIndex: 30, borderRadius: 16,
   },
-  countNum: { fontSize: 96, fontWeight: "900", color: C.primary, lineHeight: 104 },
+  countNum: { fontSize: 96, fontFamily: F.displayX, color: C.primary, lineHeight: 112 },
   countSub: { fontSize: 14, color: C.ink2, marginTop: 8 },
   countCancel: { fontSize: 12, color: "#BFB4C4", marginTop: 18 },
 

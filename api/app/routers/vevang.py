@@ -41,6 +41,7 @@ async def my_reviews(user: User = Depends(current_user), session: AsyncSession =
             )).scalar_one_or_none()
             if b:
                 badge = BadgeOut(mc_name=b.mc_name, mc_title=b.mc_title, note=b.note,
-                                 audio_url=(f"/media/{b.audio_path}" if b.audio_path else None))
+                                 audio_url=(f"/media/{b.audio_path}" if b.audio_path else None),
+                                 stats=b.stats)
         out.append(ReviewRequestOut(id=r.id, clip_id=r.clip_id, status=r.status, badge=badge))
     return out

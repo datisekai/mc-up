@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Audio } from "expo-av";
-import { C } from "./theme";
+import { C, F } from "./theme";
 import { Fire, MapIcon, Mic, Star, Trophy } from "./icons";
 
 export type OnboardPrefs = {
@@ -183,9 +183,9 @@ const st = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   heroMic: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
-  h1: { fontSize: 24, fontWeight: "900", color: C.ink, textAlign: "center", marginTop: 24, lineHeight: 32 },
-  h2: { fontSize: 21, fontWeight: "900", color: C.ink, marginBottom: 6 },
-  h2c: { fontSize: 21, fontWeight: "900", color: C.ink, marginTop: 20, textAlign: "center" },
+  h1: { fontSize: 24, fontFamily: F.displayX, color: C.ink, textAlign: "center", marginTop: 24, lineHeight: 34 },
+  h2: { fontSize: 21, fontFamily: F.displayX, color: C.ink, marginBottom: 6 },
+  h2c: { fontSize: 21, fontFamily: F.displayX, color: C.ink, marginTop: 20, textAlign: "center" },
   sub: { fontSize: 14, color: C.ink2, textAlign: "center", marginTop: 12, lineHeight: 21 },
   bold: { fontWeight: "800", color: C.ink },
   proof: {
@@ -213,5 +213,5 @@ const st = StyleSheet.create({
   },
   privacy: { fontSize: 12, color: C.success, fontWeight: "700", marginTop: 14 },
   cta: { backgroundColor: C.primary, borderRadius: 999, padding: 15, alignItems: "center" },
-  ctaT: { color: "#fff", fontWeight: "800", fontSize: 15 },
+  ctaT: { color: "#fff", fontFamily: F.title, fontSize: 15 },
 });

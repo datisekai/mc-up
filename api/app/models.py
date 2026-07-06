@@ -165,4 +165,7 @@ class BadgeCard(Base):
     mc_title: Mapped[str | None] = mapped_column(String, nullable=True)
     note: Mapped[str] = mapped_column(String)
     audio_path: Mapped[str | None] = mapped_column(String, nullable=True)  # key file giọng MC
+    # Snapshot tiến bộ cho thẻ khoe (P1-the-bao-chung-spec §8): {"before":{...},"after":{...}}
+    # before = điểm clip ĐẦU TIÊN của học viên; after = điểm clip được review. Nullable — thẻ suy biến duyên dáng.
+    stats: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

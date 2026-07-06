@@ -105,6 +105,24 @@ Bộ spec: `_bmad-output/planning-artifacts/ux-designs/ux-mc-training-2026-07-03
   `expo-sharing`, `react-native-view-shot`. Asset mới: `client/assets/ting.wav` (chuông sinh bằng script).
 - Verify: `npx tsc --noEmit` sạch + `npx expo export --platform ios` bundle OK (730 modules).
 
+### Đợt 2 phiên 2 — font thương hiệu + before/after + QR
+- **Font (DESIGN.md §Typography):** nạp qua `@expo-google-fonts/baloo-2` + `be-vietnam-pro`
+  (`useFonts` trong App). Token `F` trong `src/theme.ts` (display/displayX/title/semi/med/body).
+  Đã áp: brand, chip số, kicker, nút, tiêu đề Celebration, số đếm 3-2-1, heading Onboarding,
+  số điểm ScoreReveal, thẻ bảo chứng, TỐT NGHIỆP StageMap.
+- **Before/after cho thẻ khoe (backend):** cột JSON `BadgeCard.stats`
+  `{"before":{speed_wpm,filler_count},"after":{...}}` — before = điểm clip ĐẦU TIÊN của học viên,
+  after = clip được review; cùng clip → NULL (thẻ ẩn khối, suy biến duyên dáng).
+  Tính trong `services._badge_stats` khi MC submit review. `BadgeOut.stats` trả ở
+  `/me/reviews` + `/mc/review(-audio)`. **ĐÃ XOÁ `mcup_dev.db`** (đổi schema → tự tạo + reseed).
+- **Client thẻ khoe:** khối "TIẾN BỘ SAU KHI LUYỆN" (before gạch ngang → after màu ok theo skin)
+  + **QR thật** (`react-native-qrcode-svg`, trỏ `https://mcup.vn` placeholder — đổi khi có domain,
+  nền QR luôn trắng để quét được trên mọi skin).
+- Verify đợt 2: tsc sạch · bundle 968 modules OK · **smoke e2e**: 2 clip → vé → MC review →
+  `badge.stats` có before/after ở cả 2 endpoint ✓.
+- **Còn hoãn:** "Xem bản chữ" (cần transcript giọng MC — chờ ASR trên voice review);
+  nhắc giờ luyện từ prefs onboarding (cần `expo-notifications` + dev build, Expo Go SDK 54 không hỗ trợ).
+
 ---
 
 ## 4. Bản đồ code (file & vai trò)

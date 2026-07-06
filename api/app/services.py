@@ -61,6 +61,22 @@ async def send_golden_ticket(s: AsyncSession, user: User, clip: Clip) -> ReviewR
     return req
 
 
+async def _badge_stats(s: AsyncSession, req: ReviewRequest) -> dict | None:
+    """Snapshot before/after cho thẻ khoe: before = clip đầu tiên của học viên, after = clip này.
+    Cùng clip (mới luyện 1 lần) → None, thẻ ẩn khối tiến bộ (suy biến duyên dáng)."""
+    after = (await s.execute(select(Score).where(Score.clip_id == req.clip_id))).scalar_one_or_none()
+    first = (await s.execute(
+        select(Score).join(Clip, Clip.id == Score.clip_id)
+        .where(Clip.user_id == req.hoc_vien_id).order_by(Score.created_at).limit(1)
+    )).scalar_one_or_none()
+    if not after or not first or first.clip_id == after.clip_id:
+        return None
+    return {
+        "before": {"speed_wpm": first.speed_wpm, "filler_count": first.filler_count},
+        "after": {"speed_wpm": after.speed_wpm, "filler_count": after.filler_count},
+    }
+
+
 async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: str,
                            audio_path: str | None = None) -> BadgeCard:
     """MC gửi nhận xét (phần Hồn, AD-5) → tự sinh Thẻ bảo chứng (FR-11). audio_path = giọng MC."""
@@ -70,7 +86,8 @@ async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: 
     s.add(review)
     await s.flush()
     badge = BadgeCard(review_id=review.id, hoc_vien_id=req.hoc_vien_id,
-                      mc_name=mc.display_name or "MC", mc_title=mc.mc_title, note=note, audio_path=audio_path)
+                      mc_name=mc.display_name or "MC", mc_title=mc.mc_title, note=note, audio_path=audio_path,
+                      stats=await _badge_stats(s, req))
     s.add(badge)
     await s.commit()
     return badge
