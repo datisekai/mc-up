@@ -582,8 +582,8 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }
     return () => clearInterval(t);
   }, []);
   const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60);
-  const pct = Math.max(0, Math.min(1, energy / energyMax));
-  const perLesson = Math.max(1, energyCost);
+  // thanh hiện TIẾN ĐỘ tới bài kế (đầy = đủ học 1 bài), không phải tổng năng lượng
+  const pct = Math.max(0, Math.min(1, energy / Math.max(1, energyCost)));
   return (
     <View style={s.energyBg}>
       <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
@@ -591,9 +591,9 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }
         <Text style={{ fontSize: 40 }}>💛</Text>
         <Text style={s.energyTitle}>Hết năng lượng rồi!</Text>
         <View style={s.energyTrack}><View style={[s.energyFill, { width: `${pct * 100}%` }]} /></View>
-        <Text style={s.energyNum}>{energy}/{energyMax} · mỗi bài tốn {perLesson}</Text>
+        <Text style={s.energyNum}>Thanh đầy = đủ học 1 bài</Text>
         <Text style={s.energySub}>
-          {left > 0 ? `Năng lượng hồi thêm sau ${h > 0 ? `${h}h ` : ""}${m}m — nghỉ ngơi tí nhé.` : "Sắp có thêm năng lượng rồi, kéo tải lại xem nhé!"}
+          {left > 0 ? `Đủ học tiếp sau ${h > 0 ? `${h} giờ ` : ""}${m} phút nữa — nghỉ ngơi một chút nhé 💛` : "Sắp đủ rồi, kéo tải lại xem nhé!"}
         </Text>
         <Btn gold label="Học không giới hạn với Pro ✨" onPress={onClose} />
         <TouchableOpacity onPress={onRefresh}><Text style={s.energyLink}>Tải lại</Text></TouchableOpacity>

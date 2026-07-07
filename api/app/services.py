@@ -43,8 +43,21 @@ def energy_now(prog: Progress) -> tuple[int, int]:
     return cur, int(regen - (elapsed % regen))
 
 
+def _secs_to_reach(prog: Progress, target: int) -> int:
+    """Giây tới khi năng lượng đạt `target` (hồi tuyến tính từ energy_at)."""
+    regen = max(0, settings.energy_regen_min) * 60
+    if regen <= 0 or prog.energy >= target:
+        return 0
+    at = prog.energy_at if prog.energy_at.tzinfo else prog.energy_at.replace(tzinfo=timezone.utc)
+    elapsed = (datetime.now(timezone.utc) - at).total_seconds()
+    total = (target - prog.energy) * regen  # thời gian từ energy_at để đạt target
+    return max(0, int(total - elapsed))
+
+
 def energy_snapshot(prog: Progress, is_pro: bool) -> dict:
-    cur, secs = energy_now(prog)
+    cur, _ = energy_now(prog)
+    # ĐẾM NGƯỢC tới khi đủ cho MỘT BÀI (không phải tới +1 điểm) — đúng thời điểm học lại được
+    secs = 0 if cur >= settings.energy_cost else _secs_to_reach(prog, settings.energy_cost)
     return {"energy": settings.energy_max if is_pro else cur, "energy_max": settings.energy_max,
             "energy_cost": settings.energy_cost, "energy_secs_to_next": 0 if is_pro else secs,
             "is_pro": is_pro}
