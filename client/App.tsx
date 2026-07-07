@@ -390,7 +390,14 @@ export default function App() {
                 <Btn ghost label="Thử ngay — không cần tài khoản" onPress={doGuest} />
               </>
             )}
-          <Text style={{ color: C.ink2, fontSize: 12, textAlign: "center", marginTop: 16 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
+          <Text style={{ color: C.ink2, fontSize: 11.5, textAlign: "center", marginTop: 16, lineHeight: 17 }}>
+            Bằng việc tiếp tục, bạn đồng ý với{" "}
+            <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(API_BASE + "/terms").catch(() => {})}>Điều khoản</Text>
+            {" "}và{" "}
+            <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(API_BASE + "/privacy").catch(() => {})}>Chính sách bảo mật</Text>
+            {" "}(gồm việc thu & xử lý giọng nói để chấm điểm).
+          </Text>
+          <Text style={{ color: C.ink2, fontSize: 11.5, textAlign: "center", marginTop: 8 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
         </View>
       </View>
     );
@@ -702,6 +709,15 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
       <Btn ghost label={soundOn ? "Âm thanh: Bật 🔊" : "Âm thanh: Tắt 🔇"} onPress={onToggleSound} />
+      {/* Điều khoản & Chính sách bảo mật (mở trang web) */}
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 14, marginBottom: 2 }}>
+        <TouchableOpacity onPress={() => Linking.openURL(API_BASE + "/terms").catch(() => {})}>
+          <Text style={{ color: C.ink2, fontSize: 12, textDecorationLine: "underline" }}>Điều khoản</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => Linking.openURL(API_BASE + "/privacy").catch(() => {})}>
+          <Text style={{ color: C.ink2, fontSize: 12, textDecorationLine: "underline" }}>Chính sách bảo mật</Text>
+        </TouchableOpacity>
+      </View>
       {/* kênh góp ý cho bản test — mở mail có sẵn tiêu đề */}
       <Btn ghost label="Góp ý cho McUp 💌" onPress={() =>
         Linking.openURL("mailto:datly3494@gmail.com?subject=" + encodeURIComponent("Góp ý McUp beta")

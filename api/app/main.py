@@ -94,6 +94,18 @@ async def landing():
     return FileResponse(Path(__file__).parent / "web" / "landing.html")
 
 
+@app.get("/privacy", include_in_schema=False)
+async def privacy():
+    """Chính sách quyền riêng tư (NĐ 13/2023) — URL cho App Store/Play + link trong app."""
+    return FileResponse(Path(__file__).parent / "web" / "privacy.html")
+
+
+@app.get("/terms", include_in_schema=False)
+async def terms():
+    """Điều khoản sử dụng."""
+    return FileResponse(Path(__file__).parent / "web" / "terms.html")
+
+
 @app.get("/app", include_in_schema=False)
 async def web_prototype():
     """Prototype web 'Sân khấu ấm' — mở để xem & bấm thử toàn bộ luồng."""
