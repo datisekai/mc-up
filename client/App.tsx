@@ -57,7 +57,8 @@ export default function App() {
   const [authBusy, setAuthBusy] = useState(false);
 
   const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
-  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; ai_scores_left?: number; is_pro?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
+  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
+  const [showEnergy, setShowEnergy] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
@@ -255,23 +256,27 @@ export default function App() {
 
   async function submitReal(uri: string, dur: number) {
     if (!curLesson) return;
-    // Hết lượt chấm AI (feedback #7): KHÔNG upload/Whisper (tiết kiệm chi phí) → nộp tự luyện (mock, free)
-    if ((prog.ai_scores_left ?? -1) === 0 && !prog.is_pro) {
-      showToast("Hết lượt chấm AI hôm nay — nộp chế độ tự luyện. Nâng cấp Pro để chấm không giới hạn ✨");
-      await doSubmitMock();
-      return;
-    }
     setBusy(true);
     try {
       const clip = await submitAudio(token!, curLesson.id, uri, dur, selPath ? curLesson.id : undefined);
       await pollScore(clip.id);
-    } catch (e: any) { Alert.alert("Lỗi", e.message); setBusy(false); }
+    } catch (e: any) {
+      setBusy(false);
+      if (e instanceof ApiError && e.status === 402) { setScreen("feed"); setShowEnergy(true); }
+      else Alert.alert("Lỗi", e.message);
+    }
   }
   async function doSubmitMock() {
     if (!curLesson) return;
     setBusy(true);
-    const clip = selPath ? await Api.submitMockContent(token!, curLesson.id, 30) : await Api.submitMock(token!, curLesson.id, 30);
-    await pollScore(clip.id);
+    try {
+      const clip = selPath ? await Api.submitMockContent(token!, curLesson.id, 30) : await Api.submitMock(token!, curLesson.id, 30);
+      await pollScore(clip.id);
+    } catch (e: any) {
+      setBusy(false);
+      if (e instanceof ApiError && e.status === 402) { setScreen("feed"); setShowEnergy(true); }
+      else Alert.alert("Lỗi", e.message);
+    }
   }
   // Chờ chấm xong + cập nhật tiến độ + bắn khoảnh khắc thưởng. Trả score (null = chậm).
   async function settleScore(clipId: string): Promise<Score | null> {
@@ -304,18 +309,20 @@ export default function App() {
   }
   // Practice Reels: nộp + chờ chấm, trả score cho trang kết quả inline (P2-practice-reels-spec)
   async function runReelsLesson(lesson: ReelsLesson, audio: { uri: string; dur: number } | null): Promise<Score | null> {
-    // hết lượt chấm AI → tự luyện (mock, free), không tốn Whisper
-    const useAI = audio && !((prog.ai_scores_left ?? -1) === 0 && !prog.is_pro);
-    if (audio && !useAI) showToast("Hết lượt chấm AI hôm nay — nộp chế độ tự luyện.");
     try {
-      const clip = useAI
-        ? await submitAudio(token!, lesson.id, audio!.uri, audio!.dur, selPath ? lesson.id : undefined)
+      const clip = audio
+        ? await submitAudio(token!, lesson.id, audio.uri, audio.dur, selPath ? lesson.id : undefined)
         : selPath ? await Api.submitMockContent(token!, lesson.id, 30) : await Api.submitMock(token!, lesson.id, 30);
       const sc = await settleScore(clip.id);
       if (!sc) showToast("Mạng hơi chậm — điểm sẽ hiện sau, bài của bạn không mất đâu.");
       setLastClip(clip.id);
       return sc;
-    } catch (e: any) { showToast("Lỗi: " + e.message); return null; }
+    } catch (e: any) {
+      // hết năng lượng giữa chừng Reels → thoát ra màn hết năng lượng
+      if (e instanceof ApiError && e.status === 402) { setScreen("feed"); setShowEnergy(true); }
+      else showToast("Lỗi: " + e.message);
+      return null;
+    }
   }
   async function sendVeVang() {
     try {
@@ -412,14 +419,26 @@ export default function App() {
   // tab bar icon ở ĐÁY (chuẩn native, EXPERIENCE.md IA) · vuốt ngang đổi tab từ mọi màn
   // (trừ đang luyện/Reels để không vuốt nhầm).
   const swipeEnabled = (screen === "feed" || screen === "score" || tab === "hs" || tab === "mc");
-  const aiLeft = prog.ai_scores_left ?? -1;  // -1 = không giới hạn (Pro / mock)
+  // Thanh năng lượng (Duolingo-style): đủ để học thêm bài không?
+  const energy = prog.energy ?? prog.energy_max ?? 30;
+  const energyMax = prog.energy_max ?? 30;
+  const energyCost = prog.energy_cost ?? 10;
+  const hasEnergy = !!prog.is_pro || energy >= energyCost;
+  // Cửa vào bài: đủ năng lượng thì vào, không thì hiện màn hết năng lượng
+  function tryEnterLesson(fn: () => void) {
+    if (hasEnergy) fn();
+    else setShowEnergy(true);
+  }
   return (
     <View style={s.app}>
       <StatusBar style="dark" />
       <View style={s.header}>
         <Text style={s.brand}>McUp</Text>
         <View style={s.chipCluster}>
-          {aiLeft >= 0 && !prog.is_pro && (<><Text style={[s.chipT, { color: aiLeft === 0 ? C.primary : C.ink }]}>⚡{aiLeft}</Text><View style={s.chipDiv} /></>)}
+          {!prog.is_pro
+            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center" }}><Text style={{ fontSize: 13 }}>⚡</Text><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{Math.floor(energy / energyCost)}</Text></TouchableOpacity>)
+            : (<Text style={[s.chipT, { color: C.spot }]}>⚡∞</Text>)}
+          <View style={s.chipDiv} />
           <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
           <View style={s.chipDiv} />
           <Star size={13} color={C.primary} /><Text style={s.chipT}>{prog.xp}</Text>
@@ -474,10 +493,10 @@ export default function App() {
               </View>
             ) : (
               <StageMap lessons={lessons} refreshing={refreshing} onRefresh={safeRefresh}
-                onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) { setCur(full); setScreen("practice"); } }} />
+                onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />
             )}
             {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
-            <TouchableOpacity style={s.reelsFab} onPress={() => setScreen("reels")} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
+            <TouchableOpacity style={s.reelsFab} onPress={() => tryEnterLesson(() => setScreen("reels"))} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
               <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
             </TouchableOpacity>
           </View>
@@ -545,7 +564,39 @@ export default function App() {
       )}
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
+      {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
+        secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
+        onRefresh={async () => { await safeRefresh(); setShowEnergy(false); }} />}
       {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
+    </View>
+  );
+}
+
+// Màn "Hết năng lượng" (Duolingo-style) — đếm ngược tới lúc hồi thêm, CTA Pro. Không phán xét.
+function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }: { energy: number; energyMax: number; energyCost: number; secs: number; onClose: () => void; onRefresh: () => void }) {
+  const [left, setLeft] = useState(secs);
+  useEffect(() => {
+    const t = setInterval(() => setLeft((x) => Math.max(0, x - 1)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60);
+  const pct = Math.max(0, Math.min(1, energy / energyMax));
+  const perLesson = Math.max(1, energyCost);
+  return (
+    <View style={s.energyBg}>
+      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+      <View style={s.energyCard}>
+        <Text style={{ fontSize: 40 }}>💛</Text>
+        <Text style={s.energyTitle}>Hết năng lượng rồi!</Text>
+        <View style={s.energyTrack}><View style={[s.energyFill, { width: `${pct * 100}%` }]} /></View>
+        <Text style={s.energyNum}>{energy}/{energyMax} · mỗi bài tốn {perLesson}</Text>
+        <Text style={s.energySub}>
+          {left > 0 ? `Năng lượng hồi thêm sau ${h > 0 ? `${h}h ` : ""}${m}m — nghỉ ngơi tí nhé.` : "Sắp có thêm năng lượng rồi, kéo tải lại xem nhé!"}
+        </Text>
+        <Btn gold label="Học không giới hạn với Pro ✨" onPress={onClose} />
+        <TouchableOpacity onPress={onRefresh}><Text style={s.energyLink}>Tải lại</Text></TouchableOpacity>
+        <TouchableOpacity onPress={onClose}><Text style={s.energyLink}>Để sau</Text></TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -574,7 +625,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
       {!prog.is_pro && (
         <View style={s.proCard}>
           <Text style={s.proTitle}>McUp Pro ✨</Text>
-          <Text style={s.proLine}>• Chấm AI không giới hạn (bạn còn {prog.ai_scores_left ?? "–"} lượt free hôm nay)</Text>
+          <Text style={s.proLine}>• ⚡ Năng lượng KHÔNG GIỚI HẠN — học bao nhiêu bài tuỳ thích</Text>
           <Text style={s.proLine}>• Mở toàn bộ khoá nâng cao + thêm Vé Vàng mỗi tháng</Text>
           <Text style={s.proLine}>• Mở khoá skin thẻ khoe (Đèn đêm, San hô)</Text>
           <Btn gold label="Nâng cấp Pro · sắp có" onPress={() => {}} />
@@ -767,6 +818,14 @@ const s = StyleSheet.create({
   tabDot: { position: "absolute", top: -2, right: -4, width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary, borderWidth: 1.5, borderColor: C.raised },
   stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
   stateChipT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  energyBg: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(59,42,74,0.55)", alignItems: "center", justifyContent: "center", zIndex: 99, padding: 30 },
+  energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340 },
+  energyTitle: { fontFamily: F.displayX, fontSize: 20, color: C.ink, marginTop: 8 },
+  energyTrack: { height: 12, backgroundColor: C.sunken, borderRadius: 999, marginTop: 14, width: "100%", overflow: "hidden" },
+  energyFill: { height: "100%", backgroundColor: "#FFC24B", borderRadius: 999 },
+  energyNum: { fontFamily: F.semi, fontSize: 12.5, color: C.ink2, marginTop: 6 },
+  energySub: { fontFamily: F.body, fontSize: 13.5, color: C.ink2, textAlign: "center", marginTop: 10, lineHeight: 20 },
+  energyLink: { fontFamily: F.semi, fontSize: 13, color: C.ink2, textDecorationLine: "underline", marginTop: 12 },
   proCard: { backgroundColor: "#2E2239", borderRadius: 16, padding: 16, marginBottom: 4 },
   proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
   proLine: { fontSize: 12.5, color: "#E9DFF2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },

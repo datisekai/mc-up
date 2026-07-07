@@ -3,7 +3,7 @@
 //  - iOS simulator:      http://localhost:8000
 //  - Android emulator:   http://10.0.2.2:8000
 //  - Thiết bị thật (Expo Go): http://<IP-máy-bạn>:8000  (vd http://192.168.1.10:8000)
-export const API_BASE = "http://192.168.1.215:8000"; // IP LAN máy Mac // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
+export const API_BASE = "http://192.168.1.21:8000"; // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
 
 // Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
 // Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".
@@ -81,7 +81,7 @@ export async function submitAudio(token: string, lesson_id: string, uri: string,
     body: fd,
   });
   const data = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(data?.detail?.error?.message || "HTTP " + r.status);
+  if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);
   return data;
 }
 
@@ -97,6 +97,6 @@ export async function submitMcVoice(token: string, request_id: string, uri: stri
     body: fd,
   });
   const data = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(data?.detail?.error?.message || "HTTP " + r.status);
+  if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);
   return data;
 }

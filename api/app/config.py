@@ -22,8 +22,12 @@ class Settings(BaseSettings):
     allowed_origins: str = "*"
     # Quota chấm điểm — mỗi lần chấm = 1 call Whisper trả tiền. 0 = không giới hạn.
     daily_clip_limit: int = 30       # lượt nộp bài / user / ngày (trần chống lạm dụng)
-    daily_ai_score_free: int = 5     # lượt CHẤM AI free / ngày (feedback #7); hết → tự luyện. Pro = ∞
     mc_claim_timeout_min: int = 30   # MC nhận vé mà không xét trong X phút → tự nhả cho MC khác
+    # Thanh năng lượng (Duolingo-style): max 30, mỗi bài tốn 10 → 3 bài/lần đầy; hồi 1 điểm / 40 phút.
+    # (đầy lại toàn bộ sau ~20h; ~1 bài mỗi ~6.7h). Pro = không tiêu năng lượng.
+    energy_max: int = 30
+    energy_cost: int = 10
+    energy_regen_min: int = 40
     guest_per_ip_daily: int = 5      # tài khoản khách mới / IP / ngày
     guest_daily_total: int = 300     # tổng khách mới / ngày (van tổng chống farm)
 

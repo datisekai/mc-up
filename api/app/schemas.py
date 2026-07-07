@@ -65,7 +65,11 @@ class ProgressOut(BaseModel):
     tickets: int
     tier: str = "Đồng"
     practiced_today: bool = False
-    ai_scores_left: int = -1  # lượt chấm AI còn lại hôm nay (-1 = không giới hạn / Pro) — feedback #7
+    # Thanh năng lượng (Duolingo-style)
+    energy: int = 30
+    energy_max: int = 30
+    energy_cost: int = 10
+    energy_secs_to_next: int = 0   # giây tới khi hồi thêm 1 điểm
     is_pro: bool = False
 
 

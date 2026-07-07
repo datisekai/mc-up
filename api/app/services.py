@@ -27,16 +27,36 @@ log = logging.getLogger("mcup.services")
 TICKET_STREAK_MILESTONES = {3, 7, 14, 30, 60, 100}
 
 
-async def ai_scores_left_today(s: AsyncSession, user: "User") -> int:
-    """Số lượt CHẤM AI còn lại hôm nay (feedback #7). Pro = không giới hạn (-1).
-    Đếm score THẬT (is_mock=False) hôm nay — mock không tốn tiền nên không tính."""
-    if getattr(user, "is_pro", False) or settings.daily_ai_score_free <= 0:
-        return -1
-    used = (await s.execute(
-        select(func.count(Score.id)).join(Clip, Clip.id == Score.clip_id)
-        .where(Clip.user_id == user.id, Score.is_mock == False,  # noqa: E712
-               func.date(Score.created_at) == date.today().isoformat()))).scalar() or 0
-    return max(0, settings.daily_ai_score_free - used)
+def energy_now(prog: Progress) -> tuple[int, int]:
+    """Năng lượng hiện tại + số giây tới điểm hồi kế (Duolingo-style, hồi theo thời gian).
+    Trả (current, secs_to_next). Không ghi DB — chỉ tính; ghi khi tiêu (consume_energy)."""
+    mx = settings.energy_max
+    regen = max(0, settings.energy_regen_min) * 60
+    at = prog.energy_at if prog.energy_at.tzinfo else prog.energy_at.replace(tzinfo=timezone.utc)
+    if regen <= 0:
+        return min(prog.energy, mx), 0
+    elapsed = (datetime.now(timezone.utc) - at).total_seconds()
+    gained = int(elapsed // regen)
+    cur = min(mx, prog.energy + gained)
+    if cur >= mx:
+        return mx, 0
+    return cur, int(regen - (elapsed % regen))
+
+
+def energy_snapshot(prog: Progress, is_pro: bool) -> dict:
+    cur, secs = energy_now(prog)
+    return {"energy": settings.energy_max if is_pro else cur, "energy_max": settings.energy_max,
+            "energy_cost": settings.energy_cost, "energy_secs_to_next": 0 if is_pro else secs,
+            "is_pro": is_pro}
+
+
+async def consume_energy(s: AsyncSession, prog: Progress, is_pro: bool) -> None:
+    """Tiêu năng lượng khi hoàn thành 1 bài (không phải Pro). Bank phần đã hồi trước khi trừ."""
+    if is_pro or settings.energy_cost <= 0:
+        return
+    cur, _ = energy_now(prog)
+    prog.energy = max(0, cur - settings.energy_cost)
+    prog.energy_at = datetime.now(timezone.utc)
 
 
 async def _lesson_steps(s: AsyncSession, clip: Clip) -> list[str]:
@@ -189,6 +209,9 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
                 prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
                 prog.last_day = today
             prog.xp += lesson_xp
+            # Tiêu năng lượng cho bài hoàn thành (Duolingo-style). Pro không tiêu.
+            mc_user = await s.get(User, user_id)
+            await consume_energy(s, prog, bool(mc_user and mc_user.is_pro))
             # Vé Vàng HIẾM (feedback #7): lần luyện ĐẦU (trải nghiệm MC 1 lần) + mỗi MỐC streak.
             # Bỏ "tặng mỗi lần" — vé = premium, không rải free.
             await s.flush()

@@ -10,7 +10,8 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import Clip, ContentLesson, Lesson, Progress, Score, User
 from ..schemas import ClipOut, ProgressOut, ScoreOut, SubmitClipIn
-from ..services import ai_scores_left_today, run_scoring, summarize_score, tier_of
+from ..config import settings as _s
+from ..services import energy_now, energy_snapshot, run_scoring, summarize_score, tier_of
 
 _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi deploy
 
@@ -31,10 +32,22 @@ async def _check_quota(session: AsyncSession, user: User) -> None:
             f"Hôm nay bạn luyện {n} lượt rồi — nghỉ giọng cho khoẻ, mai leo tiếp nhé! 💪"}})
 
 
+async def _check_energy(session: AsyncSession, user: User) -> None:
+    """Chặn bắt đầu bài khi hết năng lượng (Duolingo-style). Pro = miễn."""
+    if user.is_pro or _s.energy_cost <= 0:
+        return
+    prog = await session.get(Progress, user.id)
+    cur, _secs = energy_now(prog)
+    if cur < _s.energy_cost:
+        raise HTTPException(402, {"error": {"code": "no_energy", "message":
+            "Hết năng lượng rồi 💛 Nghỉ ngơi tí cho năng lượng hồi lại, hoặc nâng cấp Pro để học không giới hạn nhé!"}})
+
+
 @router.post("/practice/submit", response_model=ClipOut)
 async def submit(body: SubmitClipIn, bg: BackgroundTasks,
                  user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
     await _check_quota(session, user)
+    await _check_energy(session, user)
     if body.content_lesson_id:  # v2: bài nội dung published (FR-19)
         cl = await session.get(ContentLesson, body.content_lesson_id)
         if not cl:
@@ -61,6 +74,7 @@ async def submit_audio(bg: BackgroundTasks, lesson_id: str = Form(None), content
     """Nộp bài KÈM clip audio thật (Story 3.2). Lưu qua MediaStore rồi chấm.
     Nhận bài v1 (lesson_id) hoặc bài nội dung published (content_lesson_id — FR-19)."""
     await _check_quota(session, user)
+    await _check_energy(session, user)
     if content_lesson_id:
         cl = await session.get(ContentLesson, content_lesson_id)
         if not cl:
@@ -114,4 +128,4 @@ async def my_progress(user: User = Depends(current_user), session: AsyncSession 
     prog = await session.get(Progress, user.id)
     return ProgressOut(xp=prog.xp, streak=prog.streak, tickets=prog.tickets,
                        tier=tier_of(prog.xp), practiced_today=(prog.last_day == date.today()),
-                       ai_scores_left=await ai_scores_left_today(session, user), is_pro=user.is_pro)
+                       **energy_snapshot(prog, user.is_pro))
