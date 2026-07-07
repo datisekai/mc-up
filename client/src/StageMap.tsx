@@ -39,8 +39,10 @@ function buildItems(lessons: Lesson[]): Item[] {
   return ordered;
 }
 
-export default function StageMap({ lessons, onPick, onRefresh, refreshing }: {
+export default function StageMap({ lessons, onPick, onRefresh, refreshing, energyCost = 0, canAfford = true }: {
   lessons: Lesson[]; onPick: (l: Lesson) => void; onRefresh?: () => void; refreshing?: boolean;
+  energyCost?: number;   // năng lượng mỗi bài tốn (feedback) — 0 = Pro/không giới hạn → ẩn
+  canAfford?: boolean;   // đủ năng lượng cho bài kế tiếp? (false → badge san hô cảnh báo)
 }) {
   const { width, height } = useWindowDimensions();
   const cx = width / 2;
@@ -136,6 +138,13 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing }: {
                 {isReward && <Ticket size={24} color={it.earned ? "#8a5a13" : "#C9AE77"} />}
               </TouchableOpacity>
 
+              {/* chi phí năng lượng — chỉ trên bài SẮP LÀM (nơi có quyết định). San hô nếu không đủ. */}
+              {open && energyCost > 0 && (
+                <View style={[st.eBadge, { left: p.x + r - 16, top: p.y - r - 8 }, !canAfford && st.eBadgeNo]} pointerEvents="none">
+                  <Text style={[st.eBadgeT, !canAfford && { color: "#fff" }]}>⚡{energyCost}</Text>
+                </View>
+              )}
+
               {/* nhãn dưới node */}
               <View style={[st.label, { left: p.x - 66, top: p.y + r + 6 }]}>
                 <Text style={[st.lt, ((it.kind === "lesson" && it.state === "locked") || (isReward && !it.earned)) && st.muted]} numberOfLines={2}>
@@ -184,6 +193,9 @@ const st = StyleSheet.create({
   nReward: { backgroundColor: C.spot, ...shadow, shadowColor: C.spot },
   nRewardLock: { backgroundColor: "#F4E8CE" },
 
+  eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised },
+  eBadgeNo: { backgroundColor: C.primary },
+  eBadgeT: { fontSize: 11, fontFamily: F.title, color: "#8a5a13" },
   glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(255,194,75,0.28)", zIndex: 1 },
   cta: { position: "absolute", width: 120, alignItems: "center", zIndex: 5 },
   ctaT: { backgroundColor: C.primary, color: "#fff", fontWeight: "900", fontSize: 11, letterSpacing: 0.4,

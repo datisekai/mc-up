@@ -493,6 +493,7 @@ export default function App() {
               </View>
             ) : (
               <StageMap lessons={lessons} refreshing={refreshing} onRefresh={safeRefresh}
+                energyCost={prog.is_pro ? 0 : energyCost} canAfford={hasEnergy}
                 onPick={(l) => { const full = lessons.find((x) => x.id === l.id); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />
             )}
             {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
@@ -515,6 +516,7 @@ export default function App() {
               <RecordScreen
                 lesson={curLesson}
                 busy={busy}
+                energyCost={prog.is_pro ? 0 : energyCost}
                 onSubmit={submitReal}
                 onMock={doSubmitMock}
                 onBack={() => safeRefresh()}
