@@ -9,6 +9,25 @@ cd "$(dirname "$0")"
 
 COMPOSE="docker compose -f docker-compose.deploy.yml"
 
+# --- 0. Kéo code mới nhất ---
+if [ -d .git ]; then
+  BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
+  echo "▶  Kéo code mới nhất (git pull origin ${BRANCH})..."
+  BEFORE="$(git rev-parse HEAD 2>/dev/null || echo none)"
+  # --ff-only: chỉ tua nhanh, tránh merge/conflict trên VPS (.env đã gitignore nên không đụng)
+  if git pull --ff-only origin "$BRANCH"; then
+    AFTER="$(git rev-parse HEAD 2>/dev/null || echo none)"
+    # Nếu chính deploy.sh vừa được cập nhật → chạy lại bản MỚI cho an toàn
+    if [ "$BEFORE" != "$AFTER" ] && [ -z "${MCUP_REEXEC:-}" ]; then
+      echo "↻  deploy.sh có bản mới — chạy lại..."
+      export MCUP_REEXEC=1
+      exec bash "$0" "$@"
+    fi
+  else
+    echo "⚠️  git pull không thành công (mạng / có thay đổi cục bộ) — deploy code hiện tại."
+  fi
+fi
+
 # --- 1. Kiểm tra .env ---
 if [ ! -f .env ]; then
   cp .env.example .env

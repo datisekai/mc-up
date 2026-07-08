@@ -35,8 +35,8 @@ Dữ liệu (DB, clip, chứng chỉ HTTPS) đều có volume nên bền qua res
 
 ## Cập nhật khi có code mới
 ```bash
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
+./deploy.sh          # tự git pull + build lại + chạy (nginx) — 1 lệnh
+# hoặc bản Caddy: git pull && docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ## Lệnh hay dùng
