@@ -32,7 +32,7 @@ class WhisperAsr:
     async def transcribe(self, audio_path: str, language: str = "vi") -> AsrResult:
         from openai import AsyncOpenAI  # import tại chỗ để demo không cần lib khi chưa dùng
 
-        client = AsyncOpenAI(api_key=self.api_key)
+        client = AsyncOpenAI(api_key=self.api_key, timeout=45.0)  # timeout: call treo không giữ slot chấm mãi
         with open(audio_path, "rb") as f:  # raise FileNotFoundError nếu chưa có clip thật
             resp = await client.audio.transcriptions.create(
                 model="whisper-1",

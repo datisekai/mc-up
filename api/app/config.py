@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     # Quota chấm điểm — mỗi lần chấm = 1 call Whisper trả tiền. 0 = không giới hạn.
     daily_clip_limit: int = 30       # lượt nộp bài / user / ngày (trần chống lạm dụng)
     mc_claim_timeout_min: int = 30   # MC nhận vé mà không xét trong X phút → tự nhả cho MC khác
+    # ===== Chịu tải trên VPS yếu =====
+    # Số clip CHẤM ĐỒNG THỜI. Chấm = ffmpeg (CPU) + Whisper (mạng) — nặng. Spike nhiều user
+    # sẽ XẾP HÀNG thay vì làm sập server. VPS yếu để 1-2; mạnh hơn thì tăng.
+    scoring_concurrency: int = 2
+    asr_timeout_sec: float = 45.0    # timeout gọi ASR — call treo không giữ slot mãi
+    max_clip_mb: float = 12.0        # chặn upload clip quá lớn
+    cache_ttl_sec: int = 30          # cache đọc nóng (content/paths, mentors) giảm tải DB
+
     # Thanh năng lượng (Duolingo-style): max 30, mỗi bài tốn 10 → 3 bài/lần đầy.
     # Hồi 1 điểm / 15 phút → ~1 bài mỗi 2.5h, đầy lại toàn bộ sau ~7.5h. Pro = không tiêu.
     # (Chỉnh ENERGY_REGEN_MIN trong .env để nhanh/chậm hơn — nhỏ = hồi nhanh.)

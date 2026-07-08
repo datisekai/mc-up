@@ -9,6 +9,7 @@ Tốc độ:  words / duration * 60 (công thức thật).
 Từ đệm:  đếm 'ừm/à/ờ' trên transcript — Whisper hay BỎ fillers → cần POC 3.1.
 """
 import array
+import asyncio
 import logging
 import math
 import os
@@ -109,7 +110,8 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         used_mock = True
 
     words = result.words
-    real_vol = _rms_volume(path) if (path and os.path.exists(path)) else None  # FR-13: RMS thật
+    # ffmpeg là subprocess CHẶN — chạy trong thread để không nghẽn event loop khi nhiều user
+    real_vol = await asyncio.to_thread(_rms_volume, path) if (path and os.path.exists(path)) else None
 
     # ASR thật nhưng nghe không ra (im lặng/quá nhỏ → Whisper hay bịa) → KHÔNG chấm bừa
     if not used_mock and _looks_unclear(result.text, words):

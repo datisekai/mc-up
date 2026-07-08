@@ -5,7 +5,11 @@ from sqlalchemy.orm import DeclarativeBase
 
 from .config import settings
 
-engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+# Giới hạn pool để không vắt kiệt kết nối Postgres khi tải cao (SQLite bỏ qua pool_size).
+_engine_kw = {"pool_pre_ping": True}
+if "postgresql" in settings.database_url:
+    _engine_kw.update(pool_size=10, max_overflow=20, pool_recycle=1800, pool_timeout=30)
+engine = create_async_engine(settings.database_url, **_engine_kw)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 

@@ -93,6 +93,8 @@ async def submit_audio(bg: BackgroundTasks, lesson_id: str = Form(None), content
     data = await file.read()
     if not data:
         raise HTTPException(400, {"error": {"code": "empty_audio", "message": "Clip rỗng — thu lại giúp mình nhé?"}})
+    if len(data) > _s.max_clip_mb * 1024 * 1024:  # chặn upload quá lớn (bảo vệ băng thông/đĩa/CPU)
+        raise HTTPException(413, {"error": {"code": "too_large", "message": "Clip quá lớn — thu ngắn lại giúp mình nhé?"}})
     ext = (file.filename or "clip.m4a").split(".")[-1]
     clip.audio_path = await _media.put(f"{clip.id}.{ext}", data, file.content_type or "audio/m4a")  # AD-4
     await session.commit()
