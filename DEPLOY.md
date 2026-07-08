@@ -1,21 +1,34 @@
-# Deploy McUp backend lên VPS
+# Deploy McUp lên VPS (backend + landing + admin — cùng 1 container)
 
-Yêu cầu VPS: đã cài **Docker** + **Docker Compose** (Ubuntu: `curl -fsSL https://get.docker.com | sh`).
+Backend **tự phục vụ tất cả**: landing (`/`), privacy (`/privacy`), terms (`/terms`),
+admin (`/admin-web`), và toàn bộ API. Deploy backend là có luôn cả web.
 
-## Lần đầu
+Yêu cầu VPS: **Docker + Docker Compose** (Ubuntu: `curl -fsSL https://get.docker.com | sh`).
+
+## Lần đầu (khoảng 5 phút)
 ```bash
-git clone <repo-của-bạn> mcup && cd mcup
+git clone git@github.com:datisekai/mc-up.git mcup && cd mcup
 cp .env.example .env
-nano .env            # BẮT BUỘC: JWT_SECRET + POSTGRES_PASSWORD + DOMAIN; OPENAI_API_KEY cho ASR thật
+nano .env     # BẮT BUỘC đổi:
+#   JWT_SECRET       (sinh: python3 -c "import secrets;print(secrets.token_urlsafe(48))")
+#   POSTGRES_PASSWORD
+#   DEBUG=false
+#   OPENAI_API_KEY   (để chấm giọng thật; bỏ trống = chấm giả lập)
+#   DOMAIN=api.mcup.vn   (đã trỏ DNS A record về IP VPS)  — HOẶC để DOMAIN=:80 nếu chưa có domain
 docker compose -f docker-compose.prod.yml up -d --build
 ```
-→ Có domain (DNS A record → IP VPS): API tự có **HTTPS** tại `https://<DOMAIN>` (Caddy + Let's Encrypt).
-→ Kiểm tra: `curl https://<DOMAIN>/health` · admin: `https://<DOMAIN>/admin-web`
 
-Stack gồm: **caddy** (HTTPS) + **api** (FastAPI, chỉ bind localhost) + **postgres** + **redis** + **minio**.
-Postgres/clip/minio/cert đều có volume nên dữ liệu bền qua restart.
+**Kiểm tra:**
+- Có domain: `https://<DOMAIN>/health` · landing `https://<DOMAIN>/` · admin `https://<DOMAIN>/admin-web`
+- Chưa có domain (DOMAIN=:80): `http://<IP-VPS>/health` · `http://<IP-VPS>/` (Caddy phục vụ HTTP cổng 80)
 
-**App mobile trỏ về server:** sửa `API_BASE` trong `client/src/api.ts` thành `https://<DOMAIN>` rồi build lại app.
+⚠️ **iOS chặn HTTP** — muốn app iPhone gọi được, PHẢI có domain + HTTPS (đặt DOMAIN thật).
+
+Stack (gọn cho VPS yếu): **caddy** (HTTPS tự động) + **api** (FastAPI, chỉ mạng nội bộ) + **postgres**.
+Dữ liệu (DB, clip, chứng chỉ HTTPS) đều có volume nên bền qua restart.
+*(Redis worker & MinIO/S3 chưa dùng nên đã bỏ cho nhẹ — thêm lại khi scale, xem cuối file.)*
+
+**App mobile trỏ về server:** sửa `API_BASE` trong `client/src/api.ts` thành `https://<DOMAIN>` rồi build lại (EAS).
 
 **Beta hardening có sẵn** (chỉnh trong `.env`): quota 30 lượt chấm/user/ngày ·
 5 tài khoản khách/IP/ngày · van tổng 300 khách/ngày · CORS theo `ALLOWED_ORIGINS`.
