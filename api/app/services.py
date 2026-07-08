@@ -19,7 +19,7 @@ from .models import (AuditLog, BadgeCard, Clip, ContentLesson, ContentSession, G
                      RubricModule, Score, User)
 from .rubrics import criteria_for, get_rubric
 from .scoring import score_clip
-from .security import hash_password
+from .security import hash_password, sign_media
 
 log = logging.getLogger("mcup.services")
 
@@ -819,8 +819,8 @@ async def admin_list_reviews(s: AsyncSession, status: str = "all") -> list[dict]
             "overdue": r.status == "pending" and age_h > SLA_HOURS,
             "hoc_vien": (hv.display_name or hv.email) if hv else "?",
             "mc": (mc.display_name or mc.email) if mc else None,
-            "clip_url": f"/media/{clip.audio_path}" if clip and clip.audio_path else None,
-            "voice_url": f"/media/{review.audio_path}" if review and review.audio_path else None,
+            "clip_url": sign_media(clip.audio_path) if clip and clip.audio_path else None,
+            "voice_url": sign_media(review.audio_path) if review and review.audio_path else None,
             "note": review.note if review else None,
             "speed_wpm": score.speed_wpm if score else None,
             "filler_count": score.filler_count if score else None,

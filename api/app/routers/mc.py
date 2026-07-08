@@ -10,6 +10,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..media import media
 from ..models import ReviewRequest, User
+from ..security import sign_media
 from ..schemas import BadgeOut, MCQueueItemOut, SubmitReviewIn
 from ..services import mc_claim, mc_queue, mc_release, submit_mc_review, _claim_state
 
@@ -106,4 +107,4 @@ async def submit_review_audio(request_id: str = Form(...), note: str = Form("Nhá
     transcript = await _transcribe_voice(key)
     badge = await submit_mc_review(session, user, req, note, audio_path=key, transcript=transcript)
     return BadgeOut(mc_name=badge.mc_name, mc_title=badge.mc_title, note=badge.note,
-                    audio_url=f"/media/{key}", stats=badge.stats, transcript=transcript)
+                    audio_url=sign_media(key), stats=badge.stats, transcript=transcript)

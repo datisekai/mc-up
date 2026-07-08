@@ -6,6 +6,7 @@ from ..db import get_session
 from ..deps import current_user
 from ..models import BadgeCard, Clip, MCReview, Progress, ReviewRequest, User
 from ..schemas import BadgeOut, ReviewRequestOut, SendTicketIn
+from ..security import sign_media
 from ..services import send_golden_ticket
 
 router = APIRouter(tags=["ve-vang"])
@@ -42,7 +43,7 @@ async def my_reviews(user: User = Depends(current_user), session: AsyncSession =
             if row:
                 b, transcript = row
                 badge = BadgeOut(mc_name=b.mc_name, mc_title=b.mc_title, note=b.note,
-                                 audio_url=(f"/media/{b.audio_path}" if b.audio_path else None),
+                                 audio_url=(sign_media(b.audio_path) if b.audio_path else None),
                                  stats=b.stats, transcript=transcript)
         out.append(ReviewRequestOut(id=r.id, clip_id=r.clip_id, status=r.status, badge=badge))
     return out

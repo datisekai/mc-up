@@ -60,9 +60,11 @@ async def trace_and_errors(request: Request, call_next):
         response = await call_next(request)
     except Exception as exc:
         log.exception("traceId=%s lỗi không mong đợi", trace_id)
+        # Prod: KHÔNG lộ str(exc) (rò rỉ nội bộ). Vẫn ghi full ở log server + trả traceId.
+        msg = str(exc) if settings.debug else "Có lỗi xảy ra, vui lòng thử lại sau."
         return JSONResponse(
             status_code=500,
-            content={"error": {"code": "internal_error", "message": str(exc)}},
+            content={"error": {"code": "internal_error", "message": msg, "traceId": trace_id}},
             headers={"X-Trace-Id": trace_id},
         )
     response.headers["X-Trace-Id"] = trace_id

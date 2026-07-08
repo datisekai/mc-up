@@ -5,12 +5,26 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "primaryColor": "#FF6B5B",
     "splash": {
       "backgroundColor": "#FFF8F0"
+    },
+    "ios": {
+      "bundleIdentifier": "vn.mcup.app",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "McUp cần micro để nghe và chấm giọng bạn khi luyện tập — chỉ khi bạn bấm thu, và clip là của riêng bạn.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "vn.mcup.app",
+      "versionCode": 1,
+      "permissions": ["RECORD_AUDIO"],
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF8F0"
+      }
     },
     "plugins": [
       "expo-font"

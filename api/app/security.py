@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import os
+import time
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -8,6 +9,24 @@ import jwt
 from .config import settings
 
 _ALGO = "HS256"
+
+
+# ===== URL ký cho media (clip/giọng) — chống truy cập trái phép file voice nhạy cảm =====
+# Trước đây /media/{key} không xác thực → ai có link là nghe được. Giờ URL có chữ ký + hạn.
+def sign_media(key: str, ttl: int = 7200) -> str:
+    exp = int(time.time()) + ttl
+    sig = hmac.new(settings.jwt_secret.encode(), f"{key}.{exp}".encode(), hashlib.sha256).hexdigest()[:24]
+    return f"/media/{key}?e={exp}&s={sig}"
+
+
+def verify_media(key: str, e: str, s: str) -> bool:
+    try:
+        if int(e) < int(time.time()):
+            return False
+    except Exception:
+        return False
+    expected = hmac.new(settings.jwt_secret.encode(), f"{key}.{e}".encode(), hashlib.sha256).hexdigest()[:24]
+    return hmac.compare_digest(expected, s or "")
 
 
 def hash_password(password: str) -> str:

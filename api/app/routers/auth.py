@@ -30,8 +30,14 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "?"
 
 
+def _check_password(pw: str):
+    if len(pw or "") < 6:
+        raise HTTPException(400, {"error": {"code": "weak_password", "message": "Mật khẩu cần ít nhất 6 ký tự."}})
+
+
 @router.post("/register", response_model=TokenOut)
 async def register(body: RegisterIn, session: AsyncSession = Depends(get_session)):
+    _check_password(body.password)
     exists = (await session.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if exists:
         raise HTTPException(409, {"error": {"code": "email_taken", "message": "Email đã được dùng"}})
@@ -80,6 +86,7 @@ async def upgrade(body: RegisterIn, user: User = Depends(current_user),
     """Nâng cấp khách → tài khoản thật. GIỮ NGUYÊN user_id → streak/XP/clip/vé không mất."""
     if not user.email.endswith(_GUEST_DOMAIN):
         raise HTTPException(400, {"error": {"code": "not_guest", "message": "Tài khoản đã đăng ký rồi"}})
+    _check_password(body.password)
     exists = (await session.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if exists:
         raise HTTPException(409, {"error": {"code": "email_taken", "message": "Email đã được dùng"}})

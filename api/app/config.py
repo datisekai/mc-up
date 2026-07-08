@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./mcup_dev.db"
     jwt_secret: str = "doi-secret-that-truoc-khi-deploy"
     app_version: str = "0.1.0"
+    debug: bool = False              # True chỉ khi dev — prod KHÔNG lộ chi tiết lỗi nội bộ
     # ASR: chọn nhà cung cấp. "auto" = whisper nếu có OPENAI_API_KEY, không thì giả lập.
     asr_provider: str = "auto"  # auto | mock | whisper | google | viettel
     openai_api_key: str = ""
