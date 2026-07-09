@@ -41,6 +41,9 @@
       ]
     ],
     "extra": {
+      "eas": {
+        "projectId": "6a269ba3-e90a-4ea8-baa6-667752d3df5f"
+      },
       "revenuecat": {
         "iosKey": "",
         "androidKey": "",
