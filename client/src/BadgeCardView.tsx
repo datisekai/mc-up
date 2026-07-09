@@ -17,7 +17,7 @@ export type BadgeData = {
   transcript?: string | null;  // "Xem bản chữ" — ASR giọng MC (best-effort)
 };
 
-const APP_URL = "https://mcup.vn"; // landing/deep-link — đổi khi có domain thật
+const APP_URL = "https://mcup.fun"; // landing/deep-link — đổi khi có domain thật
 
 type Skin = "cream" | "night" | "coral";
 const SKINS: Record<Skin, { bg: string; raised: string; text: string; sub: string; quote: string; accent: string; hair: string; ok: string }> = {

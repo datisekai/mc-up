@@ -777,7 +777,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
       </View>
       {/* kênh góp ý cho bản test — mở mail có sẵn tiêu đề */}
       <Btn ghost label="Góp ý cho McUp 💌" onPress={() =>
-        Linking.openURL("mailto:datly3494@gmail.com?subject=" + encodeURIComponent("Góp ý McUp beta")
+        Linking.openURL("mailto:datly030102@gmail.com?subject=" + encodeURIComponent("Góp ý McUp beta")
           + "&body=" + encodeURIComponent("Mình thấy...")).catch(() => {})
       } />
       {/* Credit BẮT BUỘC theo CC-BY 4.0 (assets/CREDITS.md) — giữ khi phát hành */}
