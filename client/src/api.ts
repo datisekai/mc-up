@@ -7,7 +7,7 @@
 //   (iOS chặn HTTP + không dùng được IP LAN). ĐỔI "https://api.mcup.vn" thành domain thật của bạn.
 export const API_BASE = __DEV__
   ? "http://192.168.1.21:8000"   // ← ĐỔI IP LAN máy Mac khi test bằng Expo Go
-  : "https://api.mcup.vn";       // ← ĐỔI domain HTTPS thật trước khi build production
+  : "https://mcup.fun";          // domain production (VPS + nginx + certbot)
 
 // Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
 // Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".

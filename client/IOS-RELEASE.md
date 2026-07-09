@@ -15,11 +15,10 @@ Thứ tự quan trọng: **deploy server có domain HTTPS → điền cấu hìn
 ---
 
 ## 1. Deploy server có domain HTTPS (BẮT BUỘC trước tiên)
-iOS **chặn HTTP** → app TestFlight phải gọi `https://`.
-1. Deploy backend lên VPS (xem `../DEPLOY.md` — `./deploy.sh` + `nginx.conf`).
-2. Trỏ DNS domain (vd `api.mcup.vn`) về IP VPS, chạy `certbot` lấy SSL.
-3. Kiểm tra: mở `https://api.mcup.vn/health` thấy `{"status":"ok"}`.
-4. **Sửa `src/api.ts`**: đổi `"https://api.mcup.vn"` (nhánh production) thành domain thật của bạn.
+iOS **chặn HTTP** → app TestFlight phải gọi `https://`. Domain: **mcup.fun** (đã set sẵn trong `src/api.ts`).
+1. Trỏ DNS: A record `mcup.fun` (và `www`) → IP VPS.
+2. Trên VPS: `./deploy.sh` (chạy backend) rồi `sudo ./setup-nginx.sh` (nginx + certbot HTTPS, 1 lệnh).
+3. Kiểm tra: mở `https://mcup.fun/health` thấy `{"status":"ok"}`.
 
 ## 2. Cài công cụ + tài khoản Expo
 ```bash

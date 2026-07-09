@@ -5,7 +5,8 @@ admin (`/admin-web`), và toàn bộ API. Deploy backend là có luôn cả web.
 
 Yêu cầu VPS: **Docker + Docker Compose** (Ubuntu: `curl -fsSL https://get.docker.com | sh`).
 
-## Lần đầu (khoảng 5 phút)
+## Lần đầu — domain mcup.fun (khoảng 5 phút)
+Trỏ DNS trước: A record `mcup.fun` (và `www`) → IP VPS.
 ```bash
 git clone git@github.com:datisekai/mc-up.git mcup && cd mcup
 cp .env.example .env
@@ -14,21 +15,19 @@ nano .env     # BẮT BUỘC đổi:
 #   POSTGRES_PASSWORD
 #   DEBUG=false
 #   OPENAI_API_KEY   (để chấm giọng thật; bỏ trống = chấm giả lập)
-#   DOMAIN=api.mcup.vn   (đã trỏ DNS A record về IP VPS)  — HOẶC để DOMAIN=:80 nếu chưa có domain
-docker compose -f docker-compose.prod.yml up -d --build
+./deploy.sh              # backend chạy ở 127.0.0.1:APP_PORT (mặc định 3011)
+sudo ./setup-nginx.sh    # nginx proxy mcup.fun → cổng đó + certbot HTTPS (1 lệnh)
 ```
 
-**Kiểm tra:**
-- Có domain: `https://<DOMAIN>/health` · landing `https://<DOMAIN>/` · admin `https://<DOMAIN>/admin-web`
-- Chưa có domain (DOMAIN=:80): `http://<IP-VPS>/health` · `http://<IP-VPS>/` (Caddy phục vụ HTTP cổng 80)
+**Kiểm tra:** `https://mcup.fun/health` · landing `https://mcup.fun/` · admin `https://mcup.fun/admin-web`
 
-⚠️ **iOS chặn HTTP** — muốn app iPhone gọi được, PHẢI có domain + HTTPS (đặt DOMAIN thật).
+⚠️ **iOS chặn HTTP** — app iPhone chỉ gọi được qua HTTPS (setup-nginx.sh đã lo, kèm redirect 80→443).
 
-Stack (gọn cho VPS yếu): **caddy** (HTTPS tự động) + **api** (FastAPI, chỉ mạng nội bộ) + **postgres**.
-Dữ liệu (DB, clip, chứng chỉ HTTPS) đều có volume nên bền qua restart.
-*(Redis worker & MinIO/S3 chưa dùng nên đã bỏ cho nhẹ — thêm lại khi scale, xem cuối file.)*
+Stack: **nginx trên host** (SSL) + **api** (FastAPI, bind 127.0.0.1) + **postgres** — xem `docker-compose.deploy.yml`.
+Dữ liệu (DB, clip) có volume nên bền qua restart.
+*(Phương án thay thế không dùng nginx: `docker-compose.prod.yml` với Caddy tự lo HTTPS — đặt `DOMAIN` trong .env.)*
 
-**App mobile trỏ về server:** sửa `API_BASE` trong `client/src/api.ts` thành `https://<DOMAIN>` rồi build lại (EAS).
+**App mobile:** `client/src/api.ts` đã trỏ sẵn production → `https://mcup.fun` (bản build EAS tự dùng).
 
 **Beta hardening có sẵn** (chỉnh trong `.env`): quota 30 lượt chấm/user/ngày ·
 5 tài khoản khách/IP/ngày · van tổng 300 khách/ngày · CORS theo `ALLOWED_ORIGINS`.
