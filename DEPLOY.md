@@ -3,6 +3,7 @@
 Backend **tự phục vụ tất cả**: landing (`/`), privacy (`/privacy`), terms (`/terms`),
 admin (`/admin-web`), và toàn bộ API. Deploy backend là có luôn cả web.
 
+Stack: **nginx trên host** (SSL, cổng 80/443) → **api** (FastAPI, Docker, bind `127.0.0.1:3011`) + **postgres**.
 Yêu cầu VPS: **Docker + Docker Compose** (Ubuntu: `curl -fsSL https://get.docker.com | sh`).
 
 ## Lần đầu — domain mcup.fun (khoảng 5 phút)
@@ -13,19 +14,14 @@ cp .env.example .env
 nano .env     # BẮT BUỘC đổi:
 #   JWT_SECRET       (sinh: python3 -c "import secrets;print(secrets.token_urlsafe(48))")
 #   POSTGRES_PASSWORD
-#   DEBUG=false
 #   OPENAI_API_KEY   (để chấm giọng thật; bỏ trống = chấm giả lập)
-./deploy.sh              # backend chạy ở 127.0.0.1:APP_PORT (mặc định 3011)
-sudo ./setup-nginx.sh    # nginx proxy mcup.fun → cổng đó + certbot HTTPS (1 lệnh)
+./deploy.sh              # backend chạy ở 127.0.0.1:3011 (APP_PORT trong .env)
+sudo ./setup-nginx.sh    # nginx proxy mcup.fun → 3011 + certbot HTTPS (1 lệnh)
 ```
 
 **Kiểm tra:** `https://mcup.fun/health` · landing `https://mcup.fun/` · admin `https://mcup.fun/admin-web`
 
 ⚠️ **iOS chặn HTTP** — app iPhone chỉ gọi được qua HTTPS (setup-nginx.sh đã lo, kèm redirect 80→443).
-
-Stack: **nginx trên host** (SSL) + **api** (FastAPI, bind 127.0.0.1) + **postgres** — xem `docker-compose.deploy.yml`.
-Dữ liệu (DB, clip) có volume nên bền qua restart.
-*(Phương án thay thế không dùng nginx: `docker-compose.prod.yml` với Caddy tự lo HTTPS — đặt `DOMAIN` trong .env.)*
 
 **App mobile:** `client/src/api.ts` đã trỏ sẵn production → `https://mcup.fun` (bản build EAS tự dùng).
 
@@ -34,9 +30,11 @@ Dữ liệu (DB, clip) có volume nên bền qua restart.
 
 ## Cập nhật khi có code mới
 ```bash
-./deploy.sh          # tự git pull + build lại + chạy (nginx) — 1 lệnh
-# hoặc bản Caddy: git pull && docker compose -f docker-compose.prod.yml up -d --build
+./deploy.sh          # tự git pull + build lại + chạy — 1 lệnh
 ```
+⚠️ Nếu bản mới **đổi schema DB** (thêm cột/bảng), Postgres cũ sẽ lỗi "column ... does not exist"
+→ hiện phải xoá DB làm lại: `docker compose -f docker-compose.prod.yml down -v && ./deploy.sh`
+(mất user/tiến độ — chấp nhận được khi beta; sẽ chuyển sang Alembic migration trước khi có user thật).
 
 ## Lệnh hay dùng
 ```bash
@@ -54,12 +52,10 @@ docker compose -f docker-compose.prod.yml down -v        # dừng + XÓA dữ li
   **`ASR_TIMEOUT_SEC`** call ASR treo không giữ slot mãi · pool Postgres đã giới hạn (10+20).
 - **Nhiều tiến trình web** (VPS ≥ 2 vCPU): sửa CMD Docker thành `uvicorn ... --workers N` (mỗi worker
   có van riêng → concurrency thực = N × SCORING_CONCURRENCY). VPS yếu giữ 1 worker.
-- Quá tải kéo dài thật sự → tách **worker chấm riêng qua Redis** (đã có Redis trong compose, hạ tầng sẵn).
 
 ## Nên làm cho production thật
-- Đặt **Caddy** phía trước để có **HTTPS** (đã cấu hình sẵn — set `DOMAIN` trong .env).
-- **`DEBUG=false`** + `JWT_SECRET` mạnh + `ALLOWED_ORIGINS=https://<domain>` trong .env.
-- Backup định kỳ volume `pgdata`. Khi schema ổn định → dùng migration (Alembic).
-- Backup định kỳ volume `pgdata`.
-- Tạo bucket MinIO `mcup-clips` (console `:9001`, user/pass theo `.env`) — hoặc chuyển sang **S3** thật.
-- Bảng DB được tạo tự động lúc khởi động (ORM). Khi schema ổn định, chuyển sang migration trong `db/migrations/`.
+- `JWT_SECRET` mạnh + `ALLOWED_ORIGINS=https://mcup.fun` trong .env (`DEBUG=false` là mặc định).
+- Backup định kỳ volume `pgdata` (DB) + `clipdata` (clip giọng).
+- Bảng DB tạo tự động lúc khởi động (ORM). Khi schema ổn định → chuyển sang **Alembic migration**
+  để update không mất dữ liệu.
+- Khi scale lớn: tách worker chấm riêng (Redis queue) + chuyển clip sang S3 — hạ tầng hiện tại chưa cần.

@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-COMPOSE="docker compose -f docker-compose.deploy.yml"
+COMPOSE="docker compose -f docker-compose.prod.yml"
 
 # --- 0. Kéo code mới nhất ---
 if [ -d .git ]; then

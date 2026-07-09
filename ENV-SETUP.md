@@ -7,21 +7,15 @@ Copy `.env.example` → `.env` rồi điền. **Chạy demo hiện tại KHÔNG 
 | `DATABASE_URL` | Ngay (đã có mặc định SQLite) | ✅ (có sẵn) | §1 |
 | `JWT_SECRET` | Trước khi cho người thật đăng nhập | ✅ | §2 |
 | `OPENAI_API_KEY` | Khi cắm chấm giọng thật (Epic 3) | ⏳ sau | §3 |
-| `S3_*` (object storage) | Khi lưu clip thật (Epic 3) | ⏳ sau | §4 |
-| `REDIS_URL` | Khi chạy queue Celery thật | ⏳ sau | §5 |
-| Expo Push token | Khi làm nhắc streak (Epic 4) | ⏳ sau | §6 |
-| RevenueCat key | Khi làm thanh toán (Epic 5) | ⏳ sau | §7 |
+| Expo Push (projectId) | Push "MC đã nhận xét" — ĐÃ cắm | ✅ (có sẵn) | §6 |
+| RevenueCat key | Khi bật bán gói Pro (IAP) | ⏳ sau | §7 |
 
 ---
 
 ## §1. `DATABASE_URL` — PostgreSQL
 
 - **Demo (mặc định):** để trống → dùng SQLite (`sqlite+aiosqlite:///./mcup_dev.db`), không cần cài gì.
-- **Local giống production:** chạy `docker compose up -d` (đã có sẵn Postgres) rồi đặt:
-  ```
-  DATABASE_URL=postgresql+asyncpg://mcup:mcup@localhost:5432/mcup
-  ```
-- **VPS:** sau khi cài PostgreSQL trên VPS, dùng dạng `postgresql+asyncpg://<user>:<pass>@<host>:5432/<db>`. **Không** commit mật khẩu thật vào git.
+- **VPS:** `docker-compose.prod.yml` **tự set** DATABASE_URL trỏ tới service postgres trong compose — chỉ cần đặt `POSTGRES_PASSWORD` trong `.env`. **Không** commit mật khẩu thật vào git.
 
 ## §2. `JWT_SECRET` — chuỗi bí mật ký token
 
@@ -53,43 +47,29 @@ Dùng cho ASR chuyển giọng→chữ (thay `MockAsr`). ~**$0.006/phút** audio
 
 > Bật Whisper: thêm `OPENAI_API_KEY=sk-...` vào `.env` rồi chạy lại. Chấm thật end-to-end còn cần **clip audio thật** (Story 3.2 upload) — hiện demo chưa upload audio nên vẫn lùi về giả lập cho tới khi có.
 
-## §4. `S3_*` — Object storage cho clip (AD-4)
+## §6. Expo Push — ĐÃ cắm xong
 
-Clip video/giọng là dữ liệu nhạy cảm → lưu ở object storage, dùng URL có ký & hết hạn.
+- Không cần API key trả phí. Push đi qua **Expo Push API** (backend `api/app/push.py`),
+  token thiết bị lấy bằng `expo-notifications` (`client/src/push.ts`) — projectId đã gắn trong `app.json`.
+- Chạy tự động khi user cấp quyền thông báo. Không có biến .env nào cần điền.
 
-- **Local/VPS tự-host (MinIO — miễn phí):** đã có trong `docker-compose.yml`.
-  ```
-  S3_ENDPOINT=http://localhost:9000
-  S3_BUCKET=mcup-clips
-  S3_ACCESS_KEY=mcup
-  S3_SECRET_KEY=mcup12345
-  ```
-  Mở console MinIO http://localhost:9001 (mcup / mcup12345) → tạo bucket `mcup-clips`. Trên VPS: đổi endpoint/khóa cho chắc.
-- **Hoặc AWS S3:** https://console.aws.amazon.com/s3 → tạo bucket → IAM tạo user có quyền S3 → lấy *Access key* + *Secret key* → đặt `S3_ENDPOINT` rỗng/khu vực AWS.
+## §7. RevenueCat (bán gói Pro — IAP)
 
-## §5. `REDIS_URL` — Queue (Celery)
+- https://www.revenuecat.com → đăng ký (miễn phí tới ngưỡng doanh thu).
+- Tạo *Project* → *API Keys*: **public SDK key** (`appl_...`) dán vào `client/app.json → extra.revenuecat.iosKey`;
+  **secret key** (`sk_...`) đặt `REVENUECAT_SECRET_KEY` trong `.env` server.
+- Cần tài khoản **App Store Connect** (Apple, $99/năm — ĐÃ có) / **Google Play Console** ($25 một lần).
+- Từng bước chi tiết: xem `client/IOS-RELEASE.md` §4. Để trống key = nút Pro hiện "sắp mở", app vẫn chạy.
 
-Demo hiện chạy chấm bằng background task trong tiến trình (không cần Redis). Khi chuyển sang Celery thật:
-- Local/VPS: đã có Redis trong `docker-compose.yml` → `REDIS_URL=redis://localhost:6379/0`.
-
-## §6. Expo Push (nhắc streak — Epic 4)
-
-- Không cần API key trả phí. Cần **tài khoản Expo**: https://expo.dev → đăng ký (miễn phí).
-- App RN lấy *Expo push token* trên thiết bị; backend gửi qua Expo Push API. Làm khi vào Epic 4.
-
-## §7. RevenueCat (thanh toán freemium — Epic 5)
-
-- https://www.revenuecat.com → đăng ký (có gói miễn phí tới ngưỡng doanh thu).
-- Tạo *Project* → *API Keys* (public SDK key cho app, secret key cho server).
-- Cần thêm: tài khoản **App Store Connect** (Apple, $99/năm) và **Google Play Console** ($25 một lần) để bán in-app. Làm khi tới Epic 5.
+> Clip giọng lưu trên đĩa VPS qua `LocalMediaStore` (volume `clipdata`, URL có ký HMAC + hết hạn).
+> Khi scale lớn mới cần chuyển S3 — hiện không cần cấu hình gì.
 
 ---
 
 ## Tóm tắt: để chạy được từng mức
 - **Xem demo ngay:** không cần gì (`./run.sh`).
-- **Cho người thật đăng nhập:** §2 (JWT) + §1 (Postgres nếu muốn bền).
+- **Cho người thật đăng nhập:** §2 (JWT) — VPS thêm `POSTGRES_PASSWORD` (§1).
 - **Chấm giọng thật:** §3 (OpenAI) — và nên bench §3b cho tiếng Việt trước.
-- **Lưu clip thật:** §4 (MinIO/S3).
-- **Đủ MVP:** thêm §5, §6, §7 theo từng epic.
+- **Bán gói Pro:** §7 (RevenueCat).
 
 > Nguyên tắc: mọi secret để trong `.env` (đã được `.gitignore` bỏ qua), **không commit lên git**. Trên VPS đặt qua biến môi trường của service, không để lộ.

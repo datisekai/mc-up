@@ -1,12 +1,6 @@
-# McUp — stack production GỌN cho VPS (api + postgres + caddy).
-# Backend tự serve landing (/) , privacy (/privacy), terms (/terms), admin (/admin-web), API.
-#
-# Deploy:
-#   cp .env.example .env   && nano .env   (ĐỔI JWT_SECRET, POSTGRES_PASSWORD, DOMAIN, DEBUG=false)
-#   docker compose -f docker-compose.prod.yml up -d --build
-#
-# Redis (worker chấm) & MinIO/S3 (lưu clip) hiện CHƯA dùng → đã bỏ cho nhẹ.
-# Khi cần scale: thêm lại 2 service đó (xem DEPLOY.md).
+# McUp — stack production: api (FastAPI) + postgres. Backend bind 127.0.0.1:APP_PORT (mặc định 3011),
+# nginx trên host reverse-proxy mcup.fun → cổng đó + lo SSL (xem nginx.conf + setup-nginx.sh).
+# Dùng qua: ./deploy.sh  (hoặc: docker compose -f docker-compose.prod.yml up -d --build)
 services:
   api:
     build: .
@@ -15,10 +9,11 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://mcup:${POSTGRES_PASSWORD:-mcup}@postgres:5432/mcup
       UPLOAD_DIR: /data/uploads
+    ports:
+      # Chỉ bind vào 127.0.0.1 → KHÔNG lộ trực tiếp ra internet, chỉ nginx trên host gọi được.
+      - "127.0.0.1:${APP_PORT:-3011}:8000"
     volumes:
-      - clipdata:/data/uploads      # clip/giọng lưu trên đĩa (LocalMediaStore) — bền qua restart
-    expose:
-      - "8000"                       # chỉ nội bộ mạng compose — ra ngoài đi qua Caddy
+      - clipdata:/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,25 +39,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # HTTPS tự động (Let's Encrypt) khi DOMAIN là tên miền thật đã trỏ DNS về IP VPS.
-  # Chưa có domain → DOMAIN=:80 (phục vụ HTTP theo IP để thử) — đặt trong .env.
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      DOMAIN: ${DOMAIN:-:80}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddydata:/data
-      - caddyconfig:/config
-    depends_on:
-      - api
-
 volumes:
   pgdata:
   clipdata:
-  caddydata:
-  caddyconfig:
