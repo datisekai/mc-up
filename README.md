@@ -30,9 +30,17 @@ npm install
 npx expo start
 ```
 
-## Triển khai (VPS + domain mcup.fun)
-Xem **[DEPLOY.md](DEPLOY.md)** — `./deploy.sh` (backend Docker, cổng 3011) + `sudo ./setup-nginx.sh` (nginx + HTTPS).
-Phát hành iOS/TestFlight: **[client/IOS-RELEASE.md](client/IOS-RELEASE.md)**.
+## Triển khai — 2 pipeline TÁCH BIỆT
+
+| | Web + Backend (`api/`…) | App mobile (`client/`) |
+|---|---|---|
+| Chạy ở đâu | VPS (Docker, sau nginx) | TestFlight / App Store (EAS cloud) |
+| Deploy 1 lệnh | `./deploy.sh` (trên VPS) | `client/release-ios.sh` (trên máy dev) |
+| Vá nhanh JS | — | `client/release-ios.sh --ota` (EAS Update) |
+| Env | `.env` trên VPS | `eas.json → build.<profile>.env` (prod ép `https://mcup.fun`) |
+| Docs | [DEPLOY.md](DEPLOY.md) | [client/IOS-RELEASE.md](client/IOS-RELEASE.md) |
+
+Đổi code client **không** ảnh hưởng image backend (Dockerfile chỉ COPY `api/ adapters/ domain/ db/`) và ngược lại.
 
 ## Env / API keys
 Xem **[ENV-SETUP.md](ENV-SETUP.md)** — hướng dẫn lấy từng biến (`OPENAI_API_KEY` cho Whisper, `JWT_SECRET`, RevenueCat...), cần-khi-nào & giá. Demo local **không cần key nào**.

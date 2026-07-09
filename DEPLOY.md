@@ -1,5 +1,9 @@
 # Deploy McUp lên VPS (backend + landing + admin — cùng 1 container)
 
+> File này là pipeline **WEB + BACKEND** (VPS). Pipeline **APP mobile** tách riêng:
+> `client/release-ios.sh` (EAS → TestFlight) — xem `client/IOS-RELEASE.md`. Hai bên độc lập:
+> đổi client không cần đụng VPS, đổi backend không cần build lại app (trừ khi đổi API contract).
+
 Backend **tự phục vụ tất cả**: landing (`/`), privacy (`/privacy`), terms (`/terms`),
 admin (`/admin-web`), và toàn bộ API. Deploy backend là có luôn cả web.
 

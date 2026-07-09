@@ -12,8 +12,12 @@ WORKDIR /app/mcup
 COPY api/requirements.txt api/requirements.txt
 RUN pip install --no-cache-dir -r api/requirements.txt
 
-# Copy toàn bộ mã (api + domain + adapters + db)
-COPY . .
+# CHỈ copy phần backend/web cần lúc runtime — client (app mobile) deploy RIÊNG qua EAS,
+# đổi code client không đụng image này.
+COPY api/ api/
+COPY adapters/ adapters/
+COPY domain/ domain/
+COPY db/ db/
 
 # Chạy từ root mcup/ để api/ adapters/ domain/ import sạch (không sys.path hack)
 WORKDIR /app/mcup
