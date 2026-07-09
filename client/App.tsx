@@ -489,7 +489,7 @@ export default function App() {
         <Text style={s.brand}>McUp</Text>
         <View style={s.chipCluster}>
           {!prog.is_pro
-            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center" }}><Text style={{ fontSize: 13 }}>⚡</Text><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{Math.floor(energy / energyCost)}</Text></TouchableOpacity>)
+            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center" }}><Text style={{ fontSize: 13 }}>⚡</Text><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
             : (<Text style={[s.chipT, { color: C.spot }]}>⚡∞</Text>)}
           <View style={s.chipDiv} />
           <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
