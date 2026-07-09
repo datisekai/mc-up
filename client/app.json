@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "primaryColor": "#FF6B5B",
+    "scheme": "mcup",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -14,8 +15,11 @@
     },
     "ios": {
       "bundleIdentifier": "vn.mcup.app",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": false,
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.vn.mcup.app"]
+      },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "McUp cần micro để nghe và chấm giọng bạn khi luyện tập — chỉ khi bạn bấm thu, và clip là của riêng bạn.",
         "ITSAppUsesNonExemptEncryption": false
@@ -40,7 +44,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#FF6B5B"
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "extra": {
       "revenuecat": {
@@ -49,7 +54,22 @@
         "entitlement": "pro"
       },
       "eas": {
-        "projectId": "66fa27e1-5e8f-4b3f-ae53-6eea746931d4"
+        "projectId": "66fa27e1-5e8f-4b3f-ae53-6eea746931d4",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "widget",
+                  "bundleIdentifier": "vn.mcup.app.widget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": ["group.vn.mcup.app"]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
     "owner": "datisekai",

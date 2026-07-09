@@ -24,6 +24,7 @@ import Mentors from "./src/Mentors";
 import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./src/sound";
 import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
+import { updateWidget } from "./src/widget";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -258,9 +259,15 @@ export default function App() {
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
   }
 
+  // Set tiến độ + đồng bộ widget màn hình chính (iOS, best-effort)
+  function applyProg(p: any) {
+    setProg(p);
+    updateWidget({ streak: p.streak ?? 0, practicedToday: !!p.practiced_today,
+                   energy: p.energy ?? 0, xp: p.xp ?? 0, isPro: !!p.is_pro });
+  }
   async function refresh(t = token!, goal = "") {
     const [progR, ps] = await Promise.all([Api.progress(t), Api.contentPaths(t)]);
-    setProg(progR); setPaths(ps);
+    applyProg(progR); setPaths(ps);
     // Onboarding "trả công": tự chọn lộ trình khớp mục tiêu đã chọn (P2 §B3)
     let pid = selPath;
     if (!pid && goal) {
@@ -334,7 +341,7 @@ export default function App() {
     }
     const prev = prog;
     const np = await Api.progress(token!);
-    setProg(np);
+    applyProg(np);
     // Khoảnh khắc thưởng — chỉ ở MỐC, giữ vàng đèn "đắt" (P0 §1.1)
     if (np.tier && prev.tier && np.tier !== prev.tier) setCeleb({ kind: "tier", value: np.tier });
     else if (np.streak !== prev.streak && STREAK_MILESTONES.includes(np.streak)) setCeleb({ kind: "streak", value: np.streak });
