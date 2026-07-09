@@ -5,6 +5,12 @@ Thứ tự quan trọng: **deploy server có domain HTTPS → điền cấu hìn
 
 ---
 
+## Env tách rõ dev / prod
+`API_BASE` đọc từ `EXPO_PUBLIC_API_URL`:
+- **Dev local (Expo Go):** `client/.env` (gitignored) — `cp .env.example .env`, sửa IP LAN.
+- **Build TestFlight/APK:** `eas.json → build.<profile>.env` — profile `production`/`preview`
+  **luôn ép** `https://mcup.fun`, không phụ thuộc máy ai build.
+
 ## 0. Việc code ĐÃ XONG (không cần làm gì)
 - ✅ App icon (`assets/icon.png`), adaptive icon, splash, notification icon
 - ✅ `eas.json` (profile development/preview/production + submit iOS)

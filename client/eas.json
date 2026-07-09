@@ -8,16 +8,24 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": { "simulator": false },
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.1.21:8000"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "ios": { "simulator": false },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://mcup.fun"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://mcup.fun"
+      }
     }
   },
   "submit": {

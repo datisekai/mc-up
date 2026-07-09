@@ -1,13 +1,12 @@
 // API client cho app McUp.
 //
-// DEV (Expo Go / dev build, __DEV__=true): trỏ backend chạy trên máy bạn.
-//   - Thiết bị thật cùng Wi-Fi: http://<IP-máy-bạn>:8000  (vd http://192.168.1.21:8000)
-//   - iOS simulator: http://localhost:8000 · Android emulator: http://10.0.2.2:8000
-// PRODUCTION (bản build TestFlight/APK, __DEV__=false): BẮT BUỘC domain HTTPS
-//   (iOS chặn HTTP + không dùng được IP LAN). ĐỔI "https://api.mcup.vn" thành domain thật của bạn.
-export const API_BASE = __DEV__
-  ? "http://192.168.1.21:8000"   // ← ĐỔI IP LAN máy Mac khi test bằng Expo Go
-  : "https://mcup.fun";          // domain production (VPS + nginx + certbot)
+// API_BASE lấy từ biến môi trường EXPO_PUBLIC_API_URL — tách env RÕ RÀNG:
+//   - DEV local (Expo Go):  client/.env  (gitignored) → IP LAN máy bạn (cp .env.example .env)
+//   - BUILD TestFlight/APK: eas.json → build.<profile>.env → LUÔN là https://mcup.fun (prod)
+// Không set gì → fallback an toàn: dev = localhost, build thật = prod.
+export const API_BASE =
+  process.env.EXPO_PUBLIC_API_URL ??
+  (__DEV__ ? "http://localhost:8000" : "https://mcup.fun");
 
 // Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
 // Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".
