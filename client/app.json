@@ -45,7 +45,17 @@
         "iosKey": "",
         "androidKey": "",
         "entitlement": "pro"
+      },
+      "eas": {
+        "projectId": "66fa27e1-5e8f-4b3f-ae53-6eea746931d4"
       }
+    },
+    "owner": "datisekai",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/66fa27e1-5e8f-4b3f-ae53-6eea746931d4"
     }
   }
 }
