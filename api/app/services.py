@@ -346,7 +346,22 @@ async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: 
                       mc_name=mc.display_name or "MC", mc_title=mc.mc_title, note=note, audio_path=audio_path,
                       stats=await _badge_stats(s, req))
     s.add(badge)
+    # Lấy push token của học viên TRƯỚC khi commit (còn session) để báo "MC đã nhận xét"
+    learner = await s.get(User, req.hoc_vien_id)
+    learner_token = learner.push_token if learner else None
     await s.commit()
+    # Fire-and-forget: không để MC phải chờ mạng push (đã có timeout + nuốt lỗi trong send_push)
+    if learner_token:
+        import asyncio
+
+        from .push import send_push
+        mc_who = mc.display_name or "MC thật"
+        asyncio.create_task(send_push(
+            learner_token,
+            "MC đã nhận xét bài của bạn 🎤",
+            f"{mc_who} vừa gửi nhận xét — mở Hồ sơ để xem Thẻ bảo chứng nhé!",
+            {"type": "mc_review", "review_id": review.id},
+        ))
     return badge
 
 
@@ -764,6 +779,8 @@ async def admin_patch_user(s: AsyncSession, user_id: str, fields: dict) -> bool:
         u.mc_featured = fields["mc_featured"]
     if isinstance(fields.get("is_pro"), bool):
         u.is_pro = fields["is_pro"]
+        # Đánh dấu nguồn "admin" → IAP webhook/refresh sẽ KHÔNG ghi đè Pro tặng tay
+        u.pro_source = "admin" if fields["is_pro"] else None
     if isinstance(fields.get("password"), str) and fields["password"]:
         u.password_hash = hash_password(fields["password"])
     await s.commit()

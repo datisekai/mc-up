@@ -2,6 +2,7 @@ from datetime import date
 
 from adapters.media_local import LocalMediaStore
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -131,3 +132,19 @@ async def my_progress(user: User = Depends(current_user), session: AsyncSession 
     return ProgressOut(xp=prog.xp, streak=prog.streak, tickets=prog.tickets,
                        tier=tier_of(prog.xp), practiced_today=(prog.last_day == date.today()),
                        **energy_snapshot(prog, user.is_pro))
+
+
+class PushTokenIn(BaseModel):
+    token: str
+
+
+@router.post("/me/push-token")
+async def set_push_token(body: PushTokenIn, user: User = Depends(current_user),
+                         session: AsyncSession = Depends(get_session)):
+    """Client (expo-notifications) gửi Expo push token sau khi xin quyền → lưu để bắn thông báo.
+    Idempotent: gọi mỗi lần mở app cũng OK. Gửi rỗng để tắt nhận thông báo."""
+    tok = (body.token or "").strip()
+    db_user = await session.get(User, user.id)
+    db_user.push_token = tok or None
+    await session.commit()
+    return {"ok": True}

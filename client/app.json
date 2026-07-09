@@ -6,7 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "primaryColor": "#FF6B5B",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
       "backgroundColor": "#FFF8F0"
     },
     "ios": {
@@ -23,11 +26,26 @@
       "versionCode": 1,
       "permissions": ["RECORD_AUDIO"],
       "adaptiveIcon": {
-        "backgroundColor": "#FFF8F0"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF6B5B"
       }
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FF6B5B"
+        }
+      ]
+    ],
+    "extra": {
+      "revenuecat": {
+        "iosKey": "",
+        "androidKey": "",
+        "entitlement": "pro"
+      }
+    }
   }
 }

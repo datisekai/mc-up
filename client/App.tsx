@@ -23,6 +23,8 @@ import ReelsPager, { ReelsLesson } from "./src/ReelsPager";
 import Mentors from "./src/Mentors";
 import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./src/sound";
 import { STREAK_GREET, fill, pick } from "./src/variety";
+import { registerForPush } from "./src/push";
+import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
@@ -82,6 +84,8 @@ export default function App() {
   const [celeb, setCeleb] = useState<{ kind: CelebKind; value?: number | string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [proBusy, setProBusy] = useState(false);
+  const [proPrice, setProPrice] = useState<string | null>(null);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -162,6 +166,48 @@ export default function App() {
       if (r === "mc") setQueue(await Api.mcQueue(t));
       else await refresh(t, goal);
     } catch (e) { await handleApiError(e); }
+    // Đăng ký thông báo đẩy (không chờ, không chặn màn chính nếu quyền bị từ chối)
+    registerForPush()
+      .then((pt) => { if (pt) return Api.setPushToken(t, pt); })
+      .catch(() => {});
+    // Cấu hình RevenueCat với đúng McUp user (im lặng nếu chưa bật IAP), rồi lấy giá hiển thị
+    configureIAP(t)
+      .then(() => getProPrice())
+      .then((p) => { if (p) setProPrice(p); })
+      .catch(() => {});
+  }
+  // ===== Mua / khôi phục McUp Pro (IAP) =====
+  async function upgradeToPro() {
+    if (!iapConfigured()) { showToast("Tính năng mua gói sắp mở — cảm ơn bạn đã quan tâm! ✨"); return; }
+    if (!token || proBusy) return;
+    setProBusy(true);
+    try {
+      const r = await buyPro();
+      if (r === "ok") {
+        await Api.iapRefresh(token).catch(() => {});
+        await Api.progress(token).then(setProg).catch(() => {});
+        sfx("success");
+        showToast("Đã kích hoạt McUp Pro — học không giới hạn nhé! ⚡∞");
+        setShowEnergy(false);
+      } else if (r === "unavailable") {
+        showToast("Chưa có gói để mua — thử lại sau nhé.");
+      } else if (r === "error") {
+        showToast("Mua chưa thành công — bạn chưa bị trừ tiền đâu.");
+      } // "cancelled": im lặng
+    } finally { setProBusy(false); }
+  }
+  async function restorePurchases() {
+    if (!iapConfigured()) { showToast("Tính năng mua gói sắp mở ✨"); return; }
+    if (!token || proBusy) return;
+    setProBusy(true);
+    try {
+      const ok = await restorePro();
+      if (ok) {
+        await Api.iapRefresh(token).catch(() => {});
+        await Api.progress(token).then(setProg).catch(() => {});
+        showToast("Đã khôi phục McUp Pro ✨");
+      } else showToast("Không tìm thấy gói đã mua trên tài khoản này.");
+    } finally { setProBusy(false); }
   }
   async function finishOnboard(prefs: OnboardPrefs) {
     await AsyncStorage.setItem("onboarded", "true");
@@ -544,7 +590,7 @@ export default function App() {
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
-          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />}
+          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />}
         </ScrollView>
         )}
       </View>
@@ -575,6 +621,7 @@ export default function App() {
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
+        price={proPrice} busy={proBusy} onUpgrade={upgradeToPro}
         onRefresh={async () => { await safeRefresh(); setShowEnergy(false); }} />}
       {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
     </View>
@@ -582,7 +629,7 @@ export default function App() {
 }
 
 // Màn "Hết năng lượng" (Duolingo-style) — đếm ngược tới lúc hồi thêm, CTA Pro. Không phán xét.
-function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }: { energy: number; energyMax: number; energyCost: number; secs: number; onClose: () => void; onRefresh: () => void }) {
+function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh, onUpgrade, price, busy }: { energy: number; energyMax: number; energyCost: number; secs: number; onClose: () => void; onRefresh: () => void; onUpgrade: () => void; price: string | null; busy: boolean }) {
   const [left, setLeft] = useState(secs);
   useEffect(() => {
     const t = setInterval(() => setLeft((x) => Math.max(0, x - 1)), 1000);
@@ -602,7 +649,7 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }
         <Text style={s.energySub}>
           {left > 0 ? `Đủ học tiếp sau ${h > 0 ? `${h} giờ ` : ""}${m} phút nữa — nghỉ ngơi một chút nhé 💛` : "Sắp đủ rồi, kéo tải lại xem nhé!"}
         </Text>
-        <Btn gold label="Học không giới hạn với Pro ✨" onPress={onClose} />
+        <Btn gold label={busy ? "Đang xử lý…" : `Học không giới hạn với Pro ✨${price ? ` · ${price}` : ""}`} onPress={onUpgrade} />
         <TouchableOpacity onPress={onRefresh}><Text style={s.energyLink}>Tải lại</Text></TouchableOpacity>
         <TouchableOpacity onPress={onClose}><Text style={s.energyLink}>Để sau</Text></TouchableOpacity>
       </View>
@@ -610,7 +657,7 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh }
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
+function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, onBuyPro, onRestorePro, proPrice, proBusy, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onBuyPro: () => void; onRestorePro: () => void; proPrice: string | null; proBusy: boolean; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   const [upEmail, setUpEmail] = useState("");
@@ -637,7 +684,10 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, s
           <Text style={s.proLine}>• ⚡ Năng lượng KHÔNG GIỚI HẠN — học bao nhiêu bài tuỳ thích</Text>
           <Text style={s.proLine}>• Mở toàn bộ khoá nâng cao + thêm Vé Vàng mỗi tháng</Text>
           <Text style={s.proLine}>• Mở khoá skin thẻ khoe (Đèn đêm, San hô)</Text>
-          <Btn gold label="Nâng cấp Pro · sắp có" onPress={() => {}} />
+          <Btn gold label={proBusy ? "Đang xử lý…" : `Nâng cấp Pro${proPrice ? ` · ${proPrice}` : ""}`} onPress={onBuyPro} />
+          <TouchableOpacity onPress={onRestorePro} style={{ alignSelf: "center", marginTop: 8 }}>
+            <Text style={s.proRestore}>Khôi phục gói đã mua</Text>
+          </TouchableOpacity>
         </View>
       )}
       <Kicker>Tiến bộ của bạn</Kicker>
@@ -847,6 +897,7 @@ const s = StyleSheet.create({
   proCard: { backgroundColor: "#2E2239", borderRadius: 16, padding: 16, marginBottom: 4 },
   proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
   proLine: { fontSize: 12.5, color: "#E9DFF2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
+  proRestore: { color: "#C9BBDA", fontSize: 12.5, fontFamily: F.med, textDecorationLine: "underline" },
   pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 11.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },

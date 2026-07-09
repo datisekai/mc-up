@@ -28,6 +28,8 @@ class User(Base):
     mc_specialties: Mapped[str | None] = mapped_column(String, nullable=True)  # phẩy: "đám cưới, sự kiện"
     mc_featured: Mapped[bool] = mapped_column(default=False)  # nổi bật trong danh sách (chỗ quảng cáo)
     is_pro: Mapped[bool] = mapped_column(default=False)  # McUp Pro (feedback #7) — admin bật để mô phỏng
+    pro_source: Mapped[str | None] = mapped_column(String, nullable=True)  # admin | iap_ios | iap_android
+    push_token: Mapped[str | None] = mapped_column(String, nullable=True)  # Expo push token (thông báo đẩy)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     progress: Mapped["Progress"] = relationship(back_populates="user", uselist=False)

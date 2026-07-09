@@ -41,5 +41,13 @@ class Settings(BaseSettings):
     guest_per_ip_daily: int = 5      # tài khoản khách mới / IP / ngày
     guest_daily_total: int = 300     # tổng khách mới / ngày (van tổng chống farm)
 
+    # ===== IAP Pro qua RevenueCat =====
+    # secret key (v1, dạng "sk_...") để backend GỌI RC REST xác minh entitlement — KHÔNG lộ ra client.
+    revenuecat_secret_key: str = ""
+    # entitlement id cấu hình trong RevenueCat (khớp client). Mặc định "pro".
+    revenuecat_entitlement: str = "pro"
+    # token bí mật để xác thực webhook RC (đặt trùng ở RC dashboard → Authorization header).
+    revenuecat_webhook_token: str = ""
+
 
 settings = Settings()

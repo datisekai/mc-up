@@ -1,9 +1,13 @@
 // API client cho app McUp.
-// ĐỔI cho đúng nơi backend chạy:
-//  - iOS simulator:      http://localhost:8000
-//  - Android emulator:   http://10.0.2.2:8000
-//  - Thiết bị thật (Expo Go): http://<IP-máy-bạn>:8000  (vd http://192.168.1.10:8000)
-export const API_BASE = "http://192.168.1.21:8000"; // IP LAN máy Mac — iPhone cùng Wi-Fi gọi được
+//
+// DEV (Expo Go / dev build, __DEV__=true): trỏ backend chạy trên máy bạn.
+//   - Thiết bị thật cùng Wi-Fi: http://<IP-máy-bạn>:8000  (vd http://192.168.1.21:8000)
+//   - iOS simulator: http://localhost:8000 · Android emulator: http://10.0.2.2:8000
+// PRODUCTION (bản build TestFlight/APK, __DEV__=false): BẮT BUỘC domain HTTPS
+//   (iOS chặn HTTP + không dùng được IP LAN). ĐỔI "https://api.mcup.vn" thành domain thật của bạn.
+export const API_BASE = __DEV__
+  ? "http://192.168.1.21:8000"   // ← ĐỔI IP LAN máy Mac khi test bằng Expo Go
+  : "https://api.mcup.vn";       // ← ĐỔI domain HTTPS thật trước khi build production
 
 // Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
 // Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".
@@ -66,6 +70,9 @@ export const Api = {
   leaderboard: (token: string) => req("/leaderboard", { token }),
   achievements: (token: string) => req("/me/achievements", { token }),
   scores: (token: string) => req("/me/scores", { token }),
+  setPushToken: (token: string, pushToken: string) =>
+    req("/me/push-token", { method: "POST", token, body: { token: pushToken } }),
+  iapRefresh: (token: string) => req("/iap/refresh", { method: "POST", token }),
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ
