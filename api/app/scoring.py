@@ -26,12 +26,24 @@ log = logging.getLogger("mcup.scoring")
 FILLERS = {"ừm", "à", "ờ", "ơ", "ừ", "ừa", "hử", "hửm", "ậm", "ầy"}
 
 # Whisper HALLUCINATION khi audio im lặng/quá nhỏ: bịa câu outro YouTube tiếng Việt.
-# Gặp các cụm này trong bản chấm ngắn → coi là "chưa nghe rõ", KHÔNG chấm bừa
+# Gặp các cụm này → coi là "chưa nghe rõ", KHÔNG chấm bừa
 # (EXPERIENCE.md State Patterns: âm thanh không đủ → mời thu lại, giọng dịu).
+
+# Tầng 1 — tên kênh/cụm ĐẶC TRƯNG của hallucination: không người học nào nói thật
+# → flag BẤT KỂ bài dài ngắn.
+_HALLUCINATION_ALWAYS = (
+    "lalaschool", "la la school", "ghiền mì gõ", "amara.org", "phụ đề bởi",
+    "kênh của mình nhé", "kênh youtube của mình",
+)
+# Tầng 2 — câu outro phổ biến: người thật LUYỆN MC LIVESTREAM có thể nói thật
+# trong bài dài → chỉ nghi khi bài NGẮN (≤25 từ, tức gần như cả clip chỉ có câu đó).
 _HALLUCINATION_MARKS = (
-    "đăng ký kênh", "subscribe", "cảm ơn các bạn đã theo dõi", "cảm ơn đã xem",
-    "hẹn gặp lại các bạn", "video tiếp theo", "video mới", "chúc các bạn xem video",
-    "like và share", "ghiền mì gõ",
+    "đăng ký kênh", "đăng ký cho kênh", "ủng hộ kênh", "đừng quên đăng ký",
+    "nhấn chuông", "bấm chuông", "subscribe",
+    "cảm ơn các bạn đã theo dõi", "cảm ơn đã xem", "cảm ơn các bạn đã lắng nghe",
+    "cảm ơn quý vị và các bạn", "hẹn gặp lại các bạn", "video tiếp theo",
+    "video mới", "chúc các bạn xem video", "like và share",
+    "chào mừng các bạn đến với kênh", "chào mừng quay trở lại với kênh",
 )
 
 
@@ -40,6 +52,8 @@ def _looks_unclear(text: str, words: list) -> bool:
     if len(words) < 3:
         return True
     low = (text or "").lower()
+    if any(m in low for m in _HALLUCINATION_ALWAYS):
+        return True
     return any(m in low for m in _HALLUCINATION_MARKS) and len(words) <= 25
 
 
