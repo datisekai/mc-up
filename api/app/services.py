@@ -28,6 +28,13 @@ log = logging.getLogger("mcup.services")
 TICKET_STREAK_MILESTONES = {3, 7, 14, 30, 60, 100}
 
 
+def utc_day_start(d: date) -> datetime:
+    """Đầu ngày UTC dạng datetime — dùng so sánh cột timestamp thay cho
+    func.date(col) == "YYYY-MM-DD": so date với CHUỖI nổ trên Postgres (SQLite thì nuốt),
+    và so theo khoảng timestamp còn tận dụng được index."""
+    return datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
+
+
 def energy_now(prog: Progress) -> tuple[int, int]:
     """Năng lượng hiện tại + số giây tới điểm hồi kế (Duolingo-style, hồi theo thời gian).
     Trả (current, secs_to_next). Không ghi DB — chỉ tính; ghi khi tiêu (consume_energy)."""
@@ -945,26 +952,28 @@ async def admin_metrics(s: AsyncSession) -> dict:
     guests = await _one(select(func.count(User.id)).where(User.email.like(f"%{_GUEST_DOMAIN}")))
     mcs = await _one(select(func.count(User.id)).where(User.role == "mc"))
     clips_total = await _one(select(func.count(Clip.id)))
-    today = date.today().isoformat()
-    clips_today = await _one(select(func.count(Clip.id)).where(func.date(Clip.created_at) == today))
+    today_start = utc_day_start(date.today())
+    clips_today = await _one(select(func.count(Clip.id)).where(Clip.created_at >= today_start))
     pending = await _one(select(func.count(ReviewRequest.id)).where(ReviewRequest.status == "pending"))
     reviews = await admin_list_reviews(s, "pending")
     overdue = sum(1 for r in reviews if r["overdue"])
     tickets_out = await _one(select(func.coalesce(func.sum(Progress.tickets), 0)))
-    week_ago = (date.today() - timedelta(days=7)).isoformat()
+    week_start = utc_day_start(date.today() - timedelta(days=7))
     filler_avg = (await s.execute(
-        select(func.avg(Score.filler_count)).where(func.date(Score.created_at) >= week_ago))).scalar()
+        select(func.avg(Score.filler_count)).where(Score.created_at >= week_start))).scalar()
     real_7d = await _one(select(func.count(Score.id)).where(
-        func.date(Score.created_at) >= week_ago, Score.is_mock == False))  # noqa: E712
-    all_7d = await _one(select(func.count(Score.id)).where(func.date(Score.created_at) >= week_ago))
+        Score.created_at >= week_start, Score.is_mock == False))  # noqa: E712
+    all_7d = await _one(select(func.count(Score.id)).where(Score.created_at >= week_start))
 
     days = [(date.today() - timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
-    clip_rows = dict((await s.execute(
+    chart_start = utc_day_start(date.today() - timedelta(days=13))
+    # str(key): Postgres trả date object, SQLite trả sẵn chuỗi "YYYY-MM-DD" — quy về chuỗi để khớp days
+    clip_rows = {str(k): v for k, v in (await s.execute(
         select(func.date(Clip.created_at), func.count(Clip.id))
-        .where(func.date(Clip.created_at) >= days[0]).group_by(func.date(Clip.created_at)))).all())
-    user_rows = dict((await s.execute(
+        .where(Clip.created_at >= chart_start).group_by(func.date(Clip.created_at)))).all()}
+    user_rows = {str(k): v for k, v in (await s.execute(
         select(func.date(User.created_at), func.count(User.id))
-        .where(func.date(User.created_at) >= days[0]).group_by(func.date(User.created_at)))).all())
+        .where(User.created_at >= chart_start).group_by(func.date(User.created_at)))).all()}
     return {
         "hoc_vien": total_users, "guests": guests, "mcs": mcs,
         "clips_total": clips_total, "clips_today": clips_today,

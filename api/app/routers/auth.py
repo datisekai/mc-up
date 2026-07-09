@@ -11,6 +11,7 @@ from ..deps import current_user
 from ..models import Progress, User
 from ..schemas import LoginIn, RegisterIn, TokenOut
 from ..security import hash_password, make_token, verify_password
+from ..services import utc_day_start
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -66,7 +67,7 @@ async def guest(request: Request, session: AsyncSession = Depends(get_session)):
     if settings.guest_daily_total > 0:
         total = (await session.execute(select(func.count(User.id)).where(
             User.email.like(f"%{_GUEST_DOMAIN}"),
-            func.date(User.created_at) == today))).scalar() or 0
+            User.created_at >= utc_day_start(date.today())))).scalar() or 0
         if total >= settings.guest_daily_total:
             raise HTTPException(429, {"error": {"code": "guest_limit",
                 "message": "Hôm nay đông khách quá — đăng ký email để vào ngay nhé!"}})

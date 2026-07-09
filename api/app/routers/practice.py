@@ -12,7 +12,7 @@ from ..deps import current_user
 from ..models import Clip, ContentLesson, Lesson, Progress, Score, User
 from ..schemas import ClipOut, ProgressOut, ScoreOut, SubmitClipIn
 from ..config import settings as _s
-from ..services import energy_now, energy_snapshot, run_scoring, summarize_score, tier_of
+from ..services import energy_now, energy_snapshot, run_scoring, summarize_score, tier_of, utc_day_start
 
 _media = LocalMediaStore(settings.upload_dir)  # AD-4: đổi sang MinIO/S3 khi deploy
 
@@ -26,7 +26,7 @@ async def _check_quota(session: AsyncSession, user: User) -> None:
         return
     n = (await session.execute(select(func.count(Clip.id)).where(
         Clip.user_id == user.id,
-        func.date(Clip.created_at) == date.today().isoformat(),
+        Clip.created_at >= utc_day_start(date.today()),
     ))).scalar() or 0
     if n >= settings.daily_clip_limit:
         raise HTTPException(429, {"error": {"code": "quota", "message":
