@@ -15,6 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "vn.mcup.app",
+      "appleTeamId": "HMV6A3QPKR",
       "buildNumber": "3",
       "supportsTablet": false,
       "entitlements": {
@@ -60,7 +61,7 @@
             "ios": {
               "appExtensions": [
                 {
-                  "targetName": "widget",
+                  "targetName": "McUpWidget",
                   "bundleIdentifier": "vn.mcup.app.widget",
                   "entitlements": {
                     "com.apple.security.application-groups": ["group.vn.mcup.app"]
