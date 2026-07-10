@@ -13,7 +13,9 @@ import { C, F } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { Bolt, ChevronUp, Fire, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, Star, Ticket, Trophy, User } from "./src/icons";
+import { BoltSticker, ChevronUp, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, User } from "./src/icons";
+import { Btn3D, ProgressBar } from "./src/ui";
+import Misa from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
 import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
@@ -497,14 +499,14 @@ export default function App() {
         <Text style={s.brand}>McUp</Text>
         <View style={s.chipCluster}>
           {!prog.is_pro
-            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><Bolt size={14} color={hasEnergy ? "#F5A623" : C.primary} /><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
-            : (<View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><Bolt size={14} color={C.spot} /><Text style={[s.chipT, { color: C.spot }]}>∞</Text></View>)}
+            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><BoltSticker size={17} /><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
+            : (<View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><BoltSticker size={17} /><Text style={[s.chipT, { color: C.spot }]}>∞</Text></View>)}
           <View style={s.chipDiv} />
-          <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
+          <FireSticker size={17} /><Text style={s.chipT}>{prog.streak}</Text>
           <View style={s.chipDiv} />
-          <Star size={13} color={C.primary} /><Text style={s.chipT}>{prog.xp}</Text>
+          <StarSticker size={16} /><Text style={s.chipT}>{prog.xp}</Text>
           <View style={s.chipDiv} />
-          <Ticket size={14} color="#E0A62F" /><Text style={s.chipT}>{prog.tickets}</Text>
+          <TicketSticker size={17} /><Text style={s.chipT}>{prog.tickets}</Text>
         </View>
       </View>
 
@@ -556,15 +558,15 @@ export default function App() {
             {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
             {prog.practiced_today === false && new Date().getHours() >= 17 && (
               <View style={s.reminder}>
-                <Fire size={18} color="#F5A623" />
+                <FireSticker size={20} />
                 <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
               </View>
             )}
             {lessons.length === 0 && !loadError ? (
               <View style={s.emptyFeed}>
-                <MapIcon size={40} color="#D8C8BE" />
+                <Misa mood="chao" size={100} />
                 <Text style={s.emptyTitle}>Lộ trình đang được chuẩn bị</Text>
-                <Text style={s.emptySub}>Kéo xuống để tải lại, hoặc thử chọn thể loại khác ở trên nhé.</Text>
+                <Text style={s.emptySub}>Kéo xuống để tải lại nhé.</Text>
               </View>
             ) : (
               <StageMap lessons={lessons} refreshing={refreshing} onRefresh={safeRefresh}
@@ -590,6 +592,7 @@ export default function App() {
               <RecordScreen
                 lesson={curLesson}
                 busy={busy}
+                doneCount={scores.length}
                 energyCost={prog.is_pro ? 0 : energyCost}
                 onSubmit={submitReal}
                 onMock={doSubmitMock}
@@ -641,16 +644,16 @@ export default function App() {
             inputRange: [0, WIN_W * 2], outputRange: [0, (WIN_W * 2) / 3], extrapolate: "clamp" }) }] }]} />
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
             accessibilityLabel="Tab Lộ trình">
-            <MapIcon size={22} color={tab === "hv" ? C.primary : C.ink2} />
+            <MapIcon size={26} color={tab === "hv" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("mc"); }} accessibilityLabel="Tab MC">
-            <Trophy size={22} color={tab === "mc" ? C.primary : C.ink2} />
+            <Trophy size={26} color={tab === "mc" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "mc" && { color: C.primary }]}>MC</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hs"); setNewBadge(false); }} accessibilityLabel="Tab Hồ sơ">
             <View>
-              <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
+              <User size={26} color={tab === "hs" ? C.primary : C.ink2} />
               {newBadge && <View style={s.tabDot} />}
             </View>
             <Text style={[s.bTabT, tab === "hs" && { color: C.primary }]}>Hồ sơ</Text>
@@ -682,9 +685,9 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh, 
     <View style={s.energyBg}>
       <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
       <View style={s.energyCard}>
-        <Text style={{ fontSize: 40 }}>💛</Text>
+        <Misa mood="lo" size={86} />
         <Text style={s.energyTitle}>Hết năng lượng rồi!</Text>
-        <View style={s.energyTrack}><View style={[s.energyFill, { width: `${pct * 100}%` }]} /></View>
+        <ProgressBar value={pct} height={16} style={{ marginTop: 14, width: "100%" }} />
         <Text style={s.energyNum}>Thanh đầy = đủ học 1 bài</Text>
         <Text style={s.energySub}>
           {left > 0 ? `Đủ học tiếp sau ${h > 0 ? `${h} giờ ` : ""}${m} phút nữa — nghỉ ngơi một chút nhé 💛` : "Sắp đủ rồi, kéo tải lại xem nhé!"}
@@ -732,9 +735,9 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
       )}
       <Kicker>Tiến bộ của bạn</Kicker>
       <View style={{ flexDirection: "row", gap: 10 }}>
-        <StatCard icon={<Fire size={22} color="#F5A623" />} value={prog.streak} label="Ngày streak" />
-        <StatCard icon={<Star size={22} color={C.primary} />} value={prog.xp} label="XP" />
-        <StatCard icon={<Ticket size={22} color="#E0A62F" />} value={prog.tickets} label="Vé Vàng" />
+        <StatCard icon={<FireSticker size={24} />} value={prog.streak} label="Ngày streak" />
+        <StatCard icon={<StarSticker size={24} />} value={prog.xp} label="XP" />
+        <StatCard icon={<TicketSticker size={24} />} value={prog.tickets} label="Vé Vàng" />
       </View>
       {prog.tier && <View style={s.tierBadge}><Trophy size={14} color="#5a3d00" /><Text style={{ fontWeight: "800", color: "#5a3d00", fontSize: 13 }}>Hạng {prog.tier}</Text></View>}
 
@@ -785,8 +788,8 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
           <Text style={[s.rankNum, e.rank <= 3 && { color: C.primary }]}>{e.rank}</Text>
           <Text style={{ flex: 1, fontWeight: e.is_me ? "800" : "600", color: C.ink }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-            <Fire size={12} color="#F5A623" /><Text style={{ color: C.ink2, fontSize: 12, marginRight: 8 }}>{e.streak}</Text>
-            <Star size={13} color={C.primary} /><Text style={{ fontWeight: "800", fontSize: 13 }}>{e.xp}</Text>
+            <FireSticker size={14} /><Text style={{ color: C.ink2, fontSize: 13, marginRight: 8 }}>{e.streak}</Text>
+            <StarSticker size={15} /><Text style={{ fontWeight: "800", fontSize: 14 }}>{e.xp}</Text>
           </View>
         </View>
       ))}
@@ -897,7 +900,8 @@ const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
-const Btn = ({ label, onPress, ghost, gold, icon }: any) => <TouchableOpacity onPress={() => { sfx("tap"); onPress?.(); }} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}>{icon}<Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
+const Btn = ({ label, onPress, ghost, gold, icon }: any) =>
+  <Btn3D label={label} onPress={onPress} icon={icon} kind={gold ? "gold" : ghost ? "white" : "primary"} />;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },
@@ -910,7 +914,7 @@ const s = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.sunken,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999,
   },
-  chipT: { color: C.ink, fontFamily: F.display, fontSize: 13 },
+  chipT: { color: C.ink, fontFamily: F.display, fontSize: 15 },
   chipDiv: { width: 1, height: 12, backgroundColor: C.hair, marginHorizontal: 3 },
   tabs: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 999, backgroundColor: C.sunken },
@@ -926,7 +930,7 @@ const s = StyleSheet.create({
     borderRadius: 2, backgroundColor: C.primary,
   },
   bTab: { flex: 1, alignItems: "center", gap: 2 },
-  bTabT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  bTabT: { fontSize: 12, fontFamily: F.semi, color: C.ink2 },
   tabDot: { position: "absolute", top: -2, right: -4, width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary, borderWidth: 1.5, borderColor: C.raised },
   stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
   stateChipT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },

@@ -8,8 +8,10 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
-import { C, F } from "./theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { C, F, T } from "./theme";
 import { Bolt, Mic } from "./icons";
+import Misa from "./Misa";
 import { setRecording, sfx } from "./sound";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -24,16 +26,27 @@ const STEP_SEC = 4;      // teleprompter tự trôi mỗi 4s (người dùng v�
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
 
-export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, onMock, onBack }: {
+export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount = 99, onSubmit, onMock, onBack }: {
   lesson: RecLesson;
   busy: boolean;
   energyCost?: number;   // năng lượng bài này tốn (0 = Pro/ẩn)
+  doneCount?: number;    // số bài user đã hoàn thành — <3 thì BÀI MẪU mặc định mở (V2 prompter)
   onSubmit: (uri: string, durationSec: number) => void;
   onMock: () => void;
   onBack: () => void;
 }) {
   const [mode, setMode] = useState<"ready" | "count" | "rec">("ready");
   const [showEx, setShowEx] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem("prompter_open").then((v) => {
+      if (v !== null) setShowEx(v === "1");
+      else setShowEx(doneCount < 3); // người mới: bài mẫu mở sẵn để đọc theo
+    });
+  }, []);
+  function togglePrompter(open: boolean) {
+    setShowEx(open);
+    AsyncStorage.setItem("prompter_open", open ? "1" : "0").catch(() => {});
+  }
   const [showFull, setShowFull] = useState(false); // giảm nhiễu: mặc định chỉ Đề + Dàn ý
   const [count, setCount] = useState(3);
   const [sec, setSec] = useState(0);
@@ -168,6 +181,12 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
           {over ? "Đủ dài rồi — có thể dừng bất cứ lúc nào" : `Mốc gợi ý ~${TARGET_SEC} giây`}
         </Text>
 
+        {showEx && lesson.brief?.example ? (
+          <View style={[st.prompter, { marginTop: 10 }]}>
+            <Text style={st.prompterLabel}>BÀI MẪU</Text>
+            <Text style={[st.prompterText, { fontSize: 19, lineHeight: 30 }]}>“{lesson.brief.example}”</Text>
+          </View>
+        ) : null}
         {steps.length > 0 && (
           <View style={st.tele}>
             <Text style={st.teleLabel}>ĐANG DẪN TỚI</Text>
@@ -199,7 +218,11 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
   return (
     <View>
       <View style={st.card}>
-        {lesson.tip ? <View style={st.tipBox}><Text style={st.tipT}>{lesson.tip}</Text></View> : null}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Misa mood="covu" size={54} />
+          {lesson.tip ? <View style={[st.tipBox, { flex: 1 }]}><Text style={st.tipT}>{lesson.tip}</Text></View>
+            : <Text style={[st.tipT, { flex: 1 }]}>Bạn làm được mà — nói như kể cho một người bạn nghe.</Text>}
+        </View>
         <Text style={st.taskLabel}>Đề bài</Text>
         <Text style={st.taskPrompt}>{lesson.prompt}</Text>
         {steps.length ? (<><Text style={st.taskLabel}>Gợi ý dàn ý</Text>{steps.map((s, i) => <Text key={i} style={st.taskBullet}>{i + 1}.  {s}</Text>)}</>) : null}
@@ -217,13 +240,16 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
           </TouchableOpacity>
         ) : null}
         {lesson.brief?.example ? (showEx ? (
-          <View style={st.exampleBox}>
-            <Text style={st.exampleLabel}>VÍ DỤ MẪU · tham khảo cách làm, đừng đọc nguyên văn</Text>
-            <Text style={st.exampleText}>“{lesson.brief.example}”</Text>
+          <View style={st.prompter}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={st.prompterLabel}>BÀI MẪU — mới tập thì cứ đọc theo nhé</Text>
+              <TouchableOpacity onPress={() => togglePrompter(false)} accessibilityLabel="Ẩn bài mẫu"><Text style={st.prompterHide}>Ẩn</Text></TouchableOpacity>
+            </View>
+            <Text style={st.prompterText}>“{lesson.brief.example}”</Text>
           </View>
         ) : (
-          <TouchableOpacity style={st.ghostBtn} onPress={() => setShowEx(true)}>
-            <Text style={st.ghostT}>Bí quá? Xem gợi ý mẫu</Text>
+          <TouchableOpacity style={st.ghostBtn} onPress={() => togglePrompter(true)}>
+            <Text style={st.ghostT}>Xem bài mẫu — đọc theo được</Text>
           </TouchableOpacity>
         )) : null}
 
@@ -236,7 +262,7 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
               }]} />
             )}
             <TouchableOpacity style={st.micBtn} onPress={startCountdown} accessibilityLabel="Nút ghi — chạm để bắt đầu">
-              <Mic size={34} color="#fff" />
+              <Mic size={38} color="#fff" />
             </TouchableOpacity>
           </View>
           <Text style={st.underBtn}>Chạm để bắt đầu</Text>
@@ -271,30 +297,32 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
 const st = StyleSheet.create({
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   tipBox: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
-  tipT: { color: C.ink, fontSize: 13.5 },
-  taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 11, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
-  taskPrompt: { fontFamily: F.title, fontSize: 16, color: C.ink, lineHeight: 22 },
-  taskText: { color: C.ink, fontSize: 14, lineHeight: 20, flex: 1 },
-  taskBullet: { color: C.ink, fontSize: 14, lineHeight: 22 },
+  tipT: { color: C.ink, fontSize: 15 },
+  taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 12.5, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
+  taskPrompt: { fontFamily: F.title, fontSize: T.title, color: C.ink, lineHeight: 27 },
+  taskText: { color: C.ink, fontSize: T.body, lineHeight: 23, flex: 1 },
+  taskBullet: { color: C.ink, fontSize: T.body, lineHeight: 25 },
   critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
   critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
-  exampleBox: { backgroundColor: C.sunken, borderRadius: 14, padding: 14, marginTop: 12, borderLeftWidth: 3, borderLeftColor: C.primary },
-  exampleLabel: { fontWeight: "800", fontSize: 10, color: C.ink2, marginBottom: 6, letterSpacing: 0.4 },
-  exampleText: { color: C.ink, fontSize: 14, lineHeight: 21, fontStyle: "italic" },
+  prompter: { backgroundColor: "#FFF3DA", borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 2, borderColor: "#F5DFAE" },
+  prompterLabel: { fontWeight: "800", fontSize: 12, color: "#8a5a13", letterSpacing: 0.4 },
+  prompterHide: { color: "#8a5a13", fontWeight: "800", fontSize: 13, textDecorationLine: "underline" },
+  prompterText: { color: C.ink, fontSize: T.prompter, lineHeight: 34, marginTop: 8, fontFamily: F.med },
   ghostBtn: { backgroundColor: C.sunken, borderRadius: 999, padding: 13, alignItems: "center", marginTop: 10 },
   ghostT: { color: C.ink, fontWeight: "800" },
   moreLink: { color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", marginTop: 12 },
 
   breathRing: { position: "absolute", width: 92, height: 92, borderRadius: 46, backgroundColor: C.primary },
   micBtn: {
-    width: 76, height: 76, borderRadius: 38, backgroundColor: C.primary,
+    width: 84, height: 84, borderRadius: 42, backgroundColor: C.primary,
     alignItems: "center", justifyContent: "center",
+    borderBottomWidth: 6, borderBottomColor: C.primaryDown,
     shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
   },
-  underBtn: { fontSize: 13, fontWeight: "800", color: C.ink, marginTop: 10 },
+  underBtn: { fontSize: 15, fontWeight: "800", color: C.ink, marginTop: 10 },
   energyTag: { backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, marginTop: 8, flexDirection: "row", alignItems: "center" },
   energyTagT: { fontSize: 12, fontFamily: F.semi, color: "#8a5a13" },
-  calm: { fontSize: 12, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  calm: { fontSize: 13.5, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 20 },
   skipT: { fontSize: 12, color: "#BFB4C4", marginTop: 12, textDecorationLine: "underline" },
 
   recHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 4 },

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Animated, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { C, F } from "./theme";
-import { Bolt, Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
+import { Bolt, Cap, Check, Flag, Lock, MicSticker, Ticket, TicketSticker } from "./icons";
 
 export type Lesson = { id: string; buoi: number; order_index: number; title: string; unlocked: boolean; done: boolean };
 
@@ -11,9 +11,9 @@ type Item =
   | { kind: "lesson"; lesson: Lesson; state: "done" | "open" | "locked" }
   | { kind: "reward"; buoi: number; earned: boolean };
 
-const R = 34;          // bán kính node bài
-const RR = 30;         // bán kính node thưởng
-const GAP = 184;       // khoảng cách dọc giữa các mục (giãn để nhãn dài không tràn)
+const R = 36;          // bán kính node bài (V2: node 72px)
+const RR = 33;         // bán kính node thưởng
+const GAP = 192;       // khoảng cách dọc giữa các mục (giãn để nhãn dài không tràn)
 const STAGE_H = 172;   // chiều cao sân khấu (đỉnh)
 const GROUND_H = 116;  // chiều cao mặt đất (đáy)
 const AMP = 52;        // biên độ zig-zag (rộng hơn để nhãn 2 node cạnh nhau tách ra)
@@ -132,10 +132,10 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
                   isReward && (it.earned ? st.nReward : st.nRewardLock),
                 ]}
               >
-                {it.kind === "lesson" && it.state === "done" && <Check size={30} color="#fff" />}
-                {open && <Mic size={30} color={C.primary} />}
-                {it.kind === "lesson" && it.state === "locked" && <Lock size={26} color="#A99C8C" />}
-                {isReward && <Ticket size={24} color={it.earned ? "#8a5a13" : "#C9AE77"} />}
+                {it.kind === "lesson" && it.state === "done" && <Check size={34} color="#fff" />}
+                {open && <MicSticker size={36} />}
+                {it.kind === "lesson" && it.state === "locked" && <Lock size={28} color="#A99C8C" />}
+                {isReward && (it.earned ? <TicketSticker size={30} /> : <Ticket size={26} color="#C9AE77" />)}
               </TouchableOpacity>
 
               {/* chi phí năng lượng — chỉ trên bài SẮP LÀM (nơi có quyết định). San hô nếu không đủ. */}
@@ -187,11 +187,11 @@ const st = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   stageTagT: { fontSize: 9.5, fontWeight: "800", letterSpacing: 0.4, color: "#8a5a13" },
 
-  node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3 },
-  nDone: { backgroundColor: C.success, ...shadow },
-  nOpen: { backgroundColor: "#fff", borderWidth: 3, borderColor: C.primary, ...shadow, shadowColor: C.primary, shadowOpacity: 0.4 },
+  node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3, borderBottomWidth: 5, borderBottomColor: "#D8CCBA" },
+  nDone: { backgroundColor: C.success, borderBottomColor: C.successDown, ...shadow },
+  nOpen: { backgroundColor: "#fff", borderWidth: 3, borderColor: C.primary, borderBottomWidth: 6, borderBottomColor: C.primaryDown, ...shadow, shadowColor: C.primary, shadowOpacity: 0.4 },
   nLock: { backgroundColor: "#EAE1D3" },
-  nReward: { backgroundColor: C.spot, ...shadow, shadowColor: C.spot },
+  nReward: { backgroundColor: C.spot, borderBottomColor: C.spotDown, ...shadow, shadowColor: C.spot },
   nRewardLock: { backgroundColor: "#F4E8CE" },
 
   eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised, flexDirection: "row", alignItems: "center", gap: 1 },
@@ -203,8 +203,8 @@ const st = StyleSheet.create({
     paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, overflow: "hidden" },
 
   label: { position: "absolute", width: 132, alignItems: "center", zIndex: 2 },
-  lt: { fontSize: 12.5, fontWeight: "800", color: C.ink, textAlign: "center", lineHeight: 15 },
-  ls: { fontSize: 10, fontWeight: "700", color: C.ink2, marginTop: 2, textAlign: "center" },
+  lt: { fontSize: 14, fontWeight: "800", color: C.ink, textAlign: "center", lineHeight: 17 },
+  ls: { fontSize: 12, fontWeight: "700", color: C.ink2, marginTop: 2, textAlign: "center" },
   muted: { color: "#96897a" },
   hot: { color: C.primary },
 
