@@ -422,7 +422,7 @@ export default function App() {
     } catch (e: any) { Alert.alert("Lỗi", e.message); await loadQueue(); }
   }
 
-  if (booting || !fontsLoaded) return <View style={s.center}><ActivityIndicator color={C.primary} size="large" /><Text style={{ marginTop: 10, color: C.ink2 }}>Đang mở McUp…</Text></View>;
+  if (booting || !fontsLoaded) return <BootScreen />;
 
   // ---- Người mới → onboarding ấm (P2) ----
   if (!token && !onboarded) return <Onboarding onDone={finishOnboard} />;
@@ -910,6 +910,28 @@ const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
+// Màn mở app: Misa nhún chào + câu sân khấu ngẫu nhiên + shimmer (feedback #7)
+const BOOT_LINES = ["Đang dựng sân khấu…", "Chỉnh mic một chút…", "Kéo màn lên nào…", "Bật đèn sân khấu…", "Khán giả đang vào chỗ…"];
+function BootScreen() {
+  const [line] = useState(() => BOOT_LINES[Math.floor(Math.random() * BOOT_LINES.length)]);
+  const x = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const l = Animated.loop(Animated.timing(x, { toValue: 1, duration: 1100, useNativeDriver: true }));
+    l.start();
+    return () => l.stop();
+  }, []);
+  return (
+    <View style={s.center}>
+      <Misa mood="chao" size={116} />
+      <Text style={{ marginTop: 14, color: C.ink, fontFamily: F.title, fontSize: 16 }}>{line}</Text>
+      <View style={{ width: 150, height: 8, borderRadius: 4, backgroundColor: C.sunken, overflow: "hidden", marginTop: 14 }}>
+        <Animated.View style={{ width: 54, height: 8, borderRadius: 4, backgroundColor: C.spot,
+          transform: [{ translateX: x.interpolate({ inputRange: [0, 1], outputRange: [-54, 150] }) }] }} />
+      </View>
+    </View>
+  );
+}
+
 const Btn = ({ label, onPress, ghost, gold, icon, loading }: any) =>
   <Btn3D label={label} onPress={onPress} icon={icon} loading={loading} kind={gold ? "gold" : ghost ? "white" : "primary"} />;
 
