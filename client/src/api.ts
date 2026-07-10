@@ -21,6 +21,13 @@ export class ApiError extends Error {
   get isAuth() { return this.status === 401 || this.status === 403; }
 }
 
+// Timeout để request treo không kẹt app (vd splash "Đang mở" mãi) — thành lỗi mạng thử lại được.
+function withTimeout(ms: number): AbortSignal {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 async function req(path: string, opts: { method?: string; token?: string; body?: any } = {}) {
   let r: Response;
   try {
@@ -31,6 +38,7 @@ async function req(path: string, opts: { method?: string; token?: string; body?:
         ...(opts.token ? { Authorization: "Bearer " + opts.token } : {}),
       },
       body: opts.body ? JSON.stringify(opts.body) : undefined,
+      signal: withTimeout(15_000),
     });
   } catch {
     throw new ApiError("Không kết nối được máy chủ — kiểm tra mạng giúp mình nhé.", 0, true);
@@ -85,6 +93,7 @@ export async function submitAudio(token: string, lesson_id: string, uri: string,
     method: "POST",
     headers: { Authorization: "Bearer " + token },
     body: fd,
+    signal: withTimeout(90_000),
   });
   const data = await r.json().catch(() => null);
   if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);
@@ -101,6 +110,7 @@ export async function submitMcVoice(token: string, request_id: string, uri: stri
     method: "POST",
     headers: { Authorization: "Bearer " + token },
     body: fd,
+    signal: withTimeout(90_000),
   });
   const data = await r.json().catch(() => null);
   if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);

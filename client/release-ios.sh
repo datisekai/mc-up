@@ -16,7 +16,10 @@ fi
 if [ "${1:-}" = "--ota" ]; then
   # Chỉ đổi code JS/TS (không thêm thư viện native, không đổi app.json native config)
   # → đẩy thẳng tới máy user qua EAS Update, vài phút là nhận.
-  echo "▶  Đẩy bản vá OTA lên channel production..."
+  # QUAN TRỌNG: eas update bundle JS TRÊN MÁY NÀY và đọc cả .env (file DEV trỏ IP LAN!)
+  # → phải ÉP env prod, không là bản vá đẩy xuống user trỏ nhầm về IP LAN (đã dính 1 lần).
+  export EXPO_PUBLIC_API_URL="https://mcup.fun"
+  echo "▶  Đẩy bản vá OTA lên channel production (API = ${EXPO_PUBLIC_API_URL})..."
   eas update --channel production --message "$(git log -1 --pretty=%s)"
   exit 0
 fi
