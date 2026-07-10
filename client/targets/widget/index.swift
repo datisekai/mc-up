@@ -61,14 +61,53 @@ struct Provider: TimelineProvider {
 
 // ===== Views =====
 
-struct FlameView: View {
-    let practiced: Bool
-    let size: CGFloat
+// Miệng cong — up=true là cười, false là lo
+struct MouthShape: Shape {
+    var happy: Bool
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: happy ? r.minY : r.maxY))
+        p.addQuadCurve(to: CGPoint(x: r.maxX, y: happy ? r.minY : r.maxY),
+                       control: CGPoint(x: r.midX, y: happy ? r.maxY : r.minY))
+        return p
+    }
+}
+
+// Misa — mascot McUp (bản SwiftUI rút gọn cho widget, đồng bộ client/src/Misa.tsx)
+struct MisaView: View {
+    let mood: String        // "vui" | "covu" | "lo"
+    var onCoral: Bool = false   // nền coral (danger) → viền trắng cho nổi
+    var size: CGFloat = 46
     var body: some View {
-        Text("🔥")
-            .font(.system(size: size))
-            .saturation(practiced ? 1 : 0)      // chưa luyện → lửa xám
-            .opacity(practiced ? 1 : 0.55)
+        let k = size / 46
+        let line: Color = onCoral ? .white : Color("plum")
+        ZStack {
+            RoundedRectangle(cornerRadius: 6 * k)
+                .fill(line)
+                .frame(width: 13 * k, height: 24 * k)
+                .offset(y: 17 * k)
+            Circle()
+                .fill(Color("coral"))
+                .overlay(Circle().stroke(line, lineWidth: 2.8 * k))
+                .frame(width: 34 * k, height: 34 * k)
+                .offset(y: -5 * k)
+            // mắt
+            HStack(spacing: 7 * k) {
+                eye(k: k); eye(k: k)
+            }.offset(y: -8 * k)
+            // miệng
+            MouthShape(happy: mood != "lo")
+                .stroke(line, lineWidth: 2.4 * k)
+                .frame(width: 12 * k, height: 5 * k)
+                .offset(y: 2.5 * k)
+        }
+        .frame(width: 46 * k, height: 64 * k)
+    }
+    func eye(k: CGFloat) -> some View {
+        ZStack {
+            Circle().fill(.white).frame(width: 8.4 * k, height: 8.4 * k)
+            Circle().fill(Color("plum")).frame(width: 4.4 * k, height: 4.4 * k).offset(x: 0.8 * k, y: 0.8 * k)
+        }
     }
 }
 
@@ -76,7 +115,8 @@ struct SmallView: View {
     let entry: McUpEntry
     var body: some View {
         VStack(spacing: 2) {
-            FlameView(practiced: entry.practicedToday, size: 34)
+            MisaView(mood: entry.danger ? "lo" : entry.practicedToday ? "vui" : "covu",
+                     onCoral: entry.danger, size: 38)
             Text("\(entry.streak)")
                 .font(.system(size: 30, weight: .heavy, design: .rounded))
                 .foregroundColor(entry.danger ? .white : Color("plum"))
@@ -100,7 +140,8 @@ struct MediumView: View {
     var body: some View {
         HStack(spacing: 14) {
             VStack(spacing: 0) {
-                FlameView(practiced: entry.practicedToday, size: 40)
+                MisaView(mood: entry.danger ? "lo" : entry.practicedToday ? "vui" : "covu",
+                         onCoral: entry.danger, size: 44)
                 Text("\(entry.streak)")
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
                     .foregroundColor(entry.danger ? .white : Color("plum"))
