@@ -603,6 +603,7 @@ export default function App() {
                 lesson={curLesson}
                 busy={busy}
                 doneCount={scores.length}
+                genre={paths.find((p: any) => p.id === selPath)?.genre || ""}
                 energyCost={prog.is_pro ? 0 : energyCost}
                 onSubmit={submitReal}
                 onMock={doSubmitMock}

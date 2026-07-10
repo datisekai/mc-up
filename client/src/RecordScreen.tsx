@@ -3,6 +3,7 @@
 // Waveform sống từ metering mic (expo-av) · teleprompter dàn ý · đồng hồ + vòng tiến độ.
 // Chỉ báo thu = SAN HÔ + chữ (không đỏ — đỏ chỉ cho lỗi thật).
 import { useEffect, useRef, useState } from "react";
+import { Dimensions } from "react-native";
 import {
   AccessibilityInfo, ActivityIndicator, Alert, Animated, StyleSheet, Text, TouchableOpacity, View,
 } from "react-native";
@@ -12,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { C, F, T } from "./theme";
 import { Bolt, Mic } from "./icons";
 import Misa from "./Misa";
+import GenreScene from "./scenes";
 import { setRecording, sfx } from "./sound";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -26,11 +28,12 @@ const STEP_SEC = 4;      // teleprompter tự trôi mỗi 4s (người dùng v�
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
 
-export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount = 99, onSubmit, onMock, onBack }: {
+export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount = 99, genre = "", onSubmit, onMock, onBack }: {
   lesson: RecLesson;
   busy: boolean;
   energyCost?: number;   // năng lượng bài này tốn (0 = Pro/ẩn)
   doneCount?: number;    // số bài user đã hoàn thành — <3 thì BÀI MẪU mặc định mở (V2 prompter)
+  genre?: string;        // tên thể loại — chọn SCENE minh hoạ đầu thẻ (P1-3)
   onSubmit: (uri: string, durationSec: number) => void;
   onMock: () => void;
   onBack: () => void;
@@ -218,6 +221,9 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
   return (
     <View>
       <View style={st.card}>
+        <View style={{ marginHorizontal: -14, marginTop: -14, marginBottom: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: "hidden", backgroundColor: "#FFEFE2" }}>
+          <GenreScene genre={genre} width={WCARD} />
+        </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <Misa mood="covu" size={54} />
           {lesson.tip ? <View style={[st.tipBox, { flex: 1 }]}><Text style={st.tipT}>{lesson.tip}</Text></View>
@@ -225,7 +231,12 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
         </View>
         <Text style={st.taskLabel}>Đề bài</Text>
         <Text style={st.taskPrompt}>{lesson.prompt}</Text>
-        {steps.length ? (<><Text style={st.taskLabel}>Gợi ý dàn ý</Text>{steps.map((s, i) => <Text key={i} style={st.taskBullet}>{i + 1}.  {s}</Text>)}</>) : null}
+        {steps.length ? (<><Text style={st.taskLabel}>Gợi ý dàn ý</Text>{steps.map((s, i) => (
+          <View key={i} style={st.stepRow}>
+            <View style={st.stepNum}><Text style={st.stepNumT}>{i + 1}</Text></View>
+            <Text style={st.taskBullet}>{s}</Text>
+          </View>
+        ))}</>) : null}
         {showFull ? (
           <>
             {lesson.brief?.objective ? (<><Text style={st.taskLabel}>Mục tiêu</Text><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
@@ -294,6 +305,8 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
   );
 }
 
+const WCARD = Dimensions.get("window").width - 32; // thẻ padding 16 hai bên
+
 const st = StyleSheet.create({
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   tipBox: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
@@ -303,6 +316,9 @@ const st = StyleSheet.create({
   taskText: { color: C.ink, fontSize: T.body, lineHeight: 23, flex: 1 },
   taskBullet: { color: C.ink, fontSize: T.body, lineHeight: 25 },
   critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
+  stepRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 7 },
+  stepNum: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#FFE3DE", alignItems: "center", justifyContent: "center", borderBottomWidth: 2.5, borderBottomColor: "#F5C2BA", marginTop: 1 },
+  stepNumT: { fontFamily: F.displayX, fontSize: 13, color: C.primary },
   critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
   prompter: { backgroundColor: "#FFF3DA", borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 2, borderColor: "#F5DFAE" },
   prompterLabel: { fontWeight: "800", fontSize: 12, color: "#8a5a13", letterSpacing: 0.4 },

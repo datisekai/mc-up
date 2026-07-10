@@ -4,12 +4,16 @@ import Svg, { Path } from "react-native-svg";
 import { C, F } from "./theme";
 import { Bolt, Cap, Check, Flag, Lock, MicSticker, Ticket, TicketSticker } from "./icons";
 
-export type Lesson = { id: string; buoi: number; order_index: number; title: string; unlocked: boolean; done: boolean };
+export type Lesson = { id: string; buoi: number; order_index: number; title: string; unlocked: boolean; done: boolean; level?: string };
 
-// một mục trên bản đồ: bài học hoặc mốc thưởng Vé Vàng
+// một mục trên bản đồ: bài học · mốc thưởng Vé Vàng · poster CHẶNG SHOW (P1-2)
 type Item =
   | { kind: "lesson"; lesson: Lesson; state: "done" | "open" | "locked" }
-  | { kind: "reward"; buoi: number; earned: boolean };
+  | { kind: "reward"; buoi: number; earned: boolean }
+  | { kind: "chapter"; idx: number; level: string; started: boolean };
+
+// Chặng sự nghiệp: mỗi cấp độ = 1 SHOW bạn được mời dẫn (đệm hướng A→B, xem V2 spec)
+const SHOWS = ["MC LỚP HỌC", "TIỆC CƯỚI & SỰ KIỆN", "GALA · TRUYỀN HÌNH"];
 
 const R = 36;          // bán kính node bài (V2: node 72px)
 const RR = 33;         // bán kính node thưởng
@@ -30,7 +34,13 @@ const LANDMARK: Record<number, string> = {
 function buildItems(lessons: Lesson[]): Item[] {
   const firstOpenIdx = lessons.findIndex((l) => l.unlocked && !l.done);
   const ordered: Item[] = [];
+  let chapIdx = -1;
   lessons.forEach((l, i) => {
+    // sang cấp độ mới → dựng poster CHẶNG SHOW
+    if (l.level && (i === 0 || l.level !== lessons[i - 1].level)) {
+      chapIdx += 1;
+      ordered.push({ kind: "chapter", idx: chapIdx, level: l.level, started: l.unlocked || l.done });
+    }
     const state: "done" | "open" | "locked" = l.done ? "done" : i === firstOpenIdx ? "open" : l.unlocked ? "open" : "locked";
     ordered.push({ kind: "lesson", lesson: l, state });
     const next = lessons[i + 1];
@@ -111,6 +121,18 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
           const isReward = it.kind === "reward";
           const r = isReward ? RR : R;
           const open = it.kind === "lesson" && it.state === "open";
+          if (it.kind === "chapter") {
+            return (
+              <View key={i} style={[st.chapter, { left: cx - 140, top: p.y - 44 }, !it.started && st.chapterLock]}>
+                <View style={st.chapterPoster}><MicSticker size={26} /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={st.chapterKick}>CHẶNG {it.idx + 1} · SHOW BẠN ĐƯỢC MỜI DẪN</Text>
+                  <Text style={[st.chapterName, !it.started && { color: "#B4A8BB" }]}>{SHOWS[it.idx] ?? it.level}</Text>
+                  <Text style={st.chapterLv}>{it.level}</Text>
+                </View>
+              </View>
+            );
+          }
           return (
             <View key={i}>
               {/* spotlight cho node đang mở */}
@@ -187,6 +209,15 @@ const st = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   stageTagT: { fontSize: 12, fontWeight: "800", letterSpacing: 0.4, color: "#8a5a13" },
 
+  chapter: {
+    position: "absolute", width: 280, flexDirection: "row", alignItems: "center", gap: 12, zIndex: 4,
+    backgroundColor: C.ink, borderRadius: 18, padding: 14, borderBottomWidth: 5, borderBottomColor: "#241A2E",
+  },
+  chapterLock: { backgroundColor: "#EFE6DA", borderBottomColor: "#E0D4C4" },
+  chapterPoster: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" },
+  chapterKick: { fontSize: 12, fontFamily: F.semi, color: "#C9B8D6", letterSpacing: 0.5 },
+  chapterName: { fontSize: 17, fontFamily: F.displayX, color: "#FFC24B", marginTop: 1 },
+  chapterLv: { fontSize: 12, fontFamily: F.semi, color: "#9A8EA5", marginTop: 1 },
   node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3, borderBottomWidth: 5, borderBottomColor: "#D8CCBA" },
   nDone: { backgroundColor: C.success, borderBottomColor: C.successDown, ...shadow },
   nOpen: { backgroundColor: "#fff", borderWidth: 3, borderColor: C.primary, borderBottomWidth: 6, borderBottomColor: C.primaryDown, ...shadow, shadowColor: C.primary, shadowOpacity: 0.4 },

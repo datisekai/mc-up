@@ -1000,8 +1000,8 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
             buoi_no += 1
             lessons = (await s.execute(select(ContentLesson).where(ContentLesson.session_id == cs.id, ContentLesson.status == "published").order_by(ContentLesson.order_index))).scalars().all()
             for ln in lessons:
-                flat.append((ln, buoi_no))
-    ids = [ln.id for ln, _ in flat]
+                flat.append((ln, buoi_no, lv.name))
+    ids = [ln.id for ln, _, _ in flat]
     done: set = set()
     if ids:
         rows = (await s.execute(
@@ -1010,10 +1010,11 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
         )).scalars().all()
         done = set(rows)
     out, prev_done = [], True
-    for i, (ln, buoi) in enumerate(flat):
+    for i, (ln, buoi, lv_name) in enumerate(flat):
         is_done = ln.id in done
         out.append({"id": ln.id, "buoi": buoi, "order_index": i, "title": ln.title,
                     "tip": ln.tip, "prompt": ln.prompt, "brief": ln.brief, "criteria": criteria,
+                    "level": lv_name,  # tên cấp độ — client nhóm thành chặng SHOW (P1-2)
                     "unlocked": prev_done, "done": is_done})
         prev_done = is_done
     return out
