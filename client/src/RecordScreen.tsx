@@ -331,10 +331,10 @@ const st = StyleSheet.create({
   clock: { fontSize: 17, fontFamily: F.display, color: C.ink },
   progTrack: { height: 5, backgroundColor: "#F0E6D8", borderRadius: 999, marginTop: 8, overflow: "hidden" },
   progFill: { height: "100%", backgroundColor: C.primary, borderRadius: 999 },
-  progHint: { fontSize: 10.5, color: "#BFB4C4", marginTop: 5 },
+  progHint: { fontSize: 12, color: "#BFB4C4", marginTop: 5 },
 
   tele: { backgroundColor: C.raised, borderRadius: 14, padding: 13, marginTop: 16 },
-  teleLabel: { fontWeight: "800", color: C.ink2, fontSize: 10, letterSpacing: 1, marginBottom: 6 },
+  teleLabel: { fontWeight: "800", color: C.ink2, fontSize: 12, letterSpacing: 1, marginBottom: 6 },
   teleStep: { fontSize: 14, lineHeight: 24, color: "#BFB4C4", fontWeight: "500" },
   teleCur: { color: C.primary, fontWeight: "800" },
   teleDone: { color: "#B7ADBE" },

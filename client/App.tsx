@@ -447,14 +447,14 @@ export default function App() {
                 <Btn ghost label="Thử ngay — không cần tài khoản" onPress={doGuest} />
               </>
             )}
-          <Text style={{ color: C.ink2, fontSize: 11.5, textAlign: "center", marginTop: 16, lineHeight: 17 }}>
+          <Text style={{ color: C.ink2, fontSize: 12.5, textAlign: "center", marginTop: 16, lineHeight: 17 }}>
             Bằng việc tiếp tục, bạn đồng ý với{" "}
             <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(API_BASE + "/terms").catch(() => {})}>Điều khoản</Text>
             {" "}và{" "}
             <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(API_BASE + "/privacy").catch(() => {})}>Chính sách bảo mật</Text>
             {" "}(gồm việc thu & xử lý giọng nói để chấm điểm).
           </Text>
-          <Text style={{ color: C.ink2, fontSize: 11.5, textAlign: "center", marginTop: 8 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
+          <Text style={{ color: C.ink2, fontSize: 12.5, textAlign: "center", marginTop: 8 }}>Tài khoản MC demo: mc@test.vn / 123456</Text>
         </View>
       </View>
     );
@@ -769,8 +769,8 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
         {achs.map((a) => (
           <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.45 }]}>
             <View style={[s.achIcon, a.earned && { backgroundColor: C.spot }]}><Trophy size={18} color={a.earned ? "#5a3d00" : C.ink2} /></View>
-            <Text style={{ fontSize: 11, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
-            {!a.earned && a.target > 1 && <Text style={{ fontSize: 9.5, color: C.ink2, fontFamily: F.med }}>{a.progress}/{a.target}</Text>}
+            <Text style={{ fontSize: 12.5, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
+            {!a.earned && a.target > 1 && <Text style={{ fontSize: 12, color: C.ink2, fontFamily: F.med }}>{a.progress}/{a.target}</Text>}
           </View>
         ))}
       </View>
@@ -817,7 +817,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
           + "&body=" + encodeURIComponent("Mình thấy...")).catch(() => {})
       } />
       {/* Credit BẮT BUỘC theo CC-BY 4.0 (assets/CREDITS.md) — giữ khi phát hành */}
-      <Text style={{ color: "#BFB4C4", fontSize: 10.5, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: "#BFB4C4", fontSize: 12, textAlign: "center", marginTop: 8 }}>
         Nhạc: "Wholesome" — Kevin MacLeod (incompetech.com) · CC BY 4.0
       </Text>
       <Btn ghost label="Đăng xuất" onPress={onLogout} />
@@ -830,7 +830,7 @@ function StatCard({ icon, value, label }: any) {
     <View style={[s.card, { flex: 1, alignItems: "center", marginBottom: 0 }]}>
       {icon}
       <Text style={{ fontFamily: F.displayX, fontSize: 22, color: C.ink, marginTop: 4 }}>{value}</Text>
-      <Text style={{ color: C.ink2, fontSize: 11, fontWeight: "700" }}>{label}</Text>
+      <Text style={{ color: C.ink2, fontSize: 12.5, fontWeight: "700" }}>{label}</Text>
     </View>
   );
 }
@@ -933,7 +933,7 @@ const s = StyleSheet.create({
   bTabT: { fontSize: 12, fontFamily: F.semi, color: C.ink2 },
   tabDot: { position: "absolute", top: -2, right: -4, width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary, borderWidth: 1.5, borderColor: C.raised },
   stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
-  stateChipT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
+  stateChipT: { fontSize: 12, fontFamily: F.semi, color: C.ink2 },
   energyBg: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(59,42,74,0.55)", alignItems: "center", justifyContent: "center", zIndex: 99, padding: 30 },
   energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340 },
   energyTitle: { fontFamily: F.displayX, fontSize: 20, color: C.ink, marginTop: 8 },
@@ -946,7 +946,7 @@ const s = StyleSheet.create({
   proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
   proLine: { fontSize: 12.5, color: "#E9DFF2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
   proRestore: { color: "#C9BBDA", fontSize: 12.5, fontFamily: F.med, textDecorationLine: "underline" },
-  pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 11.5, fontFamily: F.med, marginTop: 12 },
+  pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 12.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
   reelsFab: {
@@ -956,7 +956,7 @@ const s = StyleSheet.create({
     shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
   },
   reelsFabT: { color: "#fff", fontFamily: F.title, fontSize: 13.5 },
-  kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
+  kicker: { fontSize: 12.5, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 7, marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },

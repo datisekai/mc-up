@@ -182,10 +182,10 @@ const st = StyleSheet.create({
   cap: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#FFE1A6", alignItems: "center", justifyContent: "center",
     borderWidth: 4, borderColor: "rgba(255,194,75,.4)" },
   stageTitle: { marginTop: 8, fontSize: 19, fontFamily: F.displayX, letterSpacing: 1.5, color: C.ink },
-  stageSub: { marginTop: 2, fontSize: 11, fontWeight: "700", color: "#6b4f2a" },
+  stageSub: { marginTop: 2, fontSize: 12.5, fontWeight: "700", color: "#6b4f2a" },
   stageTag: { marginTop: 6, backgroundColor: "rgba(255,255,255,.7)", borderWidth: 1, borderColor: "rgba(224,166,47,.5)",
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-  stageTagT: { fontSize: 9.5, fontWeight: "800", letterSpacing: 0.4, color: "#8a5a13" },
+  stageTagT: { fontSize: 12, fontWeight: "800", letterSpacing: 0.4, color: "#8a5a13" },
 
   node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3, borderBottomWidth: 5, borderBottomColor: "#D8CCBA" },
   nDone: { backgroundColor: C.success, borderBottomColor: C.successDown, ...shadow },
@@ -196,10 +196,10 @@ const st = StyleSheet.create({
 
   eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised, flexDirection: "row", alignItems: "center", gap: 1 },
   eBadgeNo: { backgroundColor: C.primary },
-  eBadgeT: { fontSize: 11, fontFamily: F.title, color: "#8a5a13" },
+  eBadgeT: { fontSize: 12.5, fontFamily: F.title, color: "#8a5a13" },
   glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(255,194,75,0.28)", zIndex: 1 },
   cta: { position: "absolute", width: 120, alignItems: "center", zIndex: 5 },
-  ctaT: { backgroundColor: C.primary, color: "#fff", fontWeight: "900", fontSize: 11, letterSpacing: 0.4,
+  ctaT: { backgroundColor: C.primary, color: "#fff", fontWeight: "900", fontSize: 12.5, letterSpacing: 0.4,
     paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, overflow: "hidden" },
 
   label: { position: "absolute", width: 132, alignItems: "center", zIndex: 2 },
@@ -210,6 +210,6 @@ const st = StyleSheet.create({
 
   ground: { position: "absolute", height: GROUND_H - 20, alignItems: "center", justifyContent: "center",
     backgroundColor: "#F1E7D8", borderRadius: 16, borderWidth: 1, borderColor: "#E7DBC8", gap: 2 },
-  groundT: { fontSize: 11, fontWeight: "900", letterSpacing: 1, color: "#8a7a68" },
-  groundS: { fontSize: 9.5, fontWeight: "700", color: "#A99C8C", textAlign: "center" },
+  groundT: { fontSize: 12.5, fontWeight: "900", letterSpacing: 1, color: "#8a7a68" },
+  groundS: { fontSize: 12, fontWeight: "700", color: "#A99C8C", textAlign: "center" },
 });

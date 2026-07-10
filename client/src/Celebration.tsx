@@ -7,7 +7,8 @@ import * as Haptics from "expo-haptics";
 import Confetti from "./Confetti";
 import { sfx } from "./sound";
 import { C, F } from "./theme";
-import { Fire, Star, Ticket, Trophy } from "./icons";
+import { FireSticker, StarSticker, TicketSticker, TrophySticker } from "./icons";
+import Misa from "./Misa";
 import {
   CELEB_STREAK, CELEB_SUB, CELEB_TICKET, CELEB_TIER, CELEB_XP,
   ConfettiVariant, fill, pick, pickVariant,
@@ -69,7 +70,7 @@ export default function Celebration({ kind, value, onClose }: {
     return () => { mounted = false; clearTimeout(t); clearTimeout(tingT); };
   }, []);
 
-  const IconCmp = kind === "ticket" ? Ticket : kind === "tier" ? Trophy : kind === "streak" ? Fire : Star;
+  const IconCmp = kind === "ticket" ? TicketSticker : kind === "tier" ? TrophySticker : kind === "streak" ? FireSticker : StarSticker;
   // reduced-motion: mọi thứ chỉ fade — không scale/translate (§1.7)
   const spotStyle = reduced
     ? { opacity: spot }
@@ -87,9 +88,10 @@ export default function Celebration({ kind, value, onClose }: {
       <Animated.View style={[st.spot, spotStyle]} pointerEvents="none" />
       {!reduced && <Confetti variant={confettiVariant} />}
       <Animated.View style={[st.iconWrap, iconStyle]}>
-        <IconCmp size={38} color="#5a3d00" />
+        <IconCmp size={44} />
       </Animated.View>
       <Animated.View style={[textStyle, { alignItems: "center" }]}>
+        <Misa mood="anmung" size={92} />
         <Text style={st.title} accessibilityRole="header">{title}</Text>
         <Text style={st.sub}>{sub}</Text>
         <TouchableOpacity style={st.btn} onPress={close} accessibilityLabel="Đóng">

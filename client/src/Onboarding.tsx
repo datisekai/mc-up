@@ -9,6 +9,7 @@ import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 import { Audio } from "expo-av";
 import { C, F } from "./theme";
 import { ChevronLeft, Fire, MapIcon, Mic, Star, Trophy } from "./icons";
+import Misa from "./Misa";
 
 export type OnboardPrefs = {
   goal: string;          // keyword khớp Genre: "" | "đám cưới" | "sự kiện" | "livestream" | "nhí"
@@ -126,7 +127,7 @@ export default function Onboarding({ onDone }: { onDone: (prefs: OnboardPrefs) =
         <Animated.View style={[{ flex: 1 }, slideStyle]}>
           {step === 1 && (
             <View style={st.center}>
-              <StageIllustration accent={C.primary} />
+              <Misa mood="chao" size={132} />
               <Text style={st.h1}>Ai cũng từng run{"\n"}khi cầm mic.</Text>
               <Text style={st.sub}>Mình luyện cùng bạn, từng chút một —{"\n"}ở đây không ai chấm điểm bạn.</Text>
               <View style={st.proof}>

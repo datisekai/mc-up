@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { C, F } from "./theme";
 import { Mic } from "./icons";
+import Misa from "./Misa";
 import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
@@ -70,7 +71,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
     return (
       <View style={st.card}>
         <View style={st.unclearWrap}>
-          <Mic size={44} color="#B8A79B" />
+          <Misa mood="lo" size={84} />
           <Text style={st.unclearTitle}>Mình chưa nghe rõ giọng bạn</Text>
           <Text style={st.unclearSub}>
             Có thể mic hơi xa hoặc tiếng hơi nhỏ.{"\n"}
@@ -91,6 +92,9 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
       {(positives.length > 0 || improvements.length > 0) && (
         <RowIn delay={0} reduced={reduced}>
           <View style={st.summaryCard}>
+            <View style={{ alignItems: "center", marginBottom: 6 }}>
+              <Misa mood={improvements.length === 0 ? "anmung" : "covu"} size={62} />
+            </View>
             {positives.length > 0 && (
               <View style={{ marginBottom: improvements.length ? 10 : 0 }}>
                 <Text style={st.sumHead}>ĐÃ TỐT</Text>
@@ -222,7 +226,7 @@ const st = StyleSheet.create({
   pill: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999 },
   pillOk: { backgroundColor: "#E6F7EF" },
   pillMid: { backgroundColor: "#FFF3DA" },
-  pillT: { fontWeight: "800", fontSize: 12 },
+  pillT: { fontWeight: "800", fontSize: 14 },
   compareOk: { backgroundColor: "#E6F7EF", borderRadius: 10, padding: 10, marginTop: 10 },
   compareOkT: { color: "#1f8f63", fontWeight: "700", fontSize: 12.5 },
   compareMid: { backgroundColor: C.sunken, borderRadius: 10, padding: 10, marginTop: 10 },
@@ -231,18 +235,18 @@ const st = StyleSheet.create({
   tipT: { color: C.ink, fontSize: 13.5, lineHeight: 19 },
   transcriptLink: { color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", textAlign: "center", marginTop: 12 },
   transcriptBox: { backgroundColor: C.raised, borderRadius: 12, padding: 12, marginTop: 12, borderWidth: 1, borderColor: C.hair },
-  transcriptLabel: { fontFamily: F.title, fontSize: 10, color: C.ink2, letterSpacing: 0.6, marginBottom: 6 },
+  transcriptLabel: { fontFamily: F.title, fontSize: 12, color: C.ink2, letterSpacing: 0.6, marginBottom: 6 },
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
   summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
-  sumHead: { fontFamily: F.title, fontSize: 10.5, color: C.ink2, letterSpacing: 0.8, marginBottom: 6 },
+  sumHead: { fontFamily: F.title, fontSize: 12.5, color: C.ink2, letterSpacing: 0.8, marginBottom: 6 },
   sumRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 4 },
   sumOk: { color: "#3FB984", fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },
   sumArrow: { color: C.primary, fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },
   sumText: { flex: 1, fontSize: 14, color: C.ink, lineHeight: 21 },
   covBox: { backgroundColor: C.raised, borderRadius: 12, padding: 12, marginTop: 10, borderWidth: 1, borderColor: C.hair },
-  covLabel: { fontFamily: F.title, fontSize: 10, color: C.ink2, letterSpacing: 0.6 },
+  covLabel: { fontFamily: F.title, fontSize: 12, color: C.ink2, letterSpacing: 0.6 },
   covCount: { fontFamily: F.display, fontSize: 13, color: C.ink2 },
   covRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 3 },
   covMark: { fontSize: 14, fontFamily: F.title, width: 16, textAlign: "center", lineHeight: 20 },

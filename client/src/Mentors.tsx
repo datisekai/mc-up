@@ -51,22 +51,22 @@ export default function Mentors({ mentors, refreshControl }: { mentors: Mentor[]
 }
 
 const st = StyleSheet.create({
-  kicker: { fontSize: 11, fontFamily: F.title, letterSpacing: 1, color: C.ink2, textTransform: "uppercase" },
+  kicker: { fontSize: 12.5, fontFamily: F.title, letterSpacing: 1, color: C.ink2, textTransform: "uppercase" },
   sub: { fontSize: 13, color: C.ink2, fontFamily: F.body, marginTop: 4, marginBottom: 12, lineHeight: 19 },
   empty: { color: C.ink2, fontSize: 13, textAlign: "center", padding: 20 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 12 },
   featured: { borderWidth: 1.5, borderColor: C.spot },
   badge: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, marginBottom: 10 },
-  badgeT: { fontSize: 10.5, fontFamily: F.title, color: "#5a3d00" },
+  badgeT: { fontSize: 12, fontFamily: F.title, color: "#5a3d00" },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
   avatarT: { color: "#fff", fontFamily: F.displayX, fontSize: 20 },
   name: { fontFamily: F.title, fontSize: 16, color: C.ink },
   title: { fontSize: 12.5, color: C.ink2, fontFamily: F.body },
-  reviews: { fontSize: 11.5, color: C.ink2, fontFamily: F.semi },
+  reviews: { fontSize: 12.5, color: C.ink2, fontFamily: F.semi },
   bio: { fontSize: 13.5, color: C.ink, fontFamily: F.body, lineHeight: 20, marginTop: 10, fontStyle: "italic" },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: { backgroundColor: C.sunken, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  tagT: { fontSize: 11.5, color: C.ink, fontFamily: F.semi },
+  tagT: { fontSize: 12.5, color: C.ink, fontFamily: F.semi },
   cta: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: C.sunken, borderRadius: 999, padding: 11, marginTop: 12 },
   ctaT: { fontSize: 12.5, color: C.ink2, fontFamily: F.semi },
 });

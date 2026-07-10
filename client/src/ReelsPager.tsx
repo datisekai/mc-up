@@ -8,7 +8,8 @@ import {
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { C, F } from "./theme";
-import { Bulb, ChevronDown, ChevronUp, Fire, Lock, Mic, X } from "./icons";
+import { ChevronDown, ChevronUp, FireSticker, Lock, Mic, X } from "./icons";
+import Misa from "./Misa";
 import ScoreReveal, { ScoreData } from "./ScoreReveal";
 import { RecLesson } from "./RecordScreen";
 import { setRecording as setRecAudio, sfx } from "./sound";
@@ -180,7 +181,7 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
               )}
               {p.kind === "breather" && (
                 <View style={st.centerPage}>
-                  <View style={st.bulb}><Bulb size={28} color="#F5A623" /></View>
+                  <Misa mood="covu" size={80} />
                   <Text style={st.breatherLabel}>MẸO TỪ MC THẬT</Text>
                   <Text style={st.breatherTip}>“{p.b.tip}”</Text>
                   <Text style={st.breatherBy}>— {p.b.by}</Text>
@@ -189,7 +190,7 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
               )}
               {p.kind === "end" && (
                 <View style={st.centerPage}>
-                  <View style={st.endGlow}><Fire size={34} color="#F5A623" /></View>
+                  <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6 }}><Misa mood="anmung" size={88} /></View>
                   <Text style={st.endTitle}>Hôm nay đủ rồi 👏</Text>
                   <Text style={st.endSub}>Chuỗi {streak} ngày vẫn cháy.{"\n"}Mai quay lại leo tiếp sân khấu nhé!</Text>
                   <TouchableOpacity style={st.endBtn} onPress={onExit}>
@@ -302,7 +303,7 @@ function LessonPage({ lesson, unlocked, result, rec, onMic, onStop, onRetry }: {
 const st = StyleSheet.create({
   page: { flex: 1, paddingTop: 64, paddingHorizontal: 20 },
   centerPage: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 },
-  kicker: { fontSize: 10, fontFamily: F.title, letterSpacing: 1, color: C.ink2 },
+  kicker: { fontSize: 12, fontFamily: F.title, letterSpacing: 1, color: C.ink2 },
   prompt: { fontSize: 17, fontFamily: F.title, color: C.ink, lineHeight: 24, marginTop: 6 },
   stepsCard: { backgroundColor: C.raised, borderRadius: 14, padding: 12, marginTop: 14 },
   step: { fontSize: 13.5, color: C.ink, lineHeight: 23 },
@@ -315,7 +316,7 @@ const st = StyleSheet.create({
   micLabel: { fontSize: 12, fontFamily: F.semi, color: C.ink, marginTop: 8 },
   countNum: { fontSize: 84, fontFamily: F.displayX, color: C.primary, lineHeight: 96 },
   recTime: { fontSize: 22, fontFamily: F.display, color: C.ink },
-  recLabel: { fontSize: 11, fontFamily: F.title, letterSpacing: 1, color: C.primary, marginTop: 2, marginBottom: 12 },
+  recLabel: { fontSize: 12.5, fontFamily: F.title, letterSpacing: 1, color: C.primary, marginTop: 2, marginBottom: 12 },
   stopBtn: {
     width: 66, height: 66, borderRadius: 33, backgroundColor: "#fff",
     borderWidth: 3, borderColor: C.primary, alignItems: "center", justifyContent: "center",
@@ -324,10 +325,10 @@ const st = StyleSheet.create({
   procT: { fontSize: 14, fontFamily: F.semi, color: C.ink2, marginTop: 10 },
   retry: { backgroundColor: C.sunken, borderRadius: 999, padding: 12, alignItems: "center", marginTop: 6 },
   retryT: { color: C.ink, fontFamily: F.title, fontSize: 13 },
-  swipeHint: { fontSize: 11.5, color: "#BFB4C4", fontFamily: F.med, marginTop: 10 },
+  swipeHint: { fontSize: 12.5, color: "#BFB4C4", fontFamily: F.med, marginTop: 10 },
 
   bulb: { width: 62, height: 62, borderRadius: 31, backgroundColor: C.spot, alignItems: "center", justifyContent: "center" },
-  breatherLabel: { fontSize: 10, fontFamily: F.title, letterSpacing: 1.5, color: C.ink2, marginTop: 16 },
+  breatherLabel: { fontSize: 12, fontFamily: F.title, letterSpacing: 1.5, color: C.ink2, marginTop: 16 },
   breatherTip: { fontSize: 17, color: C.ink, lineHeight: 27, textAlign: "center", marginTop: 10, fontStyle: "italic", fontFamily: F.body },
   breatherBy: { fontSize: 12, color: C.ink2, marginTop: 10, fontFamily: F.med },
 
@@ -349,7 +350,7 @@ const st = StyleSheet.create({
     position: "absolute", top: 58, right: 16, backgroundColor: "rgba(59,42,74,.6)",
     paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999,
   },
-  posT: { color: "#FFF8F0", fontSize: 11, fontFamily: F.semi },
+  posT: { color: "#FFF8F0", fontSize: 12.5, fontFamily: F.semi },
 
   rmNav: { position: "absolute", bottom: 18, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 10 },
   rmBtn: { backgroundColor: C.sunken, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 5 },
