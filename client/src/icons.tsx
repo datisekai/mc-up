@@ -1,9 +1,78 @@
-// Bộ icon tuyến tự thiết kế (SVG) — không dùng emoji làm icon UI (DESIGN.md).
-import Svg, { Circle, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
+// Bộ icon tự thiết kế (SVG) — không dùng emoji làm icon UI (DESIGN.md).
+// V2 "Sân khấu ấm 2.0": icon STICKER 2 lớp (đáy tối lệch xuống + thân fill + viền đậm)
+// cho icon MANG NGHĨA (năng lượng, lửa, vé, sao, cúp); icon THAO TÁC giữ dạng tuyến.
+import Svg, { Circle, G, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
 
 type P = { size?: number; color?: string; fill?: boolean };
 const S = (size = 24) => ({ width: size, height: size, viewBox: "0 0 24 24" });
 const stroke = (c: string) => ({ stroke: c, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" });
+
+// ===== Sticker icons (V2) — mỗi icon: lớp đáy tối (translate y+1.6) rồi thân fill + viền =====
+type PS = { size?: number };
+
+export const BoltSticker = ({ size }: PS) => (
+  <Svg {...S(size)}>
+    <G transform="translate(0, 1.6)"><Polygon points="13,2 5,13.5 11,13.5 10,22 19,10.5 12.5,10.5" fill="#C77F00" /></G>
+    <Polygon points="13,2 5,13.5 11,13.5 10,22 19,10.5 12.5,10.5" fill="#FFC24B" stroke="#C77F00" strokeWidth={1.6} strokeLinejoin="round" />
+  </Svg>
+);
+
+export const FireSticker = ({ size }: PS) => {
+  const d = "M12 2.5c1 4-4.4 5.6-4.4 10a4.4 4.4 0 0 0 8.8 0c0-1.6-.8-3-.8-3s2.9 1.4 2.9 4.4a6.5 6.5 0 1 1-13 0C5.5 7.6 11 6.5 12 2.5z";
+  return (
+    <Svg {...S(size)}>
+      <G transform="translate(0, 1.6)"><Path d={d} fill="#C4620E" /></G>
+      <Path d={d} fill="#F5A623" stroke="#C4620E" strokeWidth={1.6} strokeLinejoin="round" />
+      <Path d="M12 11c.5 2-1.8 2.8-1.8 4.7a1.9 1.9 0 0 0 3.8 0C14 13.8 12.6 12.6 12 11z" fill="#FFE29B" />
+    </Svg>
+  );
+};
+
+export const StarSticker = ({ size }: PS) => {
+  const pts = "12,2 15,8.6 22,9.4 17,14.2 18.3,21.2 12,17.7 5.7,21.2 7,14.2 2,9.4 9,8.6";
+  return (
+    <Svg {...S(size)}>
+      <G transform="translate(0, 1.6)"><Polygon points={pts} fill="#C7462F" /></G>
+      <Polygon points={pts} fill="#FF6B5B" stroke="#C7462F" strokeWidth={1.6} strokeLinejoin="round" />
+    </Svg>
+  );
+};
+
+export const TicketSticker = ({ size }: PS) => {
+  const d = "M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.2 2.2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.2 2.2 0 0 0 0-4V8z";
+  return (
+    <Svg {...S(size)}>
+      <G transform="translate(0, 1.6)"><Path d={d} fill="#B8860B" /></G>
+      <Path d={d} fill="#FFC24B" stroke="#B8860B" strokeWidth={1.6} strokeLinejoin="round" />
+      <Line x1="14.5" y1="7" x2="14.5" y2="17" stroke="#B8860B" strokeWidth={1.6} strokeDasharray="2.4 2.2" />
+    </Svg>
+  );
+};
+
+export const TrophySticker = ({ size }: PS) => (
+  <Svg {...S(size)}>
+    <G transform="translate(0, 1.6)">
+      <Path d="M7 3.5h10v5.5a5 5 0 0 1-10 0V3.5z" fill="#B8860B" />
+      <Rect x="9" y="16.5" width="6" height="4" rx="1" fill="#B8860B" />
+    </G>
+    <Path d="M7 6H4.2a2.8 2.8 0 0 0 2.9 3.6M17 6h2.8a2.8 2.8 0 0 1-2.9 3.6" fill="none" stroke="#B8860B" strokeWidth={2} strokeLinecap="round" />
+    <Path d="M7 3.5h10v5.5a5 5 0 0 1-10 0V3.5z" fill="#FFC24B" stroke="#B8860B" strokeWidth={1.6} strokeLinejoin="round" />
+    <Rect x="10.8" y="13.5" width="2.4" height="4" fill="#FFC24B" stroke="#B8860B" strokeWidth={1.2} />
+    <Rect x="8.5" y="17" width="7" height="3.5" rx="1" fill="#FFC24B" stroke="#B8860B" strokeWidth={1.4} />
+  </Svg>
+);
+
+export const MicSticker = ({ size }: PS) => (
+  <Svg {...S(size)}>
+    <G transform="translate(0, 1.6)">
+      <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#C7462F" />
+    </G>
+    <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#FF6B5B" stroke="#C7462F" strokeWidth={1.6} />
+    <Path d="M5.6 10.5a6.4 6.4 0 0 0 12.8 0" fill="none" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
+    <Line x1="12" y1="17" x2="12" y2="20.5" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
+    <Line x1="8.5" y1="20.8" x2="15.5" y2="20.8" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
+  </Svg>
+);
 
 export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
   <Svg {...S(size)}>
