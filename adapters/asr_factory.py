@@ -14,7 +14,7 @@ from __future__ import annotations
 
 
 def get_asr(provider: str = "auto", *, openai_key: str = "",
-            google_key: str = "", viettel_token: str = ""):
+            google_key: str = "", viettel_token: str = "", asr_model: str = "gpt-4o-mini-transcribe"):
     provider = (provider or "auto").lower()
 
     if provider == "auto":  # xếp theo độ giữ tiếng đệm tiếng Việt (FR-12)
@@ -29,7 +29,7 @@ def get_asr(provider: str = "auto", *, openai_key: str = "",
 
     if provider == "whisper" and openai_key:
         from .asr_whisper import WhisperAsr
-        return WhisperAsr(openai_key)
+        return WhisperAsr(openai_key, model=asr_model or "gpt-4o-mini-transcribe")
     if provider == "google" and google_key:
         from .asr_google import GoogleAsr
         return GoogleAsr(google_key)

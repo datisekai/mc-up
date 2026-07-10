@@ -13,8 +13,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# Mồi để Whisper KHÔNG lược bỏ tiếng đệm (bias từ vựng/phong cách).
-_FILLER_PROMPT = "Ừm, à, ờ, ừ thì, ậm ừ, kiểu như là... Bản ghi giữ nguyên tiếng đệm khi nói."
+# Mồi tiếng Việt: (1) neo NGÔN NGỮ + từ vựng nghề MC → giảm nhận sai & chèn từ tiếng Anh vô cớ,
+# (2) giữ tiếng đệm thay vì làm sạch (FR-12).
+_FILLER_PROMPT = (
+    "Xin chào quý vị và các bạn, chào mừng đến với chương trình. Ừm, à, ờ, ừ thì, kiểu như là... "
+    "Bản ghi tiếng Việt, giữ nguyên tiếng đệm khi nói. Sân khấu, tiệc cưới, cô dâu chú rể, "
+    "quan khách, sự kiện, gala, khán giả, tiết mục, phần thi, thí sinh."
+)
 
 
 @dataclass
@@ -26,22 +31,40 @@ class AsrResult:
 class WhisperAsr:
     is_mock = False
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini-transcribe"):
         self.api_key = api_key
+        self.model = model
 
     async def transcribe(self, audio_path: str, language: str = "vi") -> AsrResult:
+        try:
+            return await self._call(audio_path, language, self.model)
+        except Exception:
+            if self.model == "whisper-1":
+                raise
+            # model mới lỗi (quota/khả dụng) → lùi về whisper-1, không chặn user
+            return await self._call(audio_path, language, "whisper-1")
+
+    async def _call(self, audio_path: str, language: str, model: str) -> AsrResult:
         from openai import AsyncOpenAI  # import tại chỗ để demo không cần lib khi chưa dùng
 
         client = AsyncOpenAI(api_key=self.api_key, timeout=45.0)  # timeout: call treo không giữ slot chấm mãi
         with open(audio_path, "rb") as f:  # raise FileNotFoundError nếu chưa có clip thật
+            if model == "whisper-1":
+                resp = await client.audio.transcriptions.create(
+                    model=model, file=f, language=language,
+                    prompt=_FILLER_PROMPT,  # FR-12: giữ 'ừm/à/ờ' thay vì làm sạch
+                    response_format="verbose_json",
+                    timestamp_granularities=["word"],
+                    temperature=0.0,  # giảm hallucination khi audio nhỏ/im lặng
+                )
+                words = [{"word": w.word, "start": w.start, "end": w.end} for w in (resp.words or [])]
+                return AsrResult(text=resp.text, words=words)
+            # gpt-4o-(mini-)transcribe: WER tiếng Việt tốt hơn hẳn whisper-1 nhưng KHÔNG
+            # trả word-timestamps → words=[]; scoring tự suy words giả từ text.
             resp = await client.audio.transcriptions.create(
-                model="whisper-1",
-                file=f,
-                language=language,
-                prompt=_FILLER_PROMPT,  # FR-12: giữ 'ừm/à/ờ' thay vì làm sạch
-                response_format="verbose_json",
-                timestamp_granularities=["word"],
-                temperature=0.0,  # giảm hallucination ("hãy đăng ký kênh...") khi audio nhỏ/im lặng
+                model=model, file=f, language=language,
+                prompt=_FILLER_PROMPT,
+                response_format="json",
+                temperature=0.0,
             )
-        words = [{"word": w.word, "start": w.start, "end": w.end} for w in (resp.words or [])]
-        return AsrResult(text=resp.text, words=words)
+            return AsrResult(text=resp.text, words=[])

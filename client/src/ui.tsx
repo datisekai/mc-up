@@ -1,7 +1,7 @@
 // UI V2 "Sân khấu ấm 2.0" — nút 3D "phím đàn" + thanh tiến độ dày (DESIGN.md V2).
 // Quy tắc affordance: có ĐÁY dày = nhấn được; nhấn = lún (đáy 0 + tụt xuống).
 import { ReactNode } from "react";
-import { Pressable, Text, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, Text, View, ViewStyle } from "react-native";
 import * as Haptics from "expo-haptics";
 import { C, F, T } from "./theme";
 import { sfx } from "./sound";
@@ -13,18 +13,19 @@ const FACE: Record<Kind, string> = { primary: C.primary, gold: C.spot, white: C.
 const DOWN: Record<Kind, string> = { primary: C.primaryDown, gold: C.spotDown, white: C.hairDown, success: C.successDown };
 const INK: Record<Kind, string> = { primary: "#fff", gold: "#5a3d00", white: C.ink, success: "#fff" };
 
-export function Btn3D({ label, onPress, kind = "primary", icon, small, disabled, style }: {
+export function Btn3D({ label, onPress, kind = "primary", icon, small, disabled, loading, style }: {
   label: string;
   onPress?: () => void;
   kind?: Kind;
   icon?: ReactNode;
   small?: boolean;      // biến thể gọn cho hàng nút phụ
   disabled?: boolean;
+  loading?: boolean;    // đang gọi API — spinner + khoá (P0-1 feedback #6)
   style?: ViewStyle;
 }) {
   return (
     <Pressable
-      disabled={disabled}
+      disabled={disabled || loading}
       onPress={() => { sfx("tap"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); onPress?.(); }}
       style={({ pressed }) => [{
         backgroundColor: disabled ? C.sunken : FACE[kind],
@@ -43,7 +44,7 @@ export function Btn3D({ label, onPress, kind = "primary", icon, small, disabled,
         gap: 8,
       }, style]}
     >
-      {icon}
+      {loading ? <ActivityIndicator size="small" color={INK[kind]} /> : icon}
       <Text style={{
         color: disabled ? C.ink2 : INK[kind],
         fontFamily: F.title,

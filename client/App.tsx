@@ -298,6 +298,11 @@ export default function App() {
     }
     setLoadError(false); setScreen("feed");
   }
+  // Về bản đồ TỨC THÌ rồi mới tải lại nền — nút không bao giờ "đơ" (P0-1 feedback #5)
+  function backToMap() {
+    setScreen("feed");
+    safeRefresh();
+  }
   // Kéo-để-tải-lại + nút "Thử lại" dùng chung: an toàn, không ném lỗi ra ngoài
   async function safeRefresh() {
     setRefreshing(true);
@@ -306,9 +311,10 @@ export default function App() {
     setRefreshing(false);
   }
   async function pickPath(pid: string | null) {
-    setSelPath(pid);
-    setLessons(pid ? await Api.contentLessons(token!, pid) : await Api.lessons(token!));
-    setScreen("feed");
+    setSelPath(pid); setScreen("feed"); setRefreshing(true);
+    try { setLessons(pid ? await Api.contentLessons(token!, pid) : await Api.lessons(token!)); }
+    catch (e) { await handleApiError(e); }
+    setRefreshing(false);
   }
 
   async function submitReal(uri: string, dur: number) {
@@ -381,12 +387,16 @@ export default function App() {
       return null;
     }
   }
+  const [veBusy, setVeBusy] = useState(false);
   async function sendVeVang() {
+    if (veBusy) return;
+    setVeBusy(true);
     try {
       await Api.sendTicket(token!, lastClip!);
       showToast("Đã gửi cho MC thật 🎤 — chờ nhận xét nhé!");
       await refresh();
     } catch (e: any) { Alert.alert("Lỗi", e.message); }
+    setVeBusy(false);
   }
   async function loadQueue() { try { setQueue(await Api.mcQueue(token!)); } catch (e) { await handleApiError(e); } }
   // MC nhận/nhả vé (feedback #4) — không giành trùng
@@ -516,7 +526,7 @@ export default function App() {
           startIndex={Math.max(0, lessons.findIndex((l) => l.unlocked && !l.done))}
           streak={prog.streak}
           onRun={runReelsLesson}
-          onExit={() => safeRefresh()}
+          onExit={backToMap}
         />
       ) : (
       <Animated.ScrollView
@@ -583,7 +593,7 @@ export default function App() {
           contentContainerStyle={{ padding: 16 }}
           onScrollEndDrag={(e) => {
             // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
-            if (screen === "score" && e.nativeEvent.contentOffset.y < -70) safeRefresh();
+            if (screen === "score" && e.nativeEvent.contentOffset.y < -70) backToMap();
           }}
         >
           {screen === "practice" && curLesson && (
@@ -596,7 +606,7 @@ export default function App() {
                 energyCost={prog.is_pro ? 0 : energyCost}
                 onSubmit={submitReal}
                 onMock={doSubmitMock}
-                onBack={() => safeRefresh()}
+                onBack={backToMap}
               />
             </View>
           )}
@@ -608,9 +618,9 @@ export default function App() {
                 // không nghe được → mời thu lại ngay, KHÔNG mời gửi MC (phí vé vô ích)
                 <Btn icon={<Mic size={16} color="#fff" />} label="Thử lại ngay" onPress={() => setScreen("practice")} />
               ) : (
-                <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
+                <Btn gold loading={veBusy} label={veBusy ? "Đang gửi cho MC…" : "Gửi cho MC thật (Vé Vàng)"} onPress={sendVeVang} />
               )}
-              <Btn ghost label="Tiếp tục lộ trình" onPress={() => safeRefresh()} />
+              <Btn ghost label="Tiếp tục lộ trình" onPress={backToMap} />
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
@@ -900,8 +910,8 @@ const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
-const Btn = ({ label, onPress, ghost, gold, icon }: any) =>
-  <Btn3D label={label} onPress={onPress} icon={icon} kind={gold ? "gold" : ghost ? "white" : "primary"} />;
+const Btn = ({ label, onPress, ghost, gold, icon, loading }: any) =>
+  <Btn3D label={label} onPress={onPress} icon={icon} loading={loading} kind={gold ? "gold" : ghost ? "white" : "primary"} />;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },

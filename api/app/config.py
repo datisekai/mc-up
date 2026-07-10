@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     debug: bool = False              # True chỉ khi dev — prod KHÔNG lộ chi tiết lỗi nội bộ
     # ASR: chọn nhà cung cấp. "auto" = whisper nếu có OPENAI_API_KEY, không thì giả lập.
     asr_provider: str = "auto"  # auto | mock | whisper | google | viettel
+    # Model OpenAI STT: gpt-4o-mini-transcribe (mặc định — WER tiếng Việt tốt hơn hẳn whisper-1,
+    # tự lùi về whisper-1 nếu lỗi) | gpt-4o-transcribe | whisper-1 (có word-timestamps)
+    asr_model: str = "gpt-4o-mini-transcribe"
     openai_api_key: str = ""
     google_stt_api_key: str = ""     # Google Cloud Speech-to-Text (vi-VN)
     viettel_stt_token: str = ""      # Viettel AI STT

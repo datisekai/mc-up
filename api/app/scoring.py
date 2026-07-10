@@ -113,6 +113,7 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         openai_key=settings.openai_api_key,
         google_key=settings.google_stt_api_key,
         viettel_token=settings.viettel_stt_token,
+        asr_model=settings.asr_model,
     )
     path = audio_path or f"clip://{clip_id}"  # clip thật đến từ MediaStore (Story 3.2)
     try:
@@ -124,6 +125,10 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         used_mock = True
 
     words = result.words
+    # Model không trả word-timestamps (gpt-4o-*-transcribe) → suy words giả từ text:
+    # đủ cho đếm từ đệm + WPM theo duration + ngưỡng "quá ít từ"; mất mỗi span nói thực.
+    if not words and (result.text or "").strip():
+        words = [{"word": w} for w in result.text.split()]
     # ffmpeg là subprocess CHẶN — chạy trong thread để không nghẽn event loop khi nhiều user
     real_vol = await asyncio.to_thread(_rms_volume, path) if (path and os.path.exists(path)) else None
 

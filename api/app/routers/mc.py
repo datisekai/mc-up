@@ -22,7 +22,7 @@ async def _transcribe_voice(key: str) -> str | None:
     lỗi/không có key thì bỏ qua, KHÔNG chặn luồng review."""
     try:
         from adapters.asr_factory import get_asr  # type: ignore
-        asr = get_asr(settings.asr_provider, openai_key=settings.openai_api_key,
+        asr = get_asr(settings.asr_provider, asr_model=settings.asr_model, openai_key=settings.openai_api_key,
                       google_key=settings.google_stt_api_key, viettel_token=settings.viettel_stt_token)
         if getattr(asr, "is_mock", False):
             return None
