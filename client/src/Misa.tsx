@@ -16,8 +16,10 @@ const CORAL_D = "#C7462F";
 const PLUM = "#3B2A4A";
 const GOLD = "#FFC24B";
 
-export default function Misa({ mood = "chao", size = 96, still = false }: {
-  mood?: MisaMood; size?: number; still?: boolean;
+export type MisaAccessory = "bowtie" | "headset" | null;
+
+export default function Misa({ mood = "chao", size = 96, still = false, accessory = null }: {
+  mood?: MisaMood; size?: number; still?: boolean; accessory?: MisaAccessory;
 }) {
   const [reduced, setReduced] = useState(false);
   const bob = useRef(new Animated.Value(0)).current;   // thở — mọi mood
@@ -154,6 +156,23 @@ export default function Misa({ mood = "chao", size = 96, still = false }: {
             <Ellipse cx="33" cy="45" rx="3.6" ry="2.4" fill="#FF9C90" />
             <Ellipse cx="67" cy="45" rx="3.6" ry="2.4" fill="#FF9C90" />
           </>
+        )}
+
+        {/* phụ kiện theo ngữ cảnh bài (P2) */}
+        {accessory === "bowtie" && (
+          <G>
+            <Polygon points="50,62 38,55 38,69" fill={CORAL_D} />
+            <Polygon points="50,62 62,55 62,69" fill={CORAL_D} />
+            <Circle cx="50" cy="62" r="4.5" fill={GOLD} />
+          </G>
+        )}
+        {accessory === "headset" && (
+          <G>
+            <Path d="M25 34 a25 25 0 0 1 50 0" stroke={PLUM} strokeWidth={5} fill="none" />
+            <Rect x="20" y="32" width="9" height="14" rx="4.5" fill={PLUM} />
+            <Rect x="71" y="32" width="9" height="14" rx="4.5" fill={PLUM} />
+            <Path d="M76 46 q2 10 -8 12" stroke={PLUM} strokeWidth={3.5} fill="none" />
+          </G>
         )}
 
         {/* sao ăn mừng */}

@@ -248,7 +248,7 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
           <GenreScene genre={genre} width={WCARD} />
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Misa mood="covu" size={54} />
+          <Misa mood="covu" size={54} accessory={genre.toLowerCase().includes("cưới") || genre.toLowerCase().includes("sự kiện") ? "bowtie" : genre.toLowerCase().includes("live") ? "headset" : null} />
           {lesson.tip ? <View style={[st.tipBox, { flex: 1 }]}><Text style={st.tipT}>{lesson.tip}</Text></View>
             : <Text style={[st.tipT, { flex: 1 }]}>Bạn làm được mà — nói như kể cho một người bạn nghe.</Text>}
         </View>
