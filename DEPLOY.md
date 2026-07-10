@@ -36,9 +36,10 @@ sudo ./setup-nginx.sh    # nginx proxy mcup.fun → 3011 + certbot HTTPS (1 lệ
 ```bash
 ./deploy.sh          # tự git pull + build lại + chạy — 1 lệnh
 ```
-⚠️ Nếu bản mới **đổi schema DB** (thêm cột/bảng), Postgres cũ sẽ lỗi "column ... does not exist"
-→ hiện phải xoá DB làm lại: `docker compose -f docker-compose.prod.yml down -v && ./deploy.sh`
-(mất user/tiến độ — chấp nhận được khi beta; sẽ chuyển sang Alembic migration trước khi có user thật).
+Đổi schema DB (thêm cột/bảng) **tự nâng cấp bằng Alembic lúc khởi động, KHÔNG mất dữ liệu**
+(migration trong `api/migrations/`; DB đời cũ được tự "stamp" baseline lần đầu).
+Khi dev đổi `models.py` → sinh migration mới:
+`PYTHONPATH=. api/.venv/bin/alembic -c api/alembic.ini revision --autogenerate -m "mô tả"` rồi commit.
 
 ## Lệnh hay dùng
 ```bash
@@ -60,6 +61,4 @@ docker compose -f docker-compose.prod.yml down -v        # dừng + XÓA dữ li
 ## Nên làm cho production thật
 - `JWT_SECRET` mạnh + `ALLOWED_ORIGINS=https://mcup.fun` trong .env (`DEBUG=false` là mặc định).
 - Backup định kỳ volume `pgdata` (DB) + `clipdata` (clip giọng).
-- Bảng DB tạo tự động lúc khởi động (ORM). Khi schema ổn định → chuyển sang **Alembic migration**
-  để update không mất dữ liệu.
 - Khi scale lớn: tách worker chấm riêng (Redis queue) + chuyển clip sang S3 — hạ tầng hiện tại chưa cần.

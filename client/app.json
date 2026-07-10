@@ -16,10 +16,12 @@
     "ios": {
       "bundleIdentifier": "vn.mcup.app",
       "appleTeamId": "HMV6A3QPKR",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "supportsTablet": false,
       "entitlements": {
-        "com.apple.security.application-groups": ["group.vn.mcup.app"]
+        "com.apple.security.application-groups": [
+          "group.vn.mcup.app"
+        ]
       },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "McUp cần micro để nghe và chấm giọng bạn khi luyện tập — chỉ khi bạn bấm thu, và clip là của riêng bạn.",
@@ -64,7 +66,9 @@
                   "targetName": "McUpWidget",
                   "bundleIdentifier": "vn.mcup.app.widget",
                   "entitlements": {
-                    "com.apple.security.application-groups": ["group.vn.mcup.app"]
+                    "com.apple.security.application-groups": [
+                      "group.vn.mcup.app"
+                    ]
                   }
                 }
               ]
