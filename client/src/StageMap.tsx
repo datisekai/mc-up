@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Animated, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { C, F } from "./theme";
-import { Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
+import { Bolt, Cap, Check, Flag, Lock, Mic, Ticket } from "./icons";
 
 export type Lesson = { id: string; buoi: number; order_index: number; title: string; unlocked: boolean; done: boolean };
 
@@ -141,7 +141,8 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
               {/* chi phí năng lượng — chỉ trên bài SẮP LÀM (nơi có quyết định). San hô nếu không đủ. */}
               {open && energyCost > 0 && (
                 <View style={[st.eBadge, { left: p.x + r - 16, top: p.y - r - 8 }, !canAfford && st.eBadgeNo]} pointerEvents="none">
-                  <Text style={[st.eBadgeT, !canAfford && { color: "#fff" }]}>⚡{energyCost}</Text>
+                  <Bolt size={11} color={canAfford ? "#8a5a13" : "#fff"} />
+                  <Text style={[st.eBadgeT, !canAfford && { color: "#fff" }]}>{energyCost}</Text>
                 </View>
               )}
 
@@ -193,7 +194,7 @@ const st = StyleSheet.create({
   nReward: { backgroundColor: C.spot, ...shadow, shadowColor: C.spot },
   nRewardLock: { backgroundColor: "#F4E8CE" },
 
-  eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised },
+  eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised, flexDirection: "row", alignItems: "center", gap: 1 },
   eBadgeNo: { backgroundColor: C.primary },
   eBadgeT: { fontSize: 11, fontFamily: F.title, color: "#8a5a13" },
   glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(255,194,75,0.28)", zIndex: 1 },

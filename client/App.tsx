@@ -13,7 +13,7 @@ import { C, F } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
+import { Bolt, Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
 import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
@@ -496,8 +496,8 @@ export default function App() {
         <Text style={s.brand}>McUp</Text>
         <View style={s.chipCluster}>
           {!prog.is_pro
-            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center" }}><Text style={{ fontSize: 13 }}>⚡</Text><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
-            : (<Text style={[s.chipT, { color: C.spot }]}>⚡∞</Text>)}
+            ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><Bolt size={14} color={hasEnergy ? "#F5A623" : C.primary} /><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
+            : (<View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><Bolt size={14} color={C.spot} /><Text style={[s.chipT, { color: C.spot }]}>∞</Text></View>)}
           <View style={s.chipDiv} />
           <Fire size={14} color="#F5A623" /><Text style={s.chipT}>{prog.streak}</Text>
           <View style={s.chipDiv} />

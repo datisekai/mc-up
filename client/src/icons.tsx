@@ -5,6 +5,13 @@ type P = { size?: number; color?: string; fill?: boolean };
 const S = (size = 24) => ({ width: size, height: size, viewBox: "0 0 24 24" });
 const stroke = (c: string) => ({ stroke: c, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" });
 
+export const Bolt = ({ size, color = "#F5A623" }: P) => (
+  <Svg {...S(size)}>
+    <Polygon points="13,2 5,13.5 11,13.5 10,22 19,10.5 12.5,10.5"
+      fill={color} stroke={color} strokeWidth={1.5} strokeLinejoin="round" />
+  </Svg>
+);
+
 export const Mic = ({ size, color = "#3B2A4A" }: P) => (
   <Svg {...S(size)}>
     <Rect x="9" y="3" width="6" height="11" rx="3" {...stroke(color)} />

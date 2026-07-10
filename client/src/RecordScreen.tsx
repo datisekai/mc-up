@@ -9,7 +9,7 @@ import {
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { C, F } from "./theme";
-import { Mic } from "./icons";
+import { Bolt, Mic } from "./icons";
 import { setRecording, sfx } from "./sound";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
@@ -240,7 +240,7 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, onSubmit, o
             </TouchableOpacity>
           </View>
           <Text style={st.underBtn}>Chạm để bắt đầu</Text>
-          {energyCost > 0 && <View style={st.energyTag}><Text style={st.energyTagT}>⚡ Bài này tốn {energyCost} năng lượng</Text></View>}
+          {energyCost > 0 && <View style={st.energyTag}><Bolt size={12} color="#8a5a13" /><Text style={st.energyTagT}> Bài này tốn {energyCost} năng lượng</Text></View>}
           <Text style={st.calm}>Hít thở nhẹ — cứ nói như đang kể cho một người bạn.{"\n"}Luyện không có sai đâu.</Text>
           <TouchableOpacity onPress={onMock}><Text style={st.skipT}>Bỏ qua — nộp giả lập</Text></TouchableOpacity>
         </View>
@@ -292,7 +292,7 @@ const st = StyleSheet.create({
     shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
   },
   underBtn: { fontSize: 13, fontWeight: "800", color: C.ink, marginTop: 10 },
-  energyTag: { backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, marginTop: 8 },
+  energyTag: { backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, marginTop: 8, flexDirection: "row", alignItems: "center" },
   energyTagT: { fontSize: 12, fontFamily: F.semi, color: "#8a5a13" },
   calm: { fontSize: 12, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 18 },
   skipT: { fontSize: 12, color: "#BFB4C4", marginTop: 12, textDecorationLine: "underline" },
