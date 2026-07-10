@@ -172,6 +172,7 @@ class ContentLesson(Base):
     tip: Mapped[str] = mapped_column(String, default="")
     prompt: Mapped[str] = mapped_column(String, default="")
     brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # Thẻ nhiệm vụ (Pha C+)
+    sample_voice_key: Mapped[str | None] = mapped_column(String, nullable=True)  # giọng MC mẫu đọc theo (P1-4)
     order_index: Mapped[int] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String, default="draft")
 

@@ -21,7 +21,7 @@ async function req(path: string, opts: { method?: string; body?: any } = {}) {
 }
 
 export type Brief = { objective?: string; context?: string; steps?: string[]; example?: string };
-export type LessonNode = { id: string; title: string; tip: string; prompt: string; brief: Brief | null; status: string; order_index: number };
+export type LessonNode = { id: string; title: string; tip: string; prompt: string; brief: Brief | null; status: string; order_index: number; sample_voice_url?: string | null };
 export type SessionNode = { id: string; title: string; status: string; order_index: number; lessons: LessonNode[] };
 export type LevelNode = { id: string; name: string; status: string; sessions: SessionNode[] };
 export type Tree = { id: string; title: string; genre: string; genre_id: string; status: string; is_free: boolean; levels: LevelNode[] };
@@ -64,4 +64,27 @@ export const Api = {
   aiSuggest: (body: { genre: string; lesson_title: string; prompt: string; field: string }) =>
     req("/admin/ai-suggest", { method: "POST", body }),
   criteria: (genre: string) => req("/admin/criteria?genre=" + encodeURIComponent(genre)),
+  uploadSampleVoice,
+  deleteSampleVoice
 };
+
+// Giọng MC mẫu cho bài (P1-4) — multipart, không đi qua req() vì req set JSON header
+async function uploadSampleVoice(lessonId: string, file: File) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const r = await fetch(`/admin/lessons/${lessonId}/sample-voice`, {
+    method: "POST",
+    headers: token ? { Authorization: "Bearer " + token } : {},
+    body: fd,
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(data?.detail?.error?.message || "Upload lỗi");
+  return data as { sample_voice_url: string };
+}
+async function deleteSampleVoice(lessonId: string) {
+  const r = await fetch(`/admin/lessons/${lessonId}/sample-voice`, {
+    method: "DELETE",
+    headers: token ? { Authorization: "Bearer " + token } : {},
+  });
+  if (!r.ok) throw new Error("Xoá lỗi");
+}

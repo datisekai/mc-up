@@ -466,6 +466,7 @@ async def get_path_tree(s: AsyncSession, path_id: str) -> dict | None:
             out_sessions.append({"id": cs.id, "title": cs.title, "status": cs.status, "order_index": cs.order_index,
                                  "lessons": [{"id": ln.id, "title": ln.title, "tip": ln.tip,
                                               "prompt": ln.prompt, "brief": ln.brief,
+                                              "sample_voice_url": sign_media(ln.sample_voice_key) if ln.sample_voice_key else None,
                                               "status": ln.status, "order_index": ln.order_index} for ln in lessons]})
         out_levels.append({"id": lv.id, "name": lv.name, "status": lv.status, "sessions": out_sessions})
     return {"id": path.id, "title": path.title, "genre": genre.name if genre else "",
@@ -1015,6 +1016,7 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
         out.append({"id": ln.id, "buoi": buoi, "order_index": i, "title": ln.title,
                     "tip": ln.tip, "prompt": ln.prompt, "brief": ln.brief, "criteria": criteria,
                     "level": lv_name,  # tên cấp độ — client nhóm thành chặng SHOW (P1-2)
+                    "sample_voice_url": sign_media(ln.sample_voice_key) if ln.sample_voice_key else None,
                     "unlocked": prev_done, "done": is_done})
         prev_done = is_done
     return out

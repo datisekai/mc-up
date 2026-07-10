@@ -303,6 +303,9 @@ function LessonCard({ lesson, genre, canUp, canDown, busy, onSave, onMove, onDup
   const [tipV, setTipV] = useState(lesson.tip);
   const [promptV, setPromptV] = useState(lesson.prompt);
   const [sparkBusy, setSparkBusy] = useState<string | null>(null);
+  const { message } = AntApp.useApp();
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(lesson.sample_voice_url ?? null);
+  const [voiceBusy, setVoiceBusy] = useState(false);
 
   function saveBrief(patch: Partial<Brief>) {
     const next = { ...brief, ...patch };
@@ -361,6 +364,39 @@ function LessonCard({ lesson, genre, canUp, canDown, busy, onSave, onMove, onDup
           <F label="Dàn ý (mỗi dòng một bước)" field="steps" value={(brief.steps ?? []).join("\n")}
             onCommit={(v) => saveBrief({ steps: v.split("\n").map((x) => x.trim()).filter(Boolean) })} />
           <F label='Ví dụ mẫu (ẩn sau "Bí quá?" trong app)' field="example" value={brief.example ?? ""} onCommit={(v) => saveBrief({ example: v })} />
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text type="secondary" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Giọng MC mẫu (học viên nghe rồi đọc theo)
+            </Typography.Text>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+              {voiceUrl ? (<>
+                <audio controls src={voiceUrl} style={{ height: 32, maxWidth: 260 }} />
+                <Tooltip title="Xoá giọng mẫu của bài này">
+                  <Button size="small" danger loading={voiceBusy} onClick={async () => {
+                    setVoiceBusy(true);
+                    try { await Api.deleteSampleVoice(lesson.id); setVoiceUrl(null); message.success("Đã xoá giọng mẫu"); }
+                    catch (e: any) { message.error(e.message); }
+                    setVoiceBusy(false);
+                  }}>Xoá</Button>
+                </Tooltip>
+              </>) : (
+                <Tooltip title="Tải audio (m4a/mp3) giọng MC đọc bài mẫu — app hiện nút Nghe mẫu trong màn thu">
+                  <Button size="small" icon={<UploadOutlined />} loading={voiceBusy} onClick={() => {
+                    const inp = document.createElement("input");
+                    inp.type = "file"; inp.accept = "audio/*";
+                    inp.onchange = async () => {
+                      const f = inp.files?.[0]; if (!f) return;
+                      setVoiceBusy(true);
+                      try { const r = await Api.uploadSampleVoice(lesson.id, f); setVoiceUrl(r.sample_voice_url); message.success("Đã tải giọng mẫu"); }
+                      catch (e: any) { message.error(e.message); }
+                      setVoiceBusy(false);
+                    };
+                    inp.click();
+                  }}>Tải giọng mẫu</Button>
+                </Tooltip>
+              )}
+            </div>
+          </div>
           <Typography.Text type="secondary" style={{ display: "block", marginTop: 10, fontSize: 12.5 }}>
             Tiêu chí đạt KHÔNG nhập tay — sinh tự động từ rubric thể loại "{genre}" (1 nguồn sự thật). Bấm <EyeOutlined /> để xem.
           </Typography.Text>

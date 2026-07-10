@@ -1,13 +1,15 @@
 """Admin API — Pha A admin-panel-plan: CRUD cây nội dung + duplicate + reorder +
 publish/unpublish + AI-split + AI-gợi-ý từng ô + preview tiêu chí.
 Mọi endpoint sau _require_admin (AD-7); node mới luôn draft (AD-12)."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
 from ..db import get_session
+from ..media import media
 from ..deps import current_user
+from ..security import sign_media
 from ..models import User
 from ..rubrics import criteria_for
 from ..schemas import AiSplitIn
@@ -175,6 +177,38 @@ async def create_lesson_node(body: dict, user: User = Depends(current_user), ses
     if not lid:
         _404("Không tìm thấy buổi")
     return {"id": lid}
+
+
+@router.post("/lessons/{lesson_id}/sample-voice")
+async def upload_sample_voice(lesson_id: str, file: UploadFile = File(...),
+                              user: User = Depends(current_user),
+                              session: AsyncSession = Depends(get_session)):
+    """Giọng MC MẪU cho bài (P1-4): học viên mới nghe rồi đọc theo (shadowing V1)."""
+    _require_admin(user)
+    cl = await session.get(ContentLesson, lesson_id)
+    if not cl:
+        raise HTTPException(404, {"error": {"code": "no_lesson", "message": "Không thấy bài"}})
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, {"error": {"code": "empty_audio", "message": "File rỗng"}})
+    ext = (file.filename or "sample.m4a").split(".")[-1]
+    key = f"sample-{lesson_id}.{ext}"
+    await media.put(key, data, file.content_type or "audio/m4a")
+    cl.sample_voice_key = key
+    await session.commit()
+    return {"ok": True, "sample_voice_url": sign_media(key)}
+
+
+@router.delete("/lessons/{lesson_id}/sample-voice")
+async def delete_sample_voice(lesson_id: str, user: User = Depends(current_user),
+                              session: AsyncSession = Depends(get_session)):
+    _require_admin(user)
+    cl = await session.get(ContentLesson, lesson_id)
+    if not cl:
+        raise HTTPException(404, {"error": {"code": "no_lesson", "message": "Không thấy bài"}})
+    cl.sample_voice_key = None
+    await session.commit()
+    return {"ok": True}
 
 
 @router.post("/lessons/{lesson_id}/duplicate")

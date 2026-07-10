@@ -11,13 +11,14 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { C, F, T } from "./theme";
-import { Bolt, Mic } from "./icons";
+import { Bolt, Mic, Pause, Play } from "./icons";
 import Misa from "./Misa";
 import GenreScene from "./scenes";
 import { setRecording, sfx } from "./sound";
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 export type RecLesson = {
+  sample_voice_url?: string | null;  // giọng MC mẫu (P1-4) — nghe rồi đọc theo
   id: string; buoi: number; title: string; tip: string; prompt: string;
   brief?: Brief | null; criteria?: string[];
 };
@@ -39,6 +40,28 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
   onBack: () => void;
 }) {
   const [mode, setMode] = useState<"ready" | "count" | "rec">("ready");
+  // Nghe giọng MC MẪU (P1-4) — người mới nghe 1 lần rồi đọc theo prompter
+  const [playingSample, setPlayingSample] = useState(false);
+  const sampleRef = useRef<Audio.Sound | null>(null);
+  useEffect(() => () => { sampleRef.current?.unloadAsync().catch(() => {}); }, []);
+  async function toggleSample() {
+    try {
+      if (playingSample) {
+        await sampleRef.current?.stopAsync();
+        setPlayingSample(false);
+        return;
+      }
+      if (!lesson.sample_voice_url) return;
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true });
+      if (!sampleRef.current) {
+        const { sound } = await Audio.Sound.createAsync({ uri: lesson.sample_voice_url });
+        sound.setOnPlaybackStatusUpdate((st: any) => { if (st.didJustFinish) setPlayingSample(false); });
+        sampleRef.current = sound;
+      }
+      await sampleRef.current.replayAsync();
+      setPlayingSample(true);
+    } catch { setPlayingSample(false); }
+  }
   const [showEx, setShowEx] = useState(false);
   useEffect(() => {
     AsyncStorage.getItem("prompter_open").then((v) => {
@@ -250,6 +273,12 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
             <Text style={st.moreLink}>Xem đủ đề bài (mục tiêu · tình huống · tiêu chí)</Text>
           </TouchableOpacity>
         ) : null}
+        {lesson.sample_voice_url ? (
+          <TouchableOpacity style={st.sampleBtn} onPress={toggleSample} accessibilityLabel="Nghe giọng MC mẫu">
+            {playingSample ? <Pause size={15} color="#fff" /> : <Play size={15} color="#fff" />}
+            <Text style={st.sampleBtnT}>{playingSample ? "Dừng giọng mẫu" : "Nghe giọng MC mẫu"}</Text>
+          </TouchableOpacity>
+        ) : null}
         {lesson.brief?.example ? (showEx ? (
           <View style={st.prompter}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -320,6 +349,8 @@ const st = StyleSheet.create({
   stepNum: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#FFE3DE", alignItems: "center", justifyContent: "center", borderBottomWidth: 2.5, borderBottomColor: "#F5C2BA", marginTop: 1 },
   stepNumT: { fontFamily: F.displayX, fontSize: 13, color: C.primary },
   critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
+  sampleBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: C.ink, borderRadius: 14, borderBottomWidth: 4, borderBottomColor: "#241A2E", paddingVertical: 11, marginTop: 12 },
+  sampleBtnT: { color: "#FFC24B", fontFamily: F.title, fontSize: 15 },
   prompter: { backgroundColor: "#FFF3DA", borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 2, borderColor: "#F5DFAE" },
   prompterLabel: { fontWeight: "800", fontSize: 12, color: "#8a5a13", letterSpacing: 0.4 },
   prompterHide: { color: "#8a5a13", fontWeight: "800", fontSize: 13, textDecorationLine: "underline" },
