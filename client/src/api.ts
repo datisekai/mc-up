@@ -3,10 +3,14 @@
 // API_BASE lấy từ biến môi trường EXPO_PUBLIC_API_URL — tách env RÕ RÀNG:
 //   - DEV local (Expo Go):  client/.env  (gitignored) → IP LAN máy bạn (cp .env.example .env)
 //   - BUILD TestFlight/APK: eas.json → build.<profile>.env → LUÔN là https://mcup.fun (prod)
-// Không set gì → fallback an toàn: dev = localhost, build thật = prod.
-export const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (__DEV__ ? "http://localhost:8000" : "https://mcup.fun");
+//
+// CHỐT AN TOÀN (sự cố 2026-07-10): `eas update` bundle trên máy dev và đọc cả .env
+// → từng đẩy OTA trỏ user production về IP LAN. Ngoài việc release-ios.sh ép env,
+// bản production (__DEV__=false) CHỈ chấp nhận URL https:// — sai thì tự về domain thật.
+const _env = process.env.EXPO_PUBLIC_API_URL;
+export const API_BASE = __DEV__
+  ? (_env ?? "http://localhost:8000")
+  : (_env?.startsWith("https://") ? _env : "https://mcup.fun");
 
 // Lỗi API có phân loại: mạng (không kết nối được) vs xác thực (token hỏng) vs khác.
 // Nhờ đó App phân biệt "mạng chập chờn → giữ phiên, thử lại" với "token hết hạn → về đăng nhập".
