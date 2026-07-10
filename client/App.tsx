@@ -15,7 +15,7 @@ import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { BoltSticker, ChevronUp, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, User } from "./src/icons";
 import { Btn3D, ProgressBar } from "./src/ui";
-import Misa from "./src/Misa";
+import Misa, { MisaHead } from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
 import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
@@ -476,7 +476,10 @@ export default function App() {
       <View style={s.app}>
         <StatusBar style="dark" />
         <View style={s.header}>
-          <Text style={s.brand}>McUp · MC</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+          <Text style={s.brand}>Mc</Text><MisaHead size={21} /><Text style={[s.brand, { color: C.primary }]}>p</Text>
+          <Text style={[s.brand, { marginLeft: 6 }]}>· MC</Text>
+        </View>
           <TouchableOpacity onPress={logout}><Text style={{ color: C.primary, fontWeight: "800" }}>Đăng xuất</Text></TouchableOpacity>
         </View>
         <ScrollView contentContainerStyle={{ padding: 16 }}
@@ -506,7 +509,9 @@ export default function App() {
     <View style={s.app}>
       <StatusBar style="dark" />
       <View style={s.header}>
-        <Text style={s.brand}>McUp</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+          <Text style={s.brand}>Mc</Text><MisaHead size={21} /><Text style={[s.brand, { color: C.primary }]}>p</Text>
+        </View>
         <View style={s.chipCluster}>
           {!prog.is_pro
             ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><BoltSticker size={17} /><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)

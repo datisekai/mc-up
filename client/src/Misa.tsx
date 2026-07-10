@@ -204,3 +204,17 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
     </Animated.View>
   );
 }
+
+
+// Logo wordmark phương án 2 (Finn chốt 2026-07-10): đầu Misa THAY chữ "U".
+// Dùng ở header app; landing/app-icon có bản SVG/PNG riêng cùng ngôn ngữ.
+export function MisaHead({ size = 22 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Circle cx="24" cy="24" r="21" fill={CORAL} stroke={PLUM} strokeWidth={4} />
+      <Circle cx="17" cy="22" r="4.6" fill="#fff" /><Circle cx="18.2" cy="23" r="2.5" fill={PLUM} />
+      <Circle cx="31" cy="22" r="4.6" fill="#fff" /><Circle cx="32.2" cy="23" r="2.5" fill={PLUM} />
+      <Path d="M17.5 31 q6.5 5.5 13 0" stroke={PLUM} strokeWidth={3} fill="none" strokeLinecap="round" />
+    </Svg>
+  );
+}
