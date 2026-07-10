@@ -3,7 +3,7 @@
 // auto-record khi trượt tới; trang Hết hàng là điểm dừng thật (không auto-loop).
 import { useRef, useState } from "react";
 import {
-  AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View,
+  AccessibilityInfo, ActivityIndicator, Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
@@ -56,6 +56,8 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
   const startAt = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const scroll = useRef<ScrollView>(null);
+  // vị trí cuộn chạy trên NATIVE driver → trang co/mờ theo NGÓN TAY, 60fps không qua JS
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduced); }, []);
   useEffect(() => () => { timers.current.forEach(clearTimeout); setRecAudio(false); recRef.current?.stopAndUnloadAsync().catch(() => {}); }, []);
@@ -145,18 +147,26 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
   return (
     <View style={{ flex: 1 }} onLayout={(e) => setPageH(e.nativeEvent.layout.height)}>
       {pageH > 0 && (
-        <ScrollView
-          ref={scroll}
+        <Animated.ScrollView
+          ref={scroll as any}
           pagingEnabled
+          decelerationRate="fast"
           scrollEnabled={!locked && !reduced}
           showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
           onMomentumScrollEnd={(e) => {
             const i = Math.round(e.nativeEvent.contentOffset.y / pageH);
             if (i !== cur) { setCur(i); Haptics.selectionAsync().catch(() => {}); }
           }}
         >
-          {pages.map((p, pi) => (
-            <View key={pi} style={{ height: pageH }}>
+          {pages.map((p, pi) => {
+            // trang co nhẹ + mờ dần khi rời tâm — cảm giác "trượt qua thẻ" kiểu Reels.
+            const range = [(pi - 1) * pageH, pi * pageH, (pi + 1) * pageH];
+            const scale = scrollY.interpolate({ inputRange: range, outputRange: [0.93, 1, 0.93], extrapolate: "clamp" });
+            const opacity = scrollY.interpolate({ inputRange: range, outputRange: [0.4, 1, 0.4], extrapolate: "clamp" });
+            return (
+            <Animated.View key={pi} style={{ height: pageH, ...(reduced ? {} : { transform: [{ scale }], opacity }) }}>
               {p.kind === "lesson" && (
                 <LessonPage
                   lesson={p.lesson}
@@ -187,9 +197,10 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
                   </TouchableOpacity>
                 </View>
               )}
-            </View>
-          ))}
-        </ScrollView>
+            </Animated.View>
+            );
+          })}
+        </Animated.ScrollView>
       )}
 
       {/* thoát + vị trí */}
