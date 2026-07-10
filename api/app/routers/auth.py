@@ -99,9 +99,37 @@ async def upgrade(body: RegisterIn, user: User = Depends(current_user),
     return TokenOut(access_token=make_token(user.id, user.role), role=user.role)
 
 
+# Chống dò mật khẩu (brute-force): tối đa 5 lần sai / 15 phút cho mỗi cặp IP+email.
+# In-memory — đủ cho 1 process; sang nhiều worker thì chuyển Redis.
+_login_fail: dict[str, tuple[float, int]] = {}
+_LOGIN_WINDOW_SEC = 900
+_LOGIN_MAX_FAILS = 5
+
+
 @router.post("/login", response_model=TokenOut)
-async def login(body: LoginIn, session: AsyncSession = Depends(get_session)):
+async def login(body: LoginIn, request: Request, session: AsyncSession = Depends(get_session)):
+    import time
+
+    key = f"{_client_ip(request)}|{body.email.strip().lower()}"
+    now = time.time()
+    first, fails = _login_fail.get(key, (now, 0))
+    if now - first > _LOGIN_WINDOW_SEC:
+        first, fails = now, 0
+    if fails >= _LOGIN_MAX_FAILS:
+        wait_min = max(1, int((_LOGIN_WINDOW_SEC - (now - first)) / 60))
+        raise HTTPException(429, {"error": {"code": "too_many_attempts",
+            "message": f"Sai quá nhiều lần — thử lại sau {wait_min} phút nhé."}})
+
     user = (await session.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if not user or not verify_password(body.password, user.password_hash):
+        if len(_login_fail) > 10_000:  # dọn entry hết hạn, chặn phình bộ nhớ
+            _login_fail_clean(now)
+        _login_fail[key] = (first, fails + 1)
         raise HTTPException(401, {"error": {"code": "bad_credentials", "message": "Sai email hoặc mật khẩu"}})
+    _login_fail.pop(key, None)
     return TokenOut(access_token=make_token(user.id, user.role), role=user.role)
+
+
+def _login_fail_clean(now: float) -> None:
+    for k in [k for k, (t, _) in _login_fail.items() if now - t > _LOGIN_WINDOW_SEC]:
+        _login_fail.pop(k, None)
