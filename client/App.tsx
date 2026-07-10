@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator, Alert, Linking, PanResponder, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
+  ActivityIndicator, Alert, Animated, Dimensions, Linking, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Audio } from "expo-av";
@@ -26,6 +26,9 @@ import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
+
+const WIN_W = Dimensions.get("window").width;
+const TAB_KEYS = ["hv", "mc", "hs"] as const;
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
@@ -94,15 +97,14 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }
 
-  // cử chỉ: vuốt ngang đổi tab TỪ MỌI MÀN (accelerator — tab đáy vẫn chạm được).
-  // Không capture nên pill ngang/pager Reels vẫn thắng khi chúng là responder.
-  const tabSwipe = useRef(PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 28 && Math.abs(g.dx) > Math.abs(g.dy) * 2.2,
-    onPanResponderRelease: (_, g) => {
-      if (g.dx < -50) setTab("hs");
-      else if (g.dx > 50) setTab("hv");
-    },
-  })).current;
+  // pager NGANG cho 3 tab (Lộ trình · MC · Hồ sơ) — trang bám theo ngón tay,
+  // thay cho PanResponder cũ (thả tay mới nhảy bụp, không animation).
+  const pagerRef = useRef<ScrollView>(null);
+  const pagerX = useRef(new Animated.Value(0)).current;
+  function goTab(t: "hv" | "mc" | "hs") {
+    setTab(t);
+    pagerRef.current?.scrollTo({ x: TAB_KEYS.indexOf(t) * WIN_W, animated: true });
+  }
 
   // dạy cử chỉ đúng 1 lần (discoverability — không ai đoán được gesture vô hình)
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function App() {
     AsyncStorage.getItem("hint_swipe").then((v) => {
       if (v) return;
       AsyncStorage.setItem("hint_swipe", "1");
-      setTimeout(() => showToast("Mẹo: vuốt ngang để đổi Lộ trình ↔ Hồ sơ"), 1200);
+      setTimeout(() => showToast("Mẹo: vuốt ngang để đổi tab"), 1200);
     });
   }, [token, role]);
 
@@ -478,7 +480,6 @@ export default function App() {
   // Minimal UI: header 1 dòng (logo + 1 cụm chip) · KHÔNG tab trên đầu ·
   // tab bar icon ở ĐÁY (chuẩn native, EXPERIENCE.md IA) · vuốt ngang đổi tab từ mọi màn
   // (trừ đang luyện/Reels để không vuốt nhầm).
-  const swipeEnabled = (screen === "feed" || screen === "score" || tab === "hs" || tab === "mc");
   // Thanh năng lượng (Duolingo-style): đủ để học thêm bài không?
   const energy = prog.energy ?? prog.energy_max ?? 30;
   const energyMax = prog.energy_max ?? 30;
@@ -507,10 +508,7 @@ export default function App() {
         </View>
       </View>
 
-      {tab === "mc" ? (
-        <Mentors mentors={mentors}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
-      ) : tab === "hv" && screen === "reels" ? (
+      {tab === "hv" && screen === "reels" ? (
         <ReelsPager
           lessons={lessons as ReelsLesson[]}
           startIndex={Math.max(0, lessons.findIndex((l) => l.unlocked && !l.done))}
@@ -519,8 +517,25 @@ export default function App() {
           onExit={() => safeRefresh()}
         />
       ) : (
-      <View style={{ flex: 1, marginBottom: 62 }} {...(swipeEnabled ? tabSwipe.panHandlers : {})}>
-        {tab === "hv" && screen === "feed" ? (
+      <Animated.ScrollView
+        ref={pagerRef as any}
+        horizontal
+        pagingEnabled
+        decelerationRate="fast"
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
+        // đang thu âm thì khoá vuốt ngang (tránh trượt nhầm giữa chừng)
+        scrollEnabled={screen !== "practice"}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: pagerX } } }], { useNativeDriver: true })}
+        onMomentumScrollEnd={(e) => {
+          const t = TAB_KEYS[Math.round(e.nativeEvent.contentOffset.x / WIN_W)];
+          if (t && t !== tab) { setTab(t); sfx("pop"); if (t === "hs") setNewBadge(false); }
+        }}
+        style={{ flex: 1, marginBottom: 62 }}
+      >
+      {/* ── Trang 1: Lộ trình (feed / luyện / điểm) ── */}
+      <View style={{ width: WIN_W, flex: 1 }}>
+        {screen === "feed" ? (
           <View style={{ flex: 1 }}>
             {paths.length > 0 && (
               <View>
@@ -564,13 +579,12 @@ export default function App() {
         ) : (
         <ScrollView
           contentContainerStyle={{ padding: 16 }}
-          refreshControl={tab === "hs" ? <RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} /> : undefined}
           onScrollEndDrag={(e) => {
             // cử chỉ: kéo xuống ở màn điểm → về bản đồ (nút vẫn còn — gesture chỉ là đường tắt)
             if (screen === "score" && e.nativeEvent.contentOffset.y < -70) safeRefresh();
           }}
         >
-          {tab === "hv" && screen === "practice" && curLesson && (
+          {screen === "practice" && curLesson && (
             <View>
               <Kicker>Buổi {curLesson.buoi} · {curLesson.title}</Kicker>
               <RecordScreen
@@ -583,7 +597,7 @@ export default function App() {
               />
             </View>
           )}
-          {tab === "hv" && screen === "score" && score && (
+          {screen === "score" && score && (
             <View>
               <Kicker>{score.unclear ? "Chưa chấm được" : "Kết quả của bạn"}</Kicker>
               <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
@@ -597,25 +611,44 @@ export default function App() {
               <Text style={s.pullHint}>kéo xuống để về bản đồ</Text>
             </View>
           )}
-          {tab === "hs" && <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />}
         </ScrollView>
         )}
       </View>
+
+      {/* ── Trang 2: MC ── */}
+      <View style={{ width: WIN_W, flex: 1 }}>
+        <Mentors mentors={mentors}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
+      </View>
+
+      {/* ── Trang 3: Hồ sơ ── */}
+      <View style={{ width: WIN_W, flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ padding: 16 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />}
+        >
+          <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />
+        </ScrollView>
+      </View>
+      </Animated.ScrollView>
       )}
 
       {/* tab bar đáy — icon, chuẩn native (3 tab: Lộ trình · MC · Hồ sơ) */}
       {screen !== "reels" && (
         <View style={s.bottomBar}>
-          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
+          {/* vạch chỉ tab TRƯỢT theo ngón tay khi vuốt ngang (native driver) */}
+          <Animated.View style={[s.tabIndicator, { transform: [{ translateX: pagerX.interpolate({
+            inputRange: [0, WIN_W * 2], outputRange: [0, (WIN_W * 2) / 3], extrapolate: "clamp" }) }] }]} />
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
             accessibilityLabel="Tab Lộ trình">
             <MapIcon size={22} color={tab === "hv" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("mc"); }} accessibilityLabel="Tab MC">
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("mc"); }} accessibilityLabel="Tab MC">
             <Trophy size={22} color={tab === "mc" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "mc" && { color: C.primary }]}>MC</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); setTab("hs"); setNewBadge(false); }} accessibilityLabel="Tab Hồ sơ">
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hs"); setNewBadge(false); }} accessibilityLabel="Tab Hồ sơ">
             <View>
               <User size={22} color={tab === "hs" ? C.primary : C.ink2} />
               {newBadge && <View style={s.tabDot} />}
@@ -887,6 +920,10 @@ const s = StyleSheet.create({
     position: "absolute", bottom: 0, left: 0, right: 0, flexDirection: "row",
     backgroundColor: C.raised, borderTopWidth: 1, borderTopColor: C.hair,
     paddingTop: 8, paddingBottom: 26,
+  },
+  tabIndicator: {
+    position: "absolute", top: -1, left: 0, width: WIN_W / 3, height: 3,
+    borderRadius: 2, backgroundColor: C.primary,
   },
   bTab: { flex: 1, alignItems: "center", gap: 2 },
   bTabT: { fontSize: 10.5, fontFamily: F.semi, color: C.ink2 },
