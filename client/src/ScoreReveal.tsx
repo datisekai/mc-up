@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { C, F } from "./theme";
+import { Mic } from "./icons";
 import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
@@ -69,7 +70,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
     return (
       <View style={st.card}>
         <View style={st.unclearWrap}>
-          <Text style={st.unclearIcon}>🎙</Text>
+          <Mic size={44} color="#B8A79B" />
           <Text style={st.unclearTitle}>Mình chưa nghe rõ giọng bạn</Text>
           <Text style={st.unclearSub}>
             Có thể mic hơi xa hoặc tiếng hơi nhỏ.{"\n"}

@@ -8,7 +8,7 @@ import {
 import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 import { Audio } from "expo-av";
 import { C, F } from "./theme";
-import { Fire, MapIcon, Mic, Star, Trophy } from "./icons";
+import { ChevronLeft, Fire, MapIcon, Mic, Star, Trophy } from "./icons";
 
 export type OnboardPrefs = {
   goal: string;          // keyword khớp Genre: "" | "đám cưới" | "sự kiện" | "livestream" | "nhí"
@@ -110,7 +110,7 @@ export default function Onboarding({ onDone }: { onDone: (prefs: OnboardPrefs) =
     <View style={st.wrap}>
       <View style={st.top}>
         <TouchableOpacity onPress={back} style={{ width: 40 }}>
-          {step > 1 && <Text style={st.back}>‹</Text>}
+          {step > 1 && <ChevronLeft size={26} color="#3B2A4A" />}
         </TouchableOpacity>
         <View style={st.dots} accessibilityLabel={`Bước ${step}/${TOTAL}`}>
           {Array.from({ length: TOTAL }).map((_, i) => (

@@ -8,7 +8,7 @@ import {
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { C, F } from "./theme";
-import { Fire, Lock, Mic } from "./icons";
+import { Bulb, ChevronDown, ChevronUp, Fire, Lock, Mic, X } from "./icons";
 import ScoreReveal, { ScoreData } from "./ScoreReveal";
 import { RecLesson } from "./RecordScreen";
 import { setRecording as setRecAudio, sfx } from "./sound";
@@ -180,7 +180,7 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
               )}
               {p.kind === "breather" && (
                 <View style={st.centerPage}>
-                  <View style={st.bulb}><Text style={{ fontSize: 26 }}>💡</Text></View>
+                  <View style={st.bulb}><Bulb size={28} color="#F5A623" /></View>
                   <Text style={st.breatherLabel}>MẸO TỪ MC THẬT</Text>
                   <Text style={st.breatherTip}>“{p.b.tip}”</Text>
                   <Text style={st.breatherBy}>— {p.b.by}</Text>
@@ -205,7 +205,7 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
 
       {/* thoát + vị trí */}
       <TouchableOpacity style={st.exit} onPress={onExit} accessibilityLabel="Thoát chế độ luyện liên tục">
-        <Text style={st.exitT}>✕</Text>
+        <X size={17} color="#FFF8F0" />
       </TouchableOpacity>
       <View style={st.pos} pointerEvents="none">
         <Text style={st.posT}>
@@ -218,10 +218,10 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
       {reduced && !locked && (
         <View style={st.rmNav}>
           <TouchableOpacity style={st.rmBtn} onPress={() => { setCur(Math.max(0, cur - 1)); goto(cur - 1); }}>
-            <Text style={st.rmT}>▲ Bài trước</Text>
+            <ChevronUp size={14} color="#FFF8F0" /><Text style={st.rmT}>Bài trước</Text>
           </TouchableOpacity>
           <TouchableOpacity style={st.rmBtn} onPress={() => { setCur(Math.min(pages.length - 1, cur + 1)); goto(cur + 1); }}>
-            <Text style={st.rmT}>▼ Bài kế</Text>
+            <ChevronDown size={14} color="#FFF8F0" /><Text style={st.rmT}>Bài kế</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -352,6 +352,6 @@ const st = StyleSheet.create({
   posT: { color: "#FFF8F0", fontSize: 11, fontFamily: F.semi },
 
   rmNav: { position: "absolute", bottom: 18, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 10 },
-  rmBtn: { backgroundColor: C.sunken, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 10 },
+  rmBtn: { backgroundColor: C.sunken, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 5 },
   rmT: { color: C.ink, fontFamily: F.title, fontSize: 12.5 },
 });

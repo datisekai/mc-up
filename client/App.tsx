@@ -13,7 +13,7 @@ import { C, F } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { Bolt, Fire, MapIcon, Star, Ticket, Trophy, User } from "./src/icons";
+import { Bolt, ChevronUp, Fire, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, Star, Ticket, Trophy, User } from "./src/icons";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
 import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
@@ -550,7 +550,7 @@ export default function App() {
             {loadError && (
               <TouchableOpacity style={s.errorBanner} onPress={safeRefresh} accessibilityLabel="Thử tải lại">
                 <Text style={{ flex: 1, color: "#8a3d33", fontWeight: "700", fontSize: 13 }}>Chưa tải được dữ liệu — chạm để thử lại</Text>
-                <Text style={{ color: "#8a3d33", fontWeight: "800" }}>↻</Text>
+                <Refresh size={16} color="#8a3d33" />
               </TouchableOpacity>
             )}
             {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
@@ -573,7 +573,7 @@ export default function App() {
             )}
             {/* điểm vào Practice Reels — bản đồ = duyệt, Reels = làm */}
             <TouchableOpacity style={s.reelsFab} onPress={() => tryEnterLesson(() => setScreen("reels"))} accessibilityLabel="Luyện liên tục — vuốt dọc qua các bài">
-              <Text style={s.reelsFabT}>▲ Luyện liên tục</Text>
+              <ChevronUp size={15} color="#fff" /><Text style={s.reelsFabT}>Luyện liên tục</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -603,7 +603,7 @@ export default function App() {
               <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
               {score.unclear ? (
                 // không nghe được → mời thu lại ngay, KHÔNG mời gửi MC (phí vé vô ích)
-                <Btn label="Thử lại ngay 🎙" onPress={() => setScreen("practice")} />
+                <Btn icon={<Mic size={16} color="#fff" />} label="Thử lại ngay" onPress={() => setScreen("practice")} />
               ) : (
                 <Btn gold label="Gửi cho MC thật (Vé Vàng)" onPress={sendVeVang} />
               )}
@@ -798,7 +798,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
         <BadgeCardView key={r.id} badge={r.badge} audioBase={API_BASE} />
       ))}
       {waiting && <Text style={{ color: C.ink2, paddingHorizontal: 4, marginTop: 4 }}>Có clip đang chờ MC nghe bạn dẫn…</Text>}
-      <Btn ghost label={soundOn ? "Âm thanh: Bật 🔊" : "Âm thanh: Tắt 🔇"} onPress={onToggleSound} />
+      <Btn ghost icon={soundOn ? <SoundOn size={16} color={C.ink} /> : <SoundOff size={16} color={C.ink} />} label={soundOn ? "Âm thanh: Bật" : "Âm thanh: Tắt"} onPress={onToggleSound} />
       {/* Điều khoản & Chính sách bảo mật (mở trang web) */}
       <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 14, marginBottom: 2 }}>
         <TouchableOpacity onPress={() => Linking.openURL(API_BASE + "/terms").catch(() => {})}>
@@ -809,7 +809,7 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
         </TouchableOpacity>
       </View>
       {/* kênh góp ý cho bản test — mở mail có sẵn tiêu đề */}
-      <Btn ghost label="Góp ý cho McUp 💌" onPress={() =>
+      <Btn ghost icon={<Mail size={16} color={C.ink} />} label="Góp ý cho McUp" onPress={() =>
         Linking.openURL("mailto:datly030102@gmail.com?subject=" + encodeURIComponent("Góp ý McUp beta")
           + "&body=" + encodeURIComponent("Mình thấy...")).catch(() => {})
       } />
@@ -897,7 +897,7 @@ const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
-const Btn = ({ label, onPress, ghost, gold }: any) => <TouchableOpacity onPress={() => { sfx("tap"); onPress?.(); }} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}><Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
+const Btn = ({ label, onPress, ghost, gold, icon }: any) => <TouchableOpacity onPress={() => { sfx("tap"); onPress?.(); }} style={[s.btn, ghost && s.btnGhost, gold && s.btnGold]}>{icon}<Text style={{ color: ghost ? C.ink : gold ? "#5a3d00" : "#fff", fontFamily: F.title }}>{label}</Text></TouchableOpacity>;
 
 const s = StyleSheet.create({
   app: { flex: 1, backgroundColor: C.base },
@@ -948,12 +948,13 @@ const s = StyleSheet.create({
   reelsFab: {
     position: "absolute", bottom: 22, alignSelf: "center", backgroundColor: C.primary,
     paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999,
+    flexDirection: "row", alignItems: "center", gap: 5,
     shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
   },
   reelsFabT: { color: "#fff", fontFamily: F.title, fontSize: 13.5 },
   kicker: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
   card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
-  btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", marginTop: 8 },
+  btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 7, marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
   rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },

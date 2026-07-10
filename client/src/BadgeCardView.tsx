@@ -8,7 +8,7 @@ import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
 import QRCode from "react-native-qrcode-svg";
 import { C, F } from "./theme";
-import { Check, Mic } from "./icons";
+import { Check, Mic, Pause, Play } from "./icons";
 
 type StatPoint = { speed_wpm: number; filler_count: number };
 export type BadgeData = {
@@ -129,7 +129,7 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
           <View style={[st.voiceBox, { backgroundColor: k.raised }]}>
             <TouchableOpacity style={[st.playBtn, { backgroundColor: k.accent }]} onPress={togglePlay}
               accessibilityLabel={playing ? "Dừng giọng MC" : "Nghe giọng MC"}>
-              <Text style={st.playT}>{playing ? "❚❚" : "▶"}</Text>
+              {playing ? <Pause size={15} color="#fff" /> : <Play size={15} color="#fff" />}
             </TouchableOpacity>
             <View style={st.waveRow}>
               {wave.map((h, i) => (

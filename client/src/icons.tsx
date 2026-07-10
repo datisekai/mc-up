@@ -5,6 +5,70 @@ type P = { size?: number; color?: string; fill?: boolean };
 const S = (size = 24) => ({ width: size, height: size, viewBox: "0 0 24 24" });
 const stroke = (c: string) => ({ stroke: c, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" });
 
+export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M20 11a8 8 0 1 0-2.2 6.3" {...stroke(color)} />
+    <Polyline points="20 4 20 11 13 11" {...stroke(color)} />
+  </Svg>
+);
+
+export const ChevronUp = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}><Polyline points="5 15 12 8 19 15" {...stroke(color)} /></Svg>
+);
+export const ChevronDown = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}><Polyline points="5 9 12 16 19 9" {...stroke(color)} /></Svg>
+);
+export const ChevronLeft = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}><Polyline points="15 5 8 12 15 19" {...stroke(color)} /></Svg>
+);
+
+export const X = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Line x1="6" y1="6" x2="18" y2="18" {...stroke(color)} />
+    <Line x1="18" y1="6" x2="6" y2="18" {...stroke(color)} />
+  </Svg>
+);
+
+export const Play = ({ size, color = "#fff" }: P) => (
+  <Svg {...S(size)}><Polygon points="8,5 19,12 8,19" fill={color} stroke={color} strokeWidth={2} strokeLinejoin="round" /></Svg>
+);
+export const Pause = ({ size, color = "#fff" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="6" y="5" width="4" height="14" rx="1.5" fill={color} />
+    <Rect x="14" y="5" width="4" height="14" rx="1.5" fill={color} />
+  </Svg>
+);
+
+export const SoundOn = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" {...stroke(color)} />
+    <Path d="M15.5 9a4.2 4.2 0 0 1 0 6" {...stroke(color)} />
+    <Path d="M18 6.5a8 8 0 0 1 0 11" {...stroke(color)} />
+  </Svg>
+);
+export const SoundOff = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" {...stroke(color)} />
+    <Line x1="15.5" y1="9.5" x2="20.5" y2="14.5" {...stroke(color)} />
+    <Line x1="20.5" y1="9.5" x2="15.5" y2="14.5" {...stroke(color)} />
+  </Svg>
+);
+
+export const Mail = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="3" y="5" width="18" height="14" rx="2.5" {...stroke(color)} />
+    <Polyline points="4 7.5 12 13 20 7.5" {...stroke(color)} />
+  </Svg>
+);
+
+export const Bulb = ({ size, color = "#F5A623" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M12 3a6 6 0 0 0-3.6 10.8c.7.55 1.1 1.2 1.1 2.2h5c0-1 .4-1.65 1.1-2.2A6 6 0 0 0 12 3z" {...stroke(color)} />
+    <Line x1="9.5" y1="19" x2="14.5" y2="19" {...stroke(color)} />
+    <Line x1="10.5" y1="21.5" x2="13.5" y2="21.5" {...stroke(color)} />
+  </Svg>
+);
+
 export const Bolt = ({ size, color = "#F5A623" }: P) => (
   <Svg {...S(size)}>
     <Polygon points="13,2 5,13.5 11,13.5 10,22 19,10.5 12.5,10.5"
