@@ -26,6 +26,10 @@ export function Btn3D({ label, onPress, kind = "primary", icon, small, disabled,
   return (
     <Pressable
       disabled={disabled || loading}
+      // trong ScrollView lồng nhau, ngón tay xê dịch vài px là tap bị huỷ →
+      // nới vùng giữ tap + hitSlop để 1 chạm là ăn (feedback V4-1)
+      hitSlop={8}
+      pressRetentionOffset={{ top: 24, bottom: 24, left: 24, right: 24 }}
       onPress={() => { sfx("tap"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); onPress?.(); }}
       style={({ pressed }) => [{
         backgroundColor: disabled ? C.sunken : FACE[kind],

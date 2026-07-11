@@ -225,12 +225,22 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
         if not result["is_mock"] and result.get("transcript"):
             steps = await _lesson_steps(s, clip)
             result["coverage"] = await judge_coverage(result["transcript"], steps, settings.openai_api_key)
+
+        # ===== ĐẠT / RỚT (V4-2): im lặng, quá ngắn, lạc đề = RỚT — không done/XP/vé =====
+        passed, fail_reason = True, None
+        if not result["is_mock"]:
+            n_words = len((result.get("transcript") or "").split())
+            cov = result["coverage"]
+            if result["speed_wpm"] == 0 or result.get("transcript") is None:
+                passed, fail_reason = False, "khong_nghe_ro"    # im lặng/không nghe được
+            elif n_words < 8 or duration < 5:
+                passed, fail_reason = False, "qua_ngan"          # nói quá ngắn, chưa thành bài
+            elif cov and len(cov["steps"]) >= 2 and not any(cov["covered"]):
+                passed, fail_reason = False, "lac_de"            # không chạm ý nào của dàn ý
+        result["passed"], result["fail_reason"] = passed, fail_reason
         s.add(Score(clip_id=clip_id, **result))  # phần Xác, tách khỏi MCReview (AD-5)
 
-        # "Chưa nghe rõ" (ASR thật, wpm=0) = KHÔNG phải bài hoàn thành → không XP/streak/vé
-        # (vừa đúng logic, vừa chặn farm vé bằng clip im lặng)
-        unclear = (not result["is_mock"]) and result["speed_wpm"] == 0
-        if not unclear:
+        if passed:
             prog = await s.get(Progress, user_id)
             today = date.today()
             if prog.last_day != today:  # idempotent theo ngày (AD-3)
@@ -1007,7 +1017,8 @@ async def get_content_lessons_for_user(s: AsyncSession, path_id: str, user_id: s
     if ids:
         rows = (await s.execute(
             select(Clip.content_lesson_id).join(Score, Score.clip_id == Clip.id)
-            .where(Clip.user_id == user_id, Clip.content_lesson_id.in_(ids))
+            .where(Clip.user_id == user_id, Clip.content_lesson_id.in_(ids),
+                   Score.passed == True)  # noqa: E712 — RỚT không tính hoàn thành (V4-2)
         )).scalars().all()
         done = set(rows)
     out, prev_done = [], True

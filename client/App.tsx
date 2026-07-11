@@ -36,7 +36,7 @@ type Brief = { objective: string; context: string; steps: string[]; example: str
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
 type Score = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
-  transcript?: string | null; unclear?: boolean;
+  transcript?: string | null; unclear?: boolean; passed?: boolean; fail_reason?: string | null;
   coverage?: { steps: string[]; covered: boolean[] } | null;
   positives?: string[]; improvements?: string[];
 };
@@ -541,8 +541,8 @@ export default function App() {
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
-        // đang thu âm thì khoá vuốt ngang (tránh trượt nhầm giữa chừng)
-        scrollEnabled={screen !== "practice"}
+        // chỉ vuốt ngang ở màn bản đồ — màn thu/điểm ưu tiên TAP không bị pan ngang nuốt (V4-1)
+        scrollEnabled={screen === "feed"}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: pagerX } } }], { useNativeDriver: true })}
         onMomentumScrollEnd={(e) => {
           const t = TAB_KEYS[Math.round(e.nativeEvent.contentOffset.x / WIN_W)];
@@ -618,10 +618,10 @@ export default function App() {
           )}
           {screen === "score" && score && (
             <View>
-              <Kicker>{score.unclear ? "Chưa chấm được" : "Kết quả của bạn"}</Kicker>
+              <Kicker>{score.unclear || score.passed === false ? "Chưa đạt — thử lại nhé" : "Kết quả của bạn"}</Kicker>
               <ScoreReveal score={score} prev={scores.length ? scores[scores.length - 1] : null} />
-              {score.unclear ? (
-                // không nghe được → mời thu lại ngay, KHÔNG mời gửi MC (phí vé vô ích)
+              {(score.unclear || score.passed === false) ? (
+                // RỚT → mời thu lại ngay, KHÔNG mời gửi MC (phí vé vô ích)
                 <Btn icon={<Mic size={16} color="#fff" />} label="Thử lại ngay" onPress={() => setScreen("practice")} />
               ) : (
                 <Btn gold loading={veBusy} label={veBusy ? "Đang gửi cho MC…" : "Gửi cho MC thật (Vé Vàng)"} onPress={sendVeVang} />

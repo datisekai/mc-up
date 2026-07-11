@@ -74,6 +74,30 @@ export const MicSticker = ({ size }: PS) => (
   </Svg>
 );
 
+export const Target = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Circle cx="12" cy="12" r="8.5" {...stroke(color)} />
+    <Circle cx="12" cy="12" r="4" {...stroke(color)} />
+    <Circle cx="12" cy="12" r="1.2" fill={color} />
+  </Svg>
+);
+export const Pin = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 1 1 13 0C18.5 15.4 12 21 12 21z" {...stroke(color)} />
+    <Circle cx="12" cy="10.5" r="2.4" {...stroke(color)} />
+  </Svg>
+);
+export const ListIcon = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Line x1="9" y1="6" x2="20" y2="6" {...stroke(color)} />
+    <Line x1="9" y1="12" x2="20" y2="12" {...stroke(color)} />
+    <Line x1="9" y1="18" x2="20" y2="18" {...stroke(color)} />
+    <Circle cx="4.8" cy="6" r="1.4" fill={color} />
+    <Circle cx="4.8" cy="12" r="1.4" fill={color} />
+    <Circle cx="4.8" cy="18" r="1.4" fill={color} />
+  </Svg>
+);
+
 export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
   <Svg {...S(size)}>
     <Path d="M20 11a8 8 0 1 0-2.2 6.3" {...stroke(color)} />

@@ -14,6 +14,8 @@ export type ScoreData = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
   unclear?: boolean;           // ASR thật nhưng không nghe được → trạng thái riêng, không hiện số
+  passed?: boolean;            // RỚT (V4-2): im lặng/quá ngắn/lạc đề → không hiện bảng điểm
+  fail_reason?: string | null; // khong_nghe_ro | qua_ngan | lac_de
   coverage?: Coverage | null;  // "đủ ý chưa" — đối chiếu dàn ý đề bài
   positives?: string[];        // "Đã tốt" — tổng hợp từ server
   improvements?: string[];     // "Cần cải thiện" — tổng hợp từ server
@@ -66,17 +68,22 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
   const [showTranscript, setShowTranscript] = useState(false);
   const volOk = score.volume_label === "tốt";
 
-  // "Chưa nghe rõ" = trạng thái riêng — hiện số 0 như một bảng điểm là chấm bừa
-  if (score.unclear) {
+  // RỚT (V4-2) — bao cả "chưa nghe rõ": nói rõ lý do + mời thử lại, KHÔNG hiện bảng điểm.
+  // Giọng dịu (không đỏ, không phán xét) nhưng dứt khoát: bài này CHƯA TÍNH hoàn thành.
+  if (score.unclear || score.passed === false) {
+    const FAIL: Record<string, [string, string]> = {
+      khong_nghe_ro: ["Mình chưa nghe rõ giọng bạn", "Có thể mic hơi xa hoặc tiếng hơi nhỏ.\nThử lại gần mic hơn, nói to rõ một chút nhé."],
+      qua_ngan: ["Bài nói hơi ngắn", "Mới vài từ là hết mất rồi — thử nói trọn vẹn theo dàn ý (~30 giây) nhé."],
+      lac_de: ["Hình như chưa đúng đề bài này", "Lời bạn nói chưa chạm ý nào trong dàn ý.\nXem lại đề + bài mẫu rồi thử lại nhé."],
+    };
+    const [title, sub] = FAIL[score.fail_reason || "khong_nghe_ro"] ?? FAIL.khong_nghe_ro;
     return (
       <View style={st.card}>
         <View style={st.unclearWrap}>
           <Misa mood="lo" size={84} />
-          <Text style={st.unclearTitle}>Mình chưa nghe rõ giọng bạn</Text>
-          <Text style={st.unclearSub}>
-            Có thể mic hơi xa hoặc tiếng hơi nhỏ.{"\n"}
-            Thử lại gần mic hơn, nói to rõ một chút nhé — lần này chưa tính điểm đâu.
-          </Text>
+          <Text style={st.unclearTitle}>{title}</Text>
+          <Text style={st.unclearSub}>{sub}</Text>
+          <View style={st.failNote}><Text style={st.failNoteT}>Chưa tính lượt này — không mất năng lượng, thử lại thoải mái 💛</Text></View>
         </View>
       </View>
     );
@@ -256,6 +263,8 @@ const st = StyleSheet.create({
   covHint: { fontSize: 12, color: C.ink2, fontFamily: F.med, marginTop: 6 },
   unclearWrap: { alignItems: "center", paddingVertical: 18 },
   unclearIcon: { fontSize: 40 },
+  failNote: { backgroundColor: "#FFF3DA", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, marginTop: 12 },
+  failNoteT: { color: "#8a5a13", fontSize: 13.5, fontFamily: F.semi, textAlign: "center" },
   unclearTitle: { fontFamily: F.display, fontSize: 18, color: C.ink, marginTop: 10 },
   unclearSub: { fontFamily: F.body, fontSize: 13.5, color: C.ink2, textAlign: "center", lineHeight: 20, marginTop: 8 },
 });

@@ -131,7 +131,8 @@ export default function ReelsPager({ lessons, startIndex, streak, onRun, onExit 
     setRec({ id: l.id, mode: "proc", n: 0, sec: 0 });
     const score = await onRun(l, audio); // App lo submit + poll + celebration; null = mạng chậm
     setRec(null);
-    setDoneLocal((d) => new Set(d).add(l.id));
+    // RỚT (V4-2) → bài KHÔNG tính xong, không mở khoá bài kế trong phiên
+    if (score && score.passed !== false && !score.unclear) setDoneLocal((d) => new Set(d).add(l.id));
     if (score) {
       setResults((m) => ({ ...m, [l.id]: score }));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});

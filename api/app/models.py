@@ -71,6 +71,9 @@ class Score(Base):
     filler_count: Mapped[int] = mapped_column()           # số "ừm/à/ờ" (GIẢ LẬP ở MVP)
     tip: Mapped[str] = mapped_column(String)
     is_mock: Mapped[bool] = mapped_column(default=True)   # đánh dấu chấm giả lập
+    # ĐẠT/RỚT (V4-2): im lặng, quá ngắn, lạc đề → rớt, KHÔNG tính hoàn thành bài
+    passed: Mapped[bool] = mapped_column(default=True, server_default="1")
+    fail_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     # "Xem lại lời bạn nói": transcript ASR THẬT (mock = None — không bao giờ hiện text giả)
     transcript: Mapped[str | None] = mapped_column(String, nullable=True)
     # "Đủ ý chưa": đối chiếu lời nói với dàn ý đề bài. {"steps":[...],"covered":[bool...]} — None nếu bỏ qua

@@ -11,7 +11,7 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { C, F, T } from "./theme";
-import { Bolt, Mic, Pause, Play } from "./icons";
+import { Bolt, Check, ListIcon, Mic, Pause, Pin, Play, Target } from "./icons";
 import Misa from "./Misa";
 import GenreScene from "./scenes";
 import { setRecording, sfx } from "./sound";
@@ -185,6 +185,12 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
   }
 
   const steps = lesson.brief?.steps ?? [];
+  // nhãn section = icon + chữ (V4-3: bớt chữ, thêm hình)
+  const L = ({ icon, t }: { icon: any; t: string }) => (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 5 }}>
+      {icon}<Text style={st.taskLabel2}>{t}</Text>
+    </View>
+  );
   const over = sec >= TARGET_SEC;
   const progress = Math.min(1, sec / TARGET_SEC);
 
@@ -252,9 +258,9 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
           {lesson.tip ? <View style={[st.tipBox, { flex: 1 }]}><Text style={st.tipT}>{lesson.tip}</Text></View>
             : <Text style={[st.tipT, { flex: 1 }]}>Bạn làm được mà — nói như kể cho một người bạn nghe.</Text>}
         </View>
-        <Text style={st.taskLabel}>Đề bài</Text>
+        <L icon={<Mic size={15} color="#C7462F" />} t="Đề bài" />
         <Text style={st.taskPrompt}>{lesson.prompt}</Text>
-        {steps.length ? (<><Text style={st.taskLabel}>Gợi ý dàn ý</Text>{steps.map((s, i) => (
+        {steps.length ? (<><L icon={<ListIcon size={15} color="#B8860B" />} t="Dàn ý" />{steps.map((s, i) => (
           <View key={i} style={st.stepRow}>
             <View style={st.stepNum}><Text style={st.stepNumT}>{i + 1}</Text></View>
             <Text style={st.taskBullet}>{s}</Text>
@@ -262,9 +268,9 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
         ))}</>) : null}
         {showFull ? (
           <>
-            {lesson.brief?.objective ? (<><Text style={st.taskLabel}>Mục tiêu</Text><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
-            {lesson.brief?.context ? (<><Text style={st.taskLabel}>Tình huống</Text><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
-            {lesson.criteria?.length ? (<><Text style={st.taskLabel}>Tiêu chí đạt</Text>{lesson.criteria.map((c, i) => (
+            {lesson.brief?.objective ? (<><L icon={<Target size={15} color="#1E7A52" />} t="Mục tiêu" /><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
+            {lesson.brief?.context ? (<><L icon={<Pin size={15} color="#7A5CA8" />} t="Tình huống" /><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
+            {lesson.criteria?.length ? (<><L icon={<Check size={15} color="#1E7A52" />} t="Tiêu chí đạt" />{lesson.criteria.map((c, i) => (
               <View key={i} style={st.critRow}><View style={st.critDot} /><Text style={st.taskText}>{c}</Text></View>
             ))}</>) : null}
           </>
@@ -307,7 +313,7 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
           </View>
           <Text style={st.underBtn}>Chạm để bắt đầu</Text>
           {energyCost > 0 && <View style={st.energyTag}><Bolt size={12} color="#8a5a13" /><Text style={st.energyTagT}> Bài này tốn {energyCost} năng lượng</Text></View>}
-          <Text style={st.calm}>Hít thở nhẹ — cứ nói như đang kể cho một người bạn.{"\n"}Luyện không có sai đâu.</Text>
+          <Text style={st.calm}>Cứ nói như kể cho một người bạn nghe 💛</Text>
           <TouchableOpacity onPress={onMock}><Text style={st.skipT}>Bỏ qua — nộp giả lập</Text></TouchableOpacity>
         </View>
         <TouchableOpacity style={st.ghostBtn} onPress={onBack}>
@@ -341,7 +347,8 @@ const st = StyleSheet.create({
   tipBox: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
   tipT: { color: C.ink, fontSize: 15 },
   taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 12.5, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
-  taskPrompt: { fontFamily: F.title, fontSize: T.title, color: C.ink, lineHeight: 27 },
+  taskLabel2: { fontWeight: "800", color: C.ink2, fontSize: 13, letterSpacing: 0.5 },
+  taskPrompt: { fontFamily: F.title, fontSize: T.title, color: C.ink, lineHeight: 28 },
   taskText: { color: C.ink, fontSize: T.body, lineHeight: 23, flex: 1 },
   taskBullet: { color: C.ink, fontSize: T.body, lineHeight: 25 },
   critRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },

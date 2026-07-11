@@ -114,11 +114,13 @@ async def get_clip(clip_id: str, user: User = Depends(current_user),
     score_out = None
     if score:
         unclear = not score.is_mock and score.speed_wpm == 0
-        # tổng hợp "Đã tốt / Cần cải thiện" (bỏ qua khi chưa nghe rõ — không có gì để tổng hợp)
-        summ = {"positives": [], "improvements": []} if unclear else await summarize_score(session, clip, score)
+        # tổng hợp "Đã tốt / Cần cải thiện" (bỏ qua khi rớt — tập trung vào lý do + thử lại)
+        failed = score.passed is False
+        summ = {"positives": [], "improvements": []} if (unclear or failed) else await summarize_score(session, clip, score)
         score_out = ScoreOut(
             **{k: getattr(score, k) for k in
-               ("volume_label", "speed_wpm", "filler_count", "tip", "is_mock", "transcript", "coverage")},
+               ("volume_label", "speed_wpm", "filler_count", "tip", "is_mock", "transcript", "coverage",
+                "passed", "fail_reason")},
             unclear=unclear, positives=summ["positives"], improvements=summ["improvements"])
     return ClipOut(
         id=clip.id, lesson_id=clip.lesson_id or clip.content_lesson_id or "", status=clip.status,
