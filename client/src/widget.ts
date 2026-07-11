@@ -8,8 +8,10 @@ export type WidgetData = {
   streak: number;
   practicedToday: boolean;
   energy: number;
+  energyMax?: number;
   xp: number;
   isPro: boolean;
+  practicedDays?: string[]; // các ngày (yyyy-MM-dd, giờ máy) từng luyện — widget vẽ 7 chấm tuần
 };
 
 function localDay(): string {
@@ -28,8 +30,10 @@ export function updateWidget(data: WidgetData): void {
     // Chỉ GHI ngày khi đã luyện — widget so "lastPracticeDay == hôm nay" để vẽ lửa cam/xám
     if (data.practicedToday) storage.set("lastPracticeDay", localDay());
     storage.set("energy", data.energy);
+    storage.set("energyMax", data.energyMax ?? 30);
     storage.set("xp", data.xp);
     storage.set("isPro", data.isPro);
+    if (data.practicedDays) storage.set("practicedDays", JSON.stringify(data.practicedDays));
     ExtensionStorage.reloadWidget();
   } catch {
     /* môi trường không có widget — bỏ qua */

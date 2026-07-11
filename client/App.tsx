@@ -9,11 +9,11 @@ import { Baloo2_700Bold, Baloo2_800ExtraBold, useFonts } from "@expo-google-font
 import {
   BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold,
 } from "@expo-google-fonts/be-vietnam-pro";
-import { C, F } from "./src/theme";
+import { C, F, T } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { BoltSticker, ChevronUp, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, User } from "./src/icons";
+import { BoltSticker, ChevronUp, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
 import { Btn3D, ProgressBar } from "./src/ui";
 import Misa, { MisaHead } from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
@@ -30,7 +30,7 @@ import { updateWidget } from "./src/widget";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 const WIN_W = Dimensions.get("window").width;
-const TAB_KEYS = ["hv", "mc", "hs"] as const;
+const TAB_KEYS = ["hv", "bxh", "mc", "hs"] as const;
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
@@ -64,7 +64,7 @@ export default function App() {
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
 
-  const [tab, setTab] = useState<"hv" | "mc" | "hs">("hv");
+  const [tab, setTab] = useState<"hv" | "bxh" | "mc" | "hs">("hv");
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
   const [showEnergy, setShowEnergy] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -103,7 +103,7 @@ export default function App() {
   // thay cho PanResponder cũ (thả tay mới nhảy bụp, không animation).
   const pagerRef = useRef<ScrollView>(null);
   const pagerX = useRef(new Animated.Value(0)).current;
-  function goTab(t: "hv" | "mc" | "hs") {
+  function goTab(t: "hv" | "bxh" | "mc" | "hs") {
     setTab(t);
     pagerRef.current?.scrollTo({ x: TAB_KEYS.indexOf(t) * WIN_W, animated: true });
   }
@@ -264,10 +264,17 @@ export default function App() {
   }
 
   // Set tiến độ + đồng bộ widget màn hình chính (iOS, best-effort)
-  function applyProg(p: any) {
+  function applyProg(p: any, scoreList?: any[]) {
     setProg(p);
+    // các ngày từng luyện (giờ máy) — widget vẽ 7 chấm tuần (V4-4)
+    const days = (scoreList ?? scores).map((x: any) => {
+      const t = new Date(x.created_at);
+      return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+    });
     updateWidget({ streak: p.streak ?? 0, practicedToday: !!p.practiced_today,
-                   energy: p.energy ?? 0, xp: p.xp ?? 0, isPro: !!p.is_pro });
+                   energy: p.energy ?? 0, energyMax: p.energy_max ?? 30,
+                   xp: p.xp ?? 0, isPro: !!p.is_pro,
+                   practicedDays: [...new Set(days)].slice(-14) });
   }
   async function refresh(t = token!, goal = "") {
     const [progR, ps] = await Promise.all([Api.progress(t), Api.contentPaths(t)]);
@@ -288,6 +295,7 @@ export default function App() {
       Api.myReviews(t), Api.leaderboard(t), Api.achievements(t), Api.scores(t), Api.mentors(t),
     ]);
     setLessons(lessR); setReviews(rv); setBoard(bd); setAchs(ac); setScores(sc); setMentors(mt);
+    applyProg(progR, sc);  // đồng bộ lại widget với lịch sử luyện mới nhất
     // Thông báo trong app (#3): MC vừa nhận xét → chấm đỏ tab Hồ sơ + toast
     const badgeCount = rv.filter((r: any) => r.badge).length;
     const seen = parseInt((await AsyncStorage.getItem("seen_badges")) || "0", 10);
@@ -634,13 +642,19 @@ export default function App() {
         )}
       </View>
 
-      {/* ── Trang 2: MC ── */}
+      {/* ── Trang 2: Xếp hạng (V4-5) ── */}
+      <View style={{ width: WIN_W, flex: 1 }}>
+        <RankView board={board} achs={achs}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
+      </View>
+
+      {/* ── Trang 3: MC ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
         <Mentors mentors={mentors}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 
-      {/* ── Trang 3: Hồ sơ ── */}
+      {/* ── Trang 4: Hồ sơ ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
         <ScrollView
           contentContainerStyle={{ padding: 16 }}
@@ -657,14 +671,18 @@ export default function App() {
         <View style={s.bottomBar}>
           {/* vạch chỉ tab TRƯỢT theo ngón tay khi vuốt ngang (native driver) */}
           <Animated.View style={[s.tabIndicator, { transform: [{ translateX: pagerX.interpolate({
-            inputRange: [0, WIN_W * 2], outputRange: [0, (WIN_W * 2) / 3], extrapolate: "clamp" }) }] }]} />
+            inputRange: [0, WIN_W * 3], outputRange: [0, (WIN_W * 3) / 4], extrapolate: "clamp" }) }] }]} />
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
             accessibilityLabel="Tab Lộ trình">
             <MapIcon size={26} color={tab === "hv" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "hv" && { color: C.primary }]}>Lộ trình</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("bxh"); }} accessibilityLabel="Tab Xếp hạng">
+            <Trophy size={26} color={tab === "bxh" ? C.primary : C.ink2} />
+            <Text style={[s.bTabT, tab === "bxh" && { color: C.primary }]}>Xếp hạng</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("mc"); }} accessibilityLabel="Tab MC">
-            <Trophy size={26} color={tab === "mc" ? C.primary : C.ink2} />
+            <Mic size={26} color={tab === "mc" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "mc" && { color: C.primary }]}>MC</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hs"); setNewBadge(false); }} accessibilityLabel="Tab Hồ sơ">
@@ -713,6 +731,42 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh, 
         <TouchableOpacity onPress={onClose}><Text style={s.energyLink}>Để sau</Text></TouchableOpacity>
       </View>
     </View>
+  );
+}
+
+// Tab XẾP HẠNG (V4-5): thi đua tách khỏi Hồ sơ — BXH + huy hiệu ở một sân riêng
+function RankView({ board, achs, refreshControl }: { board: any[]; achs: any[]; refreshControl: any }) {
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16 }} refreshControl={refreshControl}>
+      <View style={{ alignItems: "center", marginBottom: 4 }}>
+        <Misa mood="anmung" size={82} />
+        <Text style={{ fontFamily: F.displayX, fontSize: T.title, color: C.ink, marginTop: 4 }}>Đấu trường sân khấu</Text>
+      </View>
+      <Kicker>Bảng xếp hạng tuần</Kicker>
+      {board.length === 0 && <Text style={s.emptyHint}>Chưa có ai trên bảng — luyện một bài là bạn có tên ngay 🏆</Text>}
+      {board.map((e) => (
+        <View key={e.rank} style={[s.rankRow, e.is_me && { borderColor: C.spot, borderWidth: 1.5 }]}>
+          <View style={[s.rankMedal, e.rank === 1 && { backgroundColor: C.spot }, e.rank === 2 && { backgroundColor: "#D9D4E8" }, e.rank === 3 && { backgroundColor: "#EBC5A8" }]}>
+            <Text style={[s.rankNum, e.rank <= 3 && { color: "#5a3d00" }]}>{e.rank}</Text>
+          </View>
+          <Text style={{ flex: 1, fontWeight: e.is_me ? "800" : "600", color: C.ink, fontSize: 15 }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+            <FireSticker size={14} /><Text style={{ color: C.ink2, fontSize: 13, marginRight: 8 }}>{e.streak}</Text>
+            <StarSticker size={15} /><Text style={{ fontWeight: "800", fontSize: 14 }}>{e.xp}</Text>
+          </View>
+        </View>
+      ))}
+      <Kicker>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</Kicker>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {achs.map((a) => (
+          <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.45 }]}>
+            <View style={[s.achIcon, a.earned && { backgroundColor: C.spot }]}>{a.earned ? <TrophySticker size={22} /> : <Trophy size={18} color={C.ink2} />}</View>
+            <Text style={{ fontSize: 12.5, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
+            {!a.earned && a.target > 1 && <Text style={{ fontSize: 12, color: C.ink2, fontFamily: F.med }}>{a.progress}/{a.target}</Text>}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -780,35 +834,12 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
         );
       })()}
 
-      <Kicker>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</Kicker>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {achs.map((a) => (
-          <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.45 }]}>
-            <View style={[s.achIcon, a.earned && { backgroundColor: C.spot }]}><Trophy size={18} color={a.earned ? "#5a3d00" : C.ink2} /></View>
-            <Text style={{ fontSize: 12.5, fontWeight: "800", textAlign: "center", marginTop: 4 }} numberOfLines={2}>{a.title}</Text>
-            {!a.earned && a.target > 1 && <Text style={{ fontSize: 12, color: C.ink2, fontFamily: F.med }}>{a.progress}/{a.target}</Text>}
-          </View>
-        ))}
-      </View>
-
       <Kicker>Tiến bộ từ đệm</Kicker>
       {scores.length >= 2 ? (
         <MiniChart data={scores.map((p: any) => p.filler_count)} label="Số từ đệm mỗi lần luyện (thấp hơn = tốt hơn)" />
       ) : (
         <Text style={s.emptyHint}>Luyện thêm vài bài để xem đường tiến bộ từ đệm của bạn nhé 📉</Text>
       )}
-      <Kicker>Bảng xếp hạng</Kicker>
-      {board.length === 0 && <Text style={s.emptyHint}>Chưa có ai trên bảng — luyện một bài là bạn có tên ngay 🏆</Text>}
-      {board.map((e) => (
-        <View key={e.rank} style={[s.rankRow, e.is_me && { borderColor: C.spot, borderWidth: 1.5 }]}>
-          <Text style={[s.rankNum, e.rank <= 3 && { color: C.primary }]}>{e.rank}</Text>
-          <Text style={{ flex: 1, fontWeight: e.is_me ? "800" : "600", color: C.ink }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-            <FireSticker size={14} /><Text style={{ color: C.ink2, fontSize: 13, marginRight: 8 }}>{e.streak}</Text>
-            <StarSticker size={15} /><Text style={{ fontWeight: "800", fontSize: 14 }}>{e.xp}</Text>
-          </View>
-        </View>
-      ))}
       <Kicker>Thẻ MC bảo chứng</Kicker>
       {badges.length === 0 && !waiting && (
         <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
@@ -964,7 +995,7 @@ const s = StyleSheet.create({
     paddingTop: 8, paddingBottom: 26,
   },
   tabIndicator: {
-    position: "absolute", top: -1, left: 0, width: WIN_W / 3, height: 3,
+    position: "absolute", top: -1, left: 0, width: WIN_W / 4, height: 3,
     borderRadius: 2, backgroundColor: C.primary,
   },
   bTab: { flex: 1, alignItems: "center", gap: 2 },
@@ -1000,6 +1031,7 @@ const s = StyleSheet.create({
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
   rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
+  rankMedal: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center", marginRight: 10 },
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
   achIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center" },
