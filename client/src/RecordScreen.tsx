@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import {
-  AccessibilityInfo, ActivityIndicator, Alert, Animated, StyleSheet, Text, TouchableOpacity, View,
+  AccessibilityInfo, ActivityIndicator, Alert, Animated, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
@@ -195,24 +195,28 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
   const progress = Math.min(1, sec / TARGET_SEC);
 
   // ===== recording =====
-  if (mode === "rec") {
-    const cur = steps.length ? Math.min(teleIdx, steps.length - 1) : -1;
-    return (
-      <View>
-        <View style={st.recHead}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Animated.View style={[st.recDot, { opacity: reduced ? 1 : blink }]} />
-            <Text style={st.recLabel}>ĐANG THU</Text>
-          </View>
-          <Text style={st.clock} accessibilityLabel={`Đang thu, ${fmt(sec)}`}>{fmt(sec)}</Text>
+  const cur = steps.length ? Math.min(teleIdx, steps.length - 1) : -1;
+  // ===== SÂN KHẤU THU (V5): toàn màn trong Modal — đồng hồ ghim đỉnh, dàn ý cuộn giữa,
+  // nút Dừng GHIM ĐÁY luôn thấy (hết cảnh overlay absolute bị cuộn trôi) =====
+  const recUI = (
+    <View style={{ flex: 1 }}>
+      <View style={st.stageHead}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Animated.View style={[st.recDot, { opacity: reduced ? 1 : blink }]} />
+          <Text style={st.recLabel}>ĐANG THU</Text>
         </View>
+        <Text style={st.clock} accessibilityLabel={`Đang thu, ${fmt(sec)}`}>{fmt(sec)}</Text>
+      </View>
+      <View style={{ paddingHorizontal: 20 }}>
         <View style={st.progTrack}>
           <View style={[st.progFill, { width: `${progress * 100}%` }, over && { backgroundColor: C.spot }]} />
         </View>
         <Text style={[st.progHint, over && { color: "#B07A00" }]}>
           {over ? "Đủ dài rồi — có thể dừng bất cứ lúc nào" : `Mốc gợi ý ~${TARGET_SEC} giây`}
         </Text>
+      </View>
 
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12 }} showsVerticalScrollIndicator={false}>
         {showEx && lesson.brief?.example ? (
           <View style={[st.prompter, { marginTop: 10 }]}>
             <Text style={st.prompterLabel}>BÀI MẪU</Text>
@@ -229,22 +233,21 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
             ))}
           </View>
         )}
+      </ScrollView>
 
+      <View style={st.stageFoot}>
         <View style={st.wave} accessibilityLabel="Sóng âm — app đang nghe bạn">
           {levels.map((lv, i) => (
             <View key={i} style={[st.bar, { height: reduced ? 14 : 6 + lv * 46 }]} />
           ))}
         </View>
-
-        <View style={{ alignItems: "center", marginTop: 12 }}>
-          <TouchableOpacity style={st.stopBtn} onPress={stopAndSubmit} accessibilityLabel="Dừng và nộp">
-            <View style={st.stopSquare} />
-          </TouchableOpacity>
-          <Text style={st.underBtn}>Dừng &amp; nộp</Text>
-        </View>
+        <TouchableOpacity style={st.stopBtn} onPress={stopAndSubmit} accessibilityLabel="Dừng và nộp">
+          <View style={st.stopSquare} />
+        </TouchableOpacity>
+        <Text style={st.underBtn}>Dừng &amp; nộp</Text>
       </View>
-    );
-  }
+    </View>
+  );
 
   // ===== ready (+ overlay count / processing) =====
   return (
@@ -321,21 +324,30 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
         </TouchableOpacity>
       </View>
 
-      {mode === "count" && (
-        <TouchableOpacity style={st.countOverlay} activeOpacity={1} onPress={cancelCountdown}
-          accessibilityLabel={`Đếm ngược ${count} — chạm để huỷ`}>
-          <Text style={st.countNum}>{count}</Text>
-          <Text style={st.countSub}>Chuẩn bị nào…</Text>
-          <Text style={st.countCancel}>Chạm bất kỳ đâu để huỷ</Text>
-        </TouchableOpacity>
-      )}
-
-      {busy && (
-        <View style={st.procOverlay}>
-          <ActivityIndicator color={C.spot} size="large" />
-          <Text style={st.procT}>Đang nghe bạn dẫn…</Text>
-        </View>
-      )}
+      {/* SÂN KHẤU (V5): đếm ngược + thu + chấm là MODAL toàn màn — không dính scroll trang */}
+      <Modal visible={mode !== "ready" || busy} animationType="fade" statusBarTranslucent
+        onRequestClose={() => { if (mode === "count") cancelCountdown(); }}>
+        {mode === "count" ? (
+          <TouchableOpacity style={st.countStage} activeOpacity={1} onPress={cancelCountdown}
+            accessibilityLabel={`Đếm ngược ${count} — chạm để huỷ`}>
+            <View style={st.countSpot} />
+            <Text style={st.countNum}>{count}</Text>
+            <Text style={st.countSub}>Hít một hơi… sân khấu là của bạn 🎤</Text>
+            <Text style={st.countCancel}>Chạm bất kỳ đâu để huỷ</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ flex: 1, backgroundColor: C.base }}>
+            {mode === "rec" && recUI}
+            {busy && (
+              <View style={st.procFull}>
+                <Misa mood="covu" size={84} />
+                <ActivityIndicator color={C.spot} size="large" style={{ marginTop: 14 }} />
+                <Text style={st.procT}>Đang nghe bạn dẫn…</Text>
+              </View>
+            )}
+          </View>
+        )}
+      </Modal>
     </View>
   );
 }
@@ -402,17 +414,15 @@ const st = StyleSheet.create({
   },
   stopSquare: { width: 24, height: 24, borderRadius: 7, backgroundColor: C.primary },
 
-  countOverlay: {
-    ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,248,240,0.95)",
-    alignItems: "center", justifyContent: "center", zIndex: 30, borderRadius: 16,
-  },
-  countNum: { fontSize: 96, fontFamily: F.displayX, color: C.primary, lineHeight: 112 },
-  countSub: { fontSize: 14, color: C.ink2, marginTop: 8 },
-  countCancel: { fontSize: 12, color: "#BFB4C4", marginTop: 18 },
+  // đếm ngược = hậu trường tắt đèn: nền mận tối, số vàng đèn, quầng spotlight
+  countStage: { flex: 1, backgroundColor: "#241A2E", alignItems: "center", justifyContent: "center" },
+  countSpot: { position: "absolute", width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,194,75,0.14)" },
+  countNum: { fontSize: 110, fontFamily: F.displayX, color: C.spot, lineHeight: 128 },
+  countSub: { fontSize: 16, color: "#E9DFF2", marginTop: 8, fontFamily: F.semi },
+  countCancel: { fontSize: 13, color: "#9A8EA5", marginTop: 22 },
 
-  procOverlay: {
-    ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(59,42,74,0.5)",
-    alignItems: "center", justifyContent: "center", zIndex: 30, borderRadius: 16,
-  },
-  procT: { fontSize: 16, fontWeight: "800", color: "#FFF8F0", marginTop: 14 },
+  stageHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 58, paddingHorizontal: 20, paddingBottom: 4 },
+  stageFoot: { alignItems: "center", paddingBottom: 34, paddingTop: 6, paddingHorizontal: 20, backgroundColor: C.base, borderTopWidth: 1, borderTopColor: C.hair },
+  procFull: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,248,240,0.96)", alignItems: "center", justifyContent: "center" },
+  procT: { fontSize: 17, fontWeight: "800", color: C.ink, marginTop: 12 },
 });

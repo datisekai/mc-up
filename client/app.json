@@ -16,7 +16,7 @@
     "ios": {
       "bundleIdentifier": "vn.mcup.app",
       "appleTeamId": "HMV6A3QPKR",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "supportsTablet": false,
       "entitlements": {
         "com.apple.security.application-groups": [
