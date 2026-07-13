@@ -196,6 +196,38 @@ class ContentLesson(Base):
     status: Mapped[str] = mapped_column(String, default="draft")
 
 
+class MCService(Base):
+    """Dịch vụ MC bán trên marketplace (đặt buổi 1:1)."""
+    __tablename__ = "mc_service"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    mc_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
+    title: Mapped[str] = mapped_column(String)
+    description: Mapped[str] = mapped_column(String, default="")
+    mode: Mapped[str] = mapped_column(String, default="live")   # live (gọi video) | async (nhận xét clip)
+    duration_min: Mapped[int] = mapped_column(default=30)
+    price_vnd: Mapped[int] = mapped_column(default=0)
+    active: Mapped[bool] = mapped_column(default=True, server_default="1")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Booking(Base):
+    """Lượt đặt buổi học 1:1 giữa học viên và MC."""
+    __tablename__ = "booking"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    service_id: Mapped[str] = mapped_column(ForeignKey("mc_service.id"))
+    mc_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
+    student_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
+    status: Mapped[str] = mapped_column(String, default="requested")  # requested|confirmed|done|cancelled
+    note: Mapped[str | None] = mapped_column(String, nullable=True)          # lời nhắn học viên
+    preferred: Mapped[str | None] = mapped_column(String, nullable=True)     # khung giờ mong muốn (text)
+    scheduled_at: Mapped[str | None] = mapped_column(String, nullable=True)  # MC chốt (text ISO/mô tả)
+    meeting_link: Mapped[str | None] = mapped_column(String, nullable=True)  # link Zoom/Meet MC gửi
+    price_vnd: Mapped[int] = mapped_column(default=0)
+    rating: Mapped[int | None] = mapped_column(nullable=True)                # 1-5 sau buổi
+    review: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class WeeklyChallenge(Base):
     """Thử thách MC tuần (C2): 1 chủ đề/tuần, user nộp clip, MC/admin chấm top."""
     __tablename__ = "weekly_challenge"

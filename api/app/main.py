@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .db import init_db
-from .routers import admin, auth, content, engage, iap, leaderboard, lessons, mc, media, practice, stats, vevang
+from .routers import admin, auth, content, engage, iap, leaderboard, lessons, market, mc, media, practice, stats, vevang
 from .seed import seed_admin, seed_curriculum, seed_genres, seed_lessons, seed_mc, seed_rubrics
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -105,6 +105,7 @@ app.include_router(admin.router)
 app.include_router(content.router)
 app.include_router(iap.router)
 app.include_router(engage.router)
+app.include_router(market.router)
 
 
 @app.get("/", include_in_schema=False)

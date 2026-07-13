@@ -340,6 +340,19 @@ async def seed_mc() -> None:
         s.add(mc2)
         await s.flush()
         s.add(Progress(user_id=mc2.id))
+        # Dịch vụ marketplace demo
+        from .models import MCService
+        s.add_all([
+            MCService(mc_id=mc.id, title="Nhận xét clip chi tiết", mode="async",
+                      description="Gửi clip của bạn, mình nghe kỹ và trả nhận xét bằng giọng + gợi ý sửa từng câu.",
+                      duration_min=0, price_vnd=99000),
+            MCService(mc_id=mc.id, title="Coaching 1:1 dẫn tiệc cưới", mode="live",
+                      description="Buổi gọi video 45 phút: luyện kịch bản, giọng dẫn, xử lý tình huống sân khấu cưới.",
+                      duration_min=45, price_vnd=350000),
+            MCService(mc_id=mc2.id, title="Luyện host livestream 1:1", mode="live",
+                      description="Buổi 30 phút: cách giữ năng lượng, tương tác khán giả, chốt đơn tự nhiên khi livestream.",
+                      duration_min=30, price_vnd=250000),
+        ])
         await s.commit()
 
 

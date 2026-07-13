@@ -96,6 +96,17 @@ export const Api = {
   weak: (token: string) => req("/me/weak", { token }),
   challenge: (token: string) => req("/challenge", { token }),
   likeEntry: (token: string, entry_id: string) => req("/challenge/like/" + entry_id, { method: "POST", token }),
+  // ===== Marketplace =====
+  services: (token: string, mcId?: string) => req("/market/services" + (mcId ? "?mc_id=" + mcId : ""), { token }),
+  bookService: (token: string, service_id: string, note?: string, preferred?: string) => req("/market/book", { method: "POST", token, body: { service_id, note, preferred } }),
+  myBookings: (token: string) => req("/me/bookings", { token }),
+  rateBooking: (token: string, booking_id: string, rating: number, review?: string) => req("/bookings/rate", { method: "POST", token, body: { booking_id, rating, review } }),
+  cancelBooking: (token: string, booking_id: string) => req("/bookings/cancel", { method: "POST", token, body: { booking_id, rating: 0 } }),
+  mcServices: (token: string) => req("/mc/services", { token }),
+  saveService: (token: string, body: any) => req("/mc/services", { method: "POST", token, body }),
+  mcBookings: (token: string) => req("/mc/bookings", { token }),
+  confirmBooking: (token: string, booking_id: string, scheduled_at: string, meeting_link?: string) => req("/mc/bookings/confirm", { method: "POST", token, body: { booking_id, scheduled_at, meeting_link } }),
+  doneBooking: (token: string, booking_id: string) => req("/mc/bookings/done", { method: "POST", token, body: { booking_id } }),
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ

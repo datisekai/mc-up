@@ -28,6 +28,7 @@ import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
 import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopScreen, Showreel, WeakChip } from "./src/Engage";
+import { McMarketPanel, MarketScreen } from "./src/Market";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 const WIN_W = Dimensions.get("window").width;
@@ -68,7 +69,8 @@ export default function App() {
   const [tab, setTab] = useState<"hv" | "bxh" | "shop" | "mc" | "hs">("hv");
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string; misa_color?: string; misa_outfit?: string | null }>({ xp: 0, streak: 0, tickets: 0 });
   const [showEnergy, setShowEnergy] = useState(false);
-  const [showChallenge, setShowChallenge] = useState(false);  // màn "hết năng lượng"
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [showMarket, setShowMarket] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
@@ -496,6 +498,9 @@ export default function App() {
         <ScrollView contentContainerStyle={{ padding: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadQueue(); setRefreshing(false); }} tintColor={C.primary} colors={[C.primary]} />}>
           <MCView queue={queue} onReview={doReview} onReviewVoice={doReviewVoice} onReload={loadQueue} onClaim={doClaim} onRelease={doRelease} />
+          <View style={{ height: 1, backgroundColor: C.hair, marginVertical: 18 }} />
+          <Text style={{ fontFamily: F.displayX, fontSize: T.title, color: C.ink, marginBottom: 4 }}>Dạy 1:1 kiếm thu nhập</Text>
+          <McMarketPanel token={token!} />
         </ScrollView>
         {toast && <View style={s.toast}><Text style={s.toastT}>{toast}</Text></View>}
       </View>
@@ -663,8 +668,16 @@ export default function App() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 
-      {/* ── Trang 4: MC ── */}
+      {/* ── Trang 4: MC (mạng lưới + học 1:1) ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
+        <TouchableOpacity onPress={() => setShowMarket(true)} style={s.marketBanner}>
+          <Misa mood="covu" size={52} accessory="bowtie" still />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.title, fontSize: 15.5, color: "#fff" }}>Học 1:1 với MC thật</Text>
+            <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#FFE3DE" }}>Đặt buổi coaching · nhận xét clip riêng cho bạn</Text>
+          </View>
+          <Text style={{ color: "#fff", fontFamily: F.title, fontSize: 20 }}>›</Text>
+        </TouchableOpacity>
         <Mentors mentors={mentors}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
@@ -716,6 +729,7 @@ export default function App() {
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
       {showChallenge && <ChallengeScreen token={token!} onClose={() => setShowChallenge(false)} />}
+      {showMarket && <MarketScreen token={token!} onClose={() => setShowMarket(false)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
         price={proPrice} busy={proBusy} onUpgrade={upgradeToPro}
@@ -1042,6 +1056,7 @@ const s = StyleSheet.create({
   pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 12.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
+  marketBanner: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.primary, borderRadius: 18, padding: 14, marginHorizontal: 16, marginTop: 12, borderBottomWidth: 5, borderBottomColor: C.primaryDown },
   reelsFab: {
     position: "absolute", bottom: 22, alignSelf: "center", backgroundColor: C.primary,
     paddingHorizontal: 20, paddingVertical: 12, borderRadius: 999,

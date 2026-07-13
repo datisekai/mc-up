@@ -147,6 +147,20 @@ export const Dumbbell = ({ size, color = "#3B2A4A" }: P) => (
   </Svg>
 );
 
+export const Calendar = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="3.5" y="5" width="17" height="16" rx="2.5" {...stroke(color)} />
+    <Line x1="3.5" y1="9.5" x2="20.5" y2="9.5" {...stroke(color)} />
+    <Line x1="8" y1="3" x2="8" y2="6.5" {...stroke(color)} />
+    <Line x1="16" y1="3" x2="16" y2="6.5" {...stroke(color)} />
+  </Svg>
+);
+export const Video = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="3" y="6.5" width="13" height="11" rx="2.5" {...stroke(color)} />
+    <Path d="M16 10.5 L21 7.5 v9 L16 13.5" {...stroke(color)} />
+  </Svg>
+);
 export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
   <Svg {...S(size)}>
     <Path d="M20 11a8 8 0 1 0-2.2 6.3" {...stroke(color)} />
