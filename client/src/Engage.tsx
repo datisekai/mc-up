@@ -7,53 +7,88 @@ import { C, F, T } from "./theme";
 import { Btn3D, ProgressBar } from "./ui";
 import { Api } from "./api";
 import Misa, { MisaAccessory, setMisaSkin } from "./Misa";
-import { Cert, Check, Coin, Dumbbell, Heart, Medal, Pause, Play, Snow, StarSticker, TicketSticker, X } from "./icons";
+import { Cert, Check, Coin, Dumbbell, Heart, Medal, Pause, Play, Snow, StarSticker, Target, TicketSticker, X } from "./icons";
 
 const LEAGUE_COLORS = ["#C77F00", "#B8BCC4", "#FFC24B", "#7FB5D8", "#8FE0D0"];
 
-// ===== Thẻ NHIỆM VỤ NGÀY (A2) — đặt đầu màn Lộ trình =====
+// ===== NHIỆM VỤ NGÀY (A2) — thanh GỌN 1 dòng, bấm mở bottom-sheet =====
 export function QuestsCard({ token, onCoins }: { token: string; onCoins?: (n: number) => void }) {
   const [data, setData] = useState<any>(null);
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   async function load() { try { setData(await Api.quests(token)); } catch {} }
   useEffect(() => { load(); }, []);
   if (!data || data.all_claimed) return null; // xong hết thì ẩn cho gọn
+
+  const done = data.quests.filter((q: any) => q.done && q.claimed).length;
+  const claimable = data.quests.filter((q: any) => q.done && !q.claimed);
+  const claimCoins = claimable.reduce((a: number, q: any) => a + q.coins, 0);
+
   async function claim(id: string) {
     setBusy(id);
     try { const r = await Api.claimQuest(token, id); if (r.ok) { onCoins?.(r.coins); await load(); } } catch {}
     setBusy(null);
   }
+
   return (
-    <View style={{ backgroundColor: C.raised, borderRadius: 18, padding: 14, marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: C.hair }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <Misa mood="covu" size={40} still />
-        <Text style={{ fontFamily: F.displayX, fontSize: 17, color: C.ink }}>Nhiệm vụ hôm nay</Text>
-      </View>
-      {data.quests.map((q: any) => (
-        <View key={q.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: F.semi, fontSize: 14, color: q.claimed ? C.ink2 : C.ink }}>{q.label}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
-              <ProgressBar value={q.progress / q.target} height={8} style={{ flex: 1 }} />
-              <Text style={{ fontSize: 12, fontFamily: F.med, color: C.ink2 }}>{q.progress}/{q.target}</Text>
-            </View>
-          </View>
-          {q.claimed ? (
-            <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#E7F6EE", alignItems: "center", justifyContent: "center" }}><Check size={18} color="#2E9668" /></View>
-          ) : q.done ? (
-            <TouchableOpacity onPress={() => claim(q.id)} disabled={!!busy}
-              style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.spot, borderRadius: 12, borderBottomWidth: 3, borderBottomColor: "#E09B18", paddingHorizontal: 10, paddingVertical: 6 }}>
-              {busy === q.id ? <ActivityIndicator size="small" color="#5a3d00" /> : <Coin size={16} />}
-              <Text style={{ fontFamily: F.title, fontSize: 13, color: "#5a3d00" }}>+{q.coins}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 3, opacity: 0.5 }}>
-              <Coin size={15} /><Text style={{ fontFamily: F.title, fontSize: 13, color: C.ink2 }}>{q.coins}</Text>
-            </View>
-          )}
+    <>
+      {/* thanh gọn trên bản đồ */}
+      <TouchableOpacity onPress={() => setOpen(true)} activeOpacity={0.8}
+        style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: claimable.length ? C.spot : C.hair }}>
+        <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}>
+          <Target size={17} color="#B8860B" />
         </View>
-      ))}
-    </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink }}>Nhiệm vụ hôm nay</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 12, color: C.ink2 }}>{done}/{data.quests.length} xong</Text>
+        </View>
+        {claimable.length ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.spot, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
+            <Coin size={14} /><Text style={{ fontFamily: F.title, fontSize: 13, color: "#5a3d00" }}>+{claimCoins}</Text>
+          </View>
+        ) : (
+          <Text style={{ color: C.ink2, fontFamily: F.title, fontSize: 18 }}>›</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* bottom-sheet đầy đủ */}
+      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(59,42,74,0.4)", justifyContent: "flex-end" }}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setOpen(false)} />
+          <View style={{ backgroundColor: C.base, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 20, paddingBottom: 34 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <Misa mood="covu" size={46} still />
+              <Text style={{ fontFamily: F.displayX, fontSize: 20, color: C.ink }}>Nhiệm vụ hôm nay</Text>
+            </View>
+            {data.quests.map((q: any) => (
+              <View key={q.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: F.semi, fontSize: 14.5, color: q.claimed ? C.ink2 : C.ink }}>{q.label}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
+                    <ProgressBar value={q.progress / q.target} height={8} style={{ flex: 1 }} />
+                    <Text style={{ fontSize: 12, fontFamily: F.med, color: C.ink2 }}>{q.progress}/{q.target}</Text>
+                  </View>
+                </View>
+                {q.claimed ? (
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: "#E7F6EE", alignItems: "center", justifyContent: "center" }}><Check size={18} color="#2E9668" /></View>
+                ) : q.done ? (
+                  <TouchableOpacity onPress={() => claim(q.id)} disabled={!!busy}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.spot, borderRadius: 12, borderBottomWidth: 3, borderBottomColor: "#E09B18", paddingHorizontal: 11, paddingVertical: 7 }}>
+                    {busy === q.id ? <ActivityIndicator size="small" color="#5a3d00" /> : <Coin size={16} />}
+                    <Text style={{ fontFamily: F.title, fontSize: 13, color: "#5a3d00" }}>+{q.coins}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 3, opacity: 0.5 }}>
+                    <Coin size={15} /><Text style={{ fontFamily: F.title, fontSize: 13, color: C.ink2 }}>{q.coins}</Text>
+                  </View>
+                )}
+              </View>
+            ))}
+            <Btn3D kind="white" label="Đóng" onPress={() => setOpen(false)} />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
