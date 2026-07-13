@@ -258,6 +258,10 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
             prog.xp += lesson_xp
             prog.coins += 5                          # xu mỗi bài đạt (B1)
             await add_league_xp(s, prog, lesson_xp)  # điểm giải đấu tuần (A4)
+            # Referral: bạn được mời đạt bài đầu → thưởng cả 2 (1 lần)
+            from .retention import reward_referral_if_needed, STREAK_COIN_REWARDS
+            mc_ref = await s.get(User, user_id)
+            await reward_referral_if_needed(s, mc_ref, prog)
             # Tiêu năng lượng cho bài hoàn thành. Pro không tiêu.
             mc_user = await s.get(User, user_id)
             await consume_energy(s, prog, bool(mc_user and mc_user.is_pro))
@@ -269,6 +273,9 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
                 .where(Clip.user_id == user_id))).scalar() or 0
             if scored <= 1 or prog.streak in TICKET_STREAK_MILESTONES:
                 prog.tickets += 1
+            from .retention import STREAK_COIN_REWARDS as _SCR
+            if prog.streak in _SCR:  # mốc streak lớn → thưởng xu (ngoài vé)
+                prog.coins += _SCR[prog.streak]
 
         clip.status = "done"
         await s.commit()

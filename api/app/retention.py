@@ -138,3 +138,39 @@ def retention_snapshot(prog: Progress) -> dict:
         "misa_color": prog.misa_color,
         "misa_outfit": prog.misa_outfit,
     }
+
+
+# ===== Referral (mời bạn) =====
+import hashlib
+
+REF_REFERRER_COINS = 50   # người mời nhận khi bạn mình đạt bài đầu
+REF_REFEREE_COINS = 30    # người được mời nhận
+
+# thưởng xu khi đạt MỐC STREAK lớn (ngoài Vé Vàng đã có)
+STREAK_COIN_REWARDS = {7: 30, 14: 60, 30: 150, 60: 300, 100: 600}
+
+
+def ensure_ref_code(user: User) -> str:
+    """Sinh mã mời ổn định từ user id nếu chưa có (6 ký tự, dễ đọc)."""
+    if user.ref_code:
+        return user.ref_code
+    h = hashlib.sha1(user.id.encode()).hexdigest().upper()
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # bỏ ký tự dễ nhầm (I,O,0,1)
+    code = "".join(alphabet[int(h[i:i+2], 16) % len(alphabet)] for i in range(0, 12, 2))
+    user.ref_code = code
+    return code
+
+
+async def reward_referral_if_needed(s: AsyncSession, referee: User, prog: Progress) -> None:
+    """Gọi khi referee ĐẠT bài đầu tiên: trả thưởng cho cả người mời và referee (1 lần)."""
+    if prog.ref_rewarded or not referee.referred_by:
+        return
+    referrer = await s.get(User, referee.referred_by)
+    if not referrer:
+        prog.ref_rewarded = True
+        return
+    ref_prog = await s.get(Progress, referrer.id)
+    if ref_prog:
+        ref_prog.coins += REF_REFERRER_COINS
+    prog.coins += REF_REFEREE_COINS
+    prog.ref_rewarded = True

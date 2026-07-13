@@ -31,6 +31,16 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "?"
 
 
+async def _apply_ref(session, new_user, ref_code):
+    """Gắn người mời cho user mới (nếu mã hợp lệ và không tự mời)."""
+    if not ref_code:
+        return
+    from ..models import User as _U
+    ref = (await session.execute(select(_U).where(_U.ref_code == ref_code.strip().upper()))).scalar_one_or_none()
+    if ref and ref.id != new_user.id:
+        new_user.referred_by = ref.id
+
+
 def _check_password(pw: str):
     if len(pw or "") < 6:
         raise HTTPException(400, {"error": {"code": "weak_password", "message": "Mật khẩu cần ít nhất 6 ký tự."}})
@@ -47,13 +57,14 @@ async def register(body: RegisterIn, session: AsyncSession = Depends(get_session
                 role=role, display_name=body.display_name)
     session.add(user)
     await session.flush()
+    await _apply_ref(session, user, body.ref_code)
     session.add(Progress(user_id=user.id))
     await session.commit()
     return TokenOut(access_token=make_token(user.id, user.role), role=user.role)
 
 
 @router.post("/guest", response_model=TokenOut)
-async def guest(request: Request, session: AsyncSession = Depends(get_session)):
+async def guest(request: Request, ref: str = "", session: AsyncSession = Depends(get_session)):
     """Tạo tài khoản khách ẩn danh — luyện ngay, không cần email/mật khẩu.
     password_hash rỗng → không thể login bằng mật khẩu; nâng cấp qua /auth/upgrade."""
     today = date.today().isoformat()
@@ -76,6 +87,7 @@ async def guest(request: Request, session: AsyncSession = Depends(get_session)):
                 password_hash="", role="hoc_vien", display_name="Khách")
     session.add(user)
     await session.flush()
+    await _apply_ref(session, user, ref)
     session.add(Progress(user_id=user.id))
     await session.commit()
     return TokenOut(access_token=make_token(user.id, user.role), role=user.role)

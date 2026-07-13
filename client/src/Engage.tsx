@@ -484,3 +484,39 @@ function ChallengeEntryRow({ entry, onLike }: { entry: any; onLike: () => void }
     </View>
   );
 }
+
+// ===== MỜI BẠN (Referral) =====
+import { Share } from "react-native";
+export function ReferralSheet({ token, onClose }: { token: string; onClose: () => void }) {
+  const [data, setData] = useState<any>(null);
+  useEffect(() => { Api.referral(token).then(setData).catch(() => {}); }, []);
+  async function share() {
+    if (!data) return;
+    try { await Share.share({ message: `Học làm MC cùng mình trên McUp nhé! Dùng mã ${data.code} khi vào app để cả hai được tặng xu 🎁 ${data.share_url}` }); } catch {}
+  }
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "rgba(59,42,74,0.4)", justifyContent: "flex-end" }}>
+        <TouchableOpacity style={{ flex: 1 }} onPress={onClose} />
+        <View style={{ backgroundColor: C.base, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 20, paddingBottom: 34, alignItems: "center" }}>
+          <Misa mood="anmung" size={92} />
+          <Text style={{ fontFamily: F.displayX, fontSize: 21, color: C.ink, marginTop: 2 }}>Mời bạn — nhận xu</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 13.5, color: C.ink2, textAlign: "center", marginTop: 4, paddingHorizontal: 16 }}>
+            {data ? `Bạn bè đạt bài đầu tiên: bạn +${data.referrer_reward} xu, họ +${data.referee_reward} xu` : "..."}
+          </Text>
+          {data && (<>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, borderWidth: 2, borderColor: C.spot, borderStyle: "dashed", paddingHorizontal: 20, paddingVertical: 14, marginTop: 16 }}>
+              <Text style={{ fontFamily: F.displayX, fontSize: 26, color: C.primary, letterSpacing: 3 }}>{data.code}</Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 18, marginTop: 14 }}>
+              <View style={{ alignItems: "center" }}><Text style={{ fontFamily: F.displayX, fontSize: 20, color: C.ink }}>{data.invited}</Text><Text style={{ fontSize: 12, color: C.ink2 }}>đã mời</Text></View>
+              <View style={{ alignItems: "center", flexDirection: "row", gap: 3 }}><Coin size={18} /><Text style={{ fontFamily: F.displayX, fontSize: 20, color: "#8a5a13" }}>{data.coins_earned}</Text></View>
+            </View>
+            <Btn3D kind="gold" label="Chia sẻ lời mời" onPress={share} style={{ alignSelf: "stretch", marginTop: 16 }} icon={<Heart size={16} color="#5a3d00" fill />} />
+          </>)}
+          <Btn3D kind="white" label="Đóng" onPress={onClose} style={{ alignSelf: "stretch" }} />
+        </View>
+      </View>
+    </Modal>
+  );
+}

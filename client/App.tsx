@@ -29,6 +29,7 @@ import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
 import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopScreen, Showreel, WeakChip } from "./src/Engage";
 import { McMarketPanel, MarketScreen } from "./src/Market";
+import { ReferralSheet } from "./src/Engage";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 const WIN_W = Dimensions.get("window").width;
@@ -65,6 +66,8 @@ export default function App() {
   const [regRole, setRegRole] = useState<"hoc_vien" | "mc">("hoc_vien");
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
+  const [refInput, setRefInput] = useState("");
+  const [showReferral, setShowReferral] = useState(false);
 
   const [tab, setTab] = useState<"hv" | "bxh" | "shop" | "mc" | "hs">("hv");
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string; misa_color?: string; misa_outfit?: string | null }>({ xp: 0, streak: 0, tickets: 0 });
@@ -230,7 +233,7 @@ export default function App() {
     try {
       const res = authMode === "login"
         ? await Api.login(email.trim().toLowerCase(), pw)
-        : await Api.register(email.trim().toLowerCase(), pw, name.trim() || "Học viên", regRole);
+        : await Api.register(email.trim().toLowerCase(), pw, name.trim() || "Học viên", regRole, refInput.trim() || undefined);
       await AsyncStorage.setItem("token", res.access_token);
       await AsyncStorage.setItem("role", res.role);
       setToken(res.access_token); setRole(res.role); setTab("hv"); setScreen("feed");
@@ -247,7 +250,7 @@ export default function App() {
   async function doGuest() {
     setAuthBusy(true); setAuthErr(null);
     try {
-      const res = await Api.guest();
+      const res = await Api.guest(refInput.trim() || undefined);
       await AsyncStorage.setItem("token", res.access_token);
       await AsyncStorage.setItem("role", res.role);
       await AsyncStorage.setItem("guest", "true");
@@ -463,6 +466,10 @@ export default function App() {
             </View>
           )}
           {authErr && <Text style={{ color: C.primary, marginBottom: 8, fontWeight: "600" }}>{authErr}</Text>}
+          {authMode !== "login" && (
+            <TextInput value={refInput} onChangeText={(v) => setRefInput(v.toUpperCase())} placeholder="Mã mời (nếu có) — nhận xu ngay" placeholderTextColor={C.ink2} autoCapitalize="characters"
+              style={{ backgroundColor: C.raised, borderRadius: 12, borderWidth: 1, borderColor: C.hair, paddingHorizontal: 12, paddingVertical: 11, fontSize: 15, color: C.ink, marginBottom: 8, letterSpacing: 2 }} />
+          )}
           {authBusy ? <ActivityIndicator color={C.primary} style={{ marginTop: 8 }} />
             : (
               <>
@@ -688,7 +695,7 @@ export default function App() {
           contentContainerStyle={{ padding: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />}
         >
-          <ProfileView token={token!} prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />
+          <ProfileView token={token!} onReferral={() => setShowReferral(true)} prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />
         </ScrollView>
       </View>
       </Animated.ScrollView>
@@ -730,6 +737,7 @@ export default function App() {
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
       {showChallenge && <ChallengeScreen token={token!} onClose={() => setShowChallenge(false)} />}
       {showMarket && <MarketScreen token={token!} onClose={() => setShowMarket(false)} />}
+      {showReferral && <ReferralSheet token={token!} onClose={() => setShowReferral(false)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
         price={proPrice} busy={proBusy} onUpgrade={upgradeToPro}
@@ -801,7 +809,7 @@ function RankView({ token, achs, refreshControl, onOpenChallenge }: { token: str
   );
 }
 
-function ProfileView({ token, prog, reviews, board, achs, scores, isGuest, onUpgrade, onBuyPro, onRestorePro, proPrice, proBusy, soundOn, onToggleSound, onLogout }: { token: string; prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onBuyPro: () => void; onRestorePro: () => void; proPrice: string | null; proBusy: boolean; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
+function ProfileView({ token, onReferral, prog, reviews, board, achs, scores, isGuest, onUpgrade, onBuyPro, onRestorePro, proPrice, proBusy, soundOn, onToggleSound, onLogout }: { token: string; onReferral: () => void; prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onBuyPro: () => void; onRestorePro: () => void; proPrice: string | null; proBusy: boolean; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   const [upEmail, setUpEmail] = useState("");
@@ -841,6 +849,14 @@ function ProfileView({ token, prog, reviews, board, achs, scores, isGuest, onUpg
         <StatCard icon={<TicketSticker size={24} />} value={prog.tickets} label="Vé Vàng" />
       </View>
       {prog.tier && <View style={s.tierBadge}><Trophy size={14} color="#5a3d00" /><Text style={{ fontWeight: "800", color: "#5a3d00", fontSize: 13 }}>Hạng {prog.tier}</Text></View>}
+      <TouchableOpacity onPress={onReferral} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFF3DA", borderRadius: 16, padding: 13, marginTop: 12, borderWidth: 1, borderColor: "#F5DFAE" }}>
+        <Coin size={26} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.title, fontSize: 14.5, color: "#8a5a13" }}>Mời bạn — nhận xu</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#A5843A" }}>Bạn +50 xu, họ +30 xu khi vào học</Text>
+        </View>
+        <Text style={{ color: "#8a5a13", fontFamily: F.title, fontSize: 18 }}>›</Text>
+      </TouchableOpacity>
 
       {/* "Sắp mở khoá" — huy hiệu gần nhất chưa đạt, hiện tiến độ để tạo động lực (Gen Z collectible) */}
       {(() => {

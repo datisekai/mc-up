@@ -53,11 +53,11 @@ async function req(path: string, opts: { method?: string; token?: string; body?:
 }
 
 export const Api = {
-  register: (email: string, password: string, display_name: string, role = "hoc_vien") =>
-    req("/auth/register", { method: "POST", body: { email, password, display_name, role } }),
+  register: (email: string, password: string, display_name: string, role = "hoc_vien", ref_code?: string) =>
+    req("/auth/register", { method: "POST", body: { email, password, display_name, role, ref_code } }),
   login: (email: string, password: string) =>
     req("/auth/login", { method: "POST", body: { email, password } }),
-  guest: () => req("/auth/guest", { method: "POST" }),
+  guest: (ref?: string) => req("/auth/guest" + (ref ? "?ref=" + encodeURIComponent(ref) : ""), { method: "POST" }),
   upgrade: (token: string, email: string, password: string, display_name?: string) =>
     req("/auth/upgrade", { method: "POST", token, body: { email, password, display_name } }),
   lessons: (token: string) => req("/lessons", { token }),
@@ -107,6 +107,7 @@ export const Api = {
   mcBookings: (token: string) => req("/mc/bookings", { token }),
   confirmBooking: (token: string, booking_id: string, scheduled_at: string, meeting_link?: string) => req("/mc/bookings/confirm", { method: "POST", token, body: { booking_id, scheduled_at, meeting_link } }),
   doneBooking: (token: string, booking_id: string) => req("/mc/bookings/done", { method: "POST", token, body: { booking_id } }),
+  referral: (token: string) => req("/me/referral", { token }),
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ

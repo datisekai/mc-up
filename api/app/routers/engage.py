@@ -306,3 +306,28 @@ async def like_entry(entry_id: str, user: User = Depends(current_user),
     e.likes += 1
     await session.commit()
     return {"ok": True, "likes": e.likes}
+
+
+# ===== Referral (mời bạn) =====
+from ..retention import ensure_ref_code, REF_REFERRER_COINS, REF_REFEREE_COINS  # noqa: E402
+
+
+@router.get("/me/referral")
+async def my_referral(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    code = ensure_ref_code(user)
+    await session.commit()
+    # đếm số người mình đã mời + đã tính thưởng
+    invited = (await session.execute(
+        select(func.count(User.id)).where(User.referred_by == user.id))).scalar() or 0
+    rewarded = (await session.execute(
+        select(func.count(Progress.user_id)).join(User, User.id == Progress.user_id)
+        .where(User.referred_by == user.id, Progress.ref_rewarded == True))).scalar() or 0  # noqa: E712
+    return {
+        "code": code,
+        "share_url": f"https://mcup.fun/m/{code}",
+        "invited": invited,
+        "rewarded": rewarded,
+        "coins_earned": rewarded * REF_REFERRER_COINS,
+        "referrer_reward": REF_REFERRER_COINS,
+        "referee_reward": REF_REFEREE_COINS,
+    }

@@ -30,6 +30,8 @@ class User(Base):
     is_pro: Mapped[bool] = mapped_column(default=False)  # McUp Pro (feedback #7) — admin bật để mô phỏng
     pro_source: Mapped[str | None] = mapped_column(String, nullable=True)  # admin | iap_ios | iap_android
     push_token: Mapped[str | None] = mapped_column(String, nullable=True)  # Expo push token (thông báo đẩy)
+    ref_code: Mapped[str | None] = mapped_column(String, nullable=True, unique=True)  # mã mời bạn
+    referred_by: Mapped[str | None] = mapped_column(String, nullable=True)  # user_id người đã mời
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     progress: Mapped["Progress"] = relationship(back_populates="user", uselist=False)
@@ -111,6 +113,7 @@ class Progress(Base):
     misa_color: Mapped[str] = mapped_column(String, default="coral", server_default="coral")
     misa_outfit: Mapped[str | None] = mapped_column(String, nullable=True)  # phụ kiện đang mặc
     owned_cosmetics: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # {itemId: true} đã sở hữu
+    ref_rewarded: Mapped[bool] = mapped_column(default=False, server_default="0")  # đã trả thưởng referral chưa
 
     user: Mapped["User"] = relationship(back_populates="progress")
 

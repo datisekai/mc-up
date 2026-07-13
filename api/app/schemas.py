@@ -6,6 +6,7 @@ class RegisterIn(BaseModel):
     password: str
     display_name: str | None = None
     role: str = "hoc_vien"
+    ref_code: str | None = None  # mã mời bạn (referral)
 
 
 class LoginIn(BaseModel):
