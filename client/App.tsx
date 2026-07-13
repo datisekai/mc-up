@@ -13,7 +13,7 @@ import { C, F, T } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { BoltSticker, ChevronUp, Coin, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
+import { BoltSticker, Cert, ChevronUp, Coin, Dumbbell, FireSticker, Mail, MapIcon, Medal, Mic, Play, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
 import { Btn3D, ProgressBar } from "./src/ui";
 import Misa, { MisaHead } from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
@@ -27,11 +27,11 @@ import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./
 import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
-import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopModal, Showreel, WeakChip } from "./src/Engage";
+import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopScreen, Showreel, WeakChip } from "./src/Engage";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 const WIN_W = Dimensions.get("window").width;
-const TAB_KEYS = ["hv", "bxh", "mc", "hs"] as const;
+const TAB_KEYS = ["hv", "bxh", "shop", "mc", "hs"] as const;
 
 type Brief = { objective: string; context: string; steps: string[]; example: string };
 type Lesson = { id: string; buoi: number; order_index: number; title: string; tip: string; prompt: string; brief?: Brief | null; criteria?: string[]; unlocked: boolean; done: boolean };
@@ -65,10 +65,9 @@ export default function App() {
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
 
-  const [tab, setTab] = useState<"hv" | "bxh" | "mc" | "hs">("hv");
+  const [tab, setTab] = useState<"hv" | "bxh" | "shop" | "mc" | "hs">("hv");
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string }>({ xp: 0, streak: 0, tickets: 0 });
   const [showEnergy, setShowEnergy] = useState(false);
-  const [showShop, setShowShop] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -106,7 +105,7 @@ export default function App() {
   // thay cho PanResponder cũ (thả tay mới nhảy bụp, không animation).
   const pagerRef = useRef<ScrollView>(null);
   const pagerX = useRef(new Animated.Value(0)).current;
-  function goTab(t: "hv" | "bxh" | "mc" | "hs") {
+  function goTab(t: "hv" | "bxh" | "shop" | "mc" | "hs") {
     setTab(t);
     pagerRef.current?.scrollTo({ x: TAB_KEYS.indexOf(t) * WIN_W, animated: true });
   }
@@ -528,6 +527,8 @@ export default function App() {
             ? (<TouchableOpacity onPress={() => setShowEnergy(true)} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><BoltSticker size={17} /><Text style={[s.chipT, { color: hasEnergy ? C.ink : C.primary }]}>{energy}</Text></TouchableOpacity>)
             : (<View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><BoltSticker size={17} /><Text style={[s.chipT, { color: C.spot }]}>∞</Text></View>)}
           <View style={s.chipDiv} />
+          <TouchableOpacity onPress={() => goTab("shop")} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}><Coin size={16} /><Text style={s.chipT}>{prog.coins ?? 0}</Text></TouchableOpacity>
+          <View style={s.chipDiv} />
           <FireSticker size={17} /><Text style={s.chipT}>{prog.streak}</Text>
           <View style={s.chipDiv} />
           <StarSticker size={16} /><Text style={s.chipT}>{prog.xp}</Text>
@@ -653,13 +654,19 @@ export default function App() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 
-      {/* ── Trang 3: MC ── */}
+      {/* ── Trang 3: Shop (B1) ── */}
+      <View style={{ width: WIN_W, flex: 1 }}>
+        <ShopScreen token={token!} coins={prog.coins ?? 0} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
+      </View>
+
+      {/* ── Trang 4: MC ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
         <Mentors mentors={mentors}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 
-      {/* ── Trang 4: Hồ sơ ── */}
+      {/* ── Trang 5: Hồ sơ ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
         <ScrollView
           contentContainerStyle={{ padding: 16 }}
@@ -676,7 +683,7 @@ export default function App() {
         <View style={s.bottomBar}>
           {/* vạch chỉ tab TRƯỢT theo ngón tay khi vuốt ngang (native driver) */}
           <Animated.View style={[s.tabIndicator, { transform: [{ translateX: pagerX.interpolate({
-            inputRange: [0, WIN_W * 3], outputRange: [0, (WIN_W * 3) / 4], extrapolate: "clamp" }) }] }]} />
+            inputRange: [0, WIN_W * 4], outputRange: [0, (WIN_W * 4) / 5], extrapolate: "clamp" }) }] }]} />
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("hv"); if (screen !== "feed" && screen !== "practice" && screen !== "score") setScreen("feed"); }}
             accessibilityLabel="Tab Lộ trình">
             <MapIcon size={26} color={tab === "hv" ? C.primary : C.ink2} />
@@ -685,6 +692,10 @@ export default function App() {
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("bxh"); }} accessibilityLabel="Tab Xếp hạng">
             <Trophy size={26} color={tab === "bxh" ? C.primary : C.ink2} />
             <Text style={[s.bTabT, tab === "bxh" && { color: C.primary }]}>Xếp hạng</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("shop"); }} accessibilityLabel="Tab Cửa hàng">
+            <Coin size={26} />
+            <Text style={[s.bTabT, tab === "shop" && { color: C.primary }]}>Cửa hàng</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.bTab} onPress={() => { sfx("pop"); goTab("mc"); }} accessibilityLabel="Tab MC">
             <Mic size={26} color={tab === "mc" ? C.primary : C.ink2} />
@@ -701,7 +712,6 @@ export default function App() {
       )}
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
-      {showShop && <ShopModal token={token!} coins={prog.coins ?? 0} onClose={() => setShowShop(false)} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))} />}
       {showChallenge && <ChallengeScreen token={token!} onClose={() => setShowChallenge(false)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
@@ -758,9 +768,9 @@ function RankView({ token, achs, refreshControl, onOpenChallenge }: { token: str
         </View>
         <Text style={{ color: C.spot, fontFamily: F.title, fontSize: 18 }}>›</Text>
       </TouchableOpacity>
-      <Kicker>Chứng nhận</Kicker>
+      <IconKicker icon={<Cert size={17} color="#B8860B" />}>Chứng nhận</IconKicker>
       <Certificates token={token} />
-      <Kicker>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</Kicker>
+      <IconKicker icon={<TrophySticker size={18} />}>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</IconKicker>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {achs.map((a) => (
           <View key={a.code} style={[s.achBadge, !a.earned && { opacity: 0.45 }]}>
@@ -807,7 +817,7 @@ function ProfileView({ token, prog, reviews, board, achs, scores, isGuest, onUpg
           </TouchableOpacity>
         </View>
       )}
-      <Kicker>Tiến bộ của bạn</Kicker>
+      <IconKicker icon={<Medal size={17} />}>Tiến bộ của bạn</IconKicker>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <StatCard icon={<FireSticker size={24} />} value={prog.streak} label="Ngày streak" />
         <StatCard icon={<StarSticker size={24} />} value={prog.xp} label="XP" />
@@ -838,15 +848,15 @@ function ProfileView({ token, prog, reviews, board, achs, scores, isGuest, onUpg
         );
       })()}
 
-      <Kicker>Tiến bộ từ đệm</Kicker>
+      <IconKicker icon={<Dumbbell size={17} color={C.primary} />}>Tiến bộ từ đệm</IconKicker>
       {scores.length >= 2 ? (
         <MiniChart data={scores.map((p: any) => p.filler_count)} label="Số từ đệm mỗi lần luyện (thấp hơn = tốt hơn)" />
       ) : (
-        <Text style={s.emptyHint}>Luyện thêm vài bài để xem đường tiến bộ từ đệm của bạn nhé 📉</Text>
+        <Text style={s.emptyHint}>Luyện thêm vài bài để xem đường tiến bộ từ đệm của bạn nhé</Text>
       )}
-      <Kicker>Showreel của bạn</Kicker>
+      <IconKicker icon={<Play size={16} color={C.primary} />}>Showreel của bạn</IconKicker>
       <Showreel token={token} />
-      <Kicker>Thẻ MC bảo chứng</Kicker>
+      <IconKicker icon={<TrophySticker size={18} />}>Thẻ MC bảo chứng</IconKicker>
       {badges.length === 0 && !waiting && (
         <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
       )}
@@ -951,6 +961,11 @@ function MCView({ queue, onReview, onReviewVoice, onReload, onClaim, onRelease }
 
 const Chip = ({ icon, children }: any) => <View style={s.chip}>{icon}<Text style={{ color: C.ink, fontFamily: F.display, fontSize: 13 }}>{children}</Text></View>;
 const Kicker = ({ children }: any) => <Text style={s.kicker}>{children}</Text>;
+const IconKicker = ({ icon, children }: any) => (
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 4 }}>
+    {icon}<Text style={[s.kicker, { marginVertical: 0 }]}>{children}</Text>
+  </View>
+);
 const Tab = ({ on, label, icon, onPress }: any) => <TouchableOpacity style={[s.tab, on && s.tabOn]} onPress={onPress}><View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>{icon}<Text style={{ fontWeight: "700", color: on ? "#fff" : C.ink2 }}>{label}</Text></View></TouchableOpacity>;
 const PathPill = ({ active, label, color, onPress }: any) => <TouchableOpacity onPress={() => { sfx("pop"); onPress?.(); }} style={[s.pathPill, active && { backgroundColor: color || C.primary }]}><Text style={{ fontWeight: "800", fontSize: 12, color: active ? "#fff" : C.ink2 }}>{label}</Text></TouchableOpacity>;
 // Màn mở app: Misa nhún chào + câu sân khấu ngẫu nhiên + shimmer (feedback #7)
@@ -1001,7 +1016,7 @@ const s = StyleSheet.create({
     paddingTop: 8, paddingBottom: 26,
   },
   tabIndicator: {
-    position: "absolute", top: -1, left: 0, width: WIN_W / 4, height: 3,
+    position: "absolute", top: -1, left: 0, width: WIN_W / 5, height: 3,
     borderRadius: 2, backgroundColor: C.primary,
   },
   bTab: { flex: 1, alignItems: "center", gap: 2 },

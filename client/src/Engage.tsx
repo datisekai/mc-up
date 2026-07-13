@@ -133,6 +133,50 @@ export function ShopModal({ token, coins, onClose, onCoins }: { token: string; c
   );
 }
 
+// ===== SHOP dạng TAB (B1) — trang riêng, không phải modal =====
+export function ShopScreen({ token, coins, onCoins, refreshControl }: { token: string; coins: number; onCoins: (n: number) => void; refreshControl?: any }) {
+  const [items, setItems] = useState<any[]>([]);
+  const [bal, setBal] = useState(coins);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState("");
+  async function load() { try { const d = await Api.shop(token); setItems(d.items); setBal(d.coins); onCoins(d.coins); } catch {} }
+  useEffect(() => { load(); }, []);
+  async function buy(id: string) {
+    setBusy(id); setMsg("");
+    try { const r = await Api.buyItem(token, id); setBal(r.coins); onCoins(r.coins); setMsg("Đã mua! 🎉"); }
+    catch (e: any) { setMsg(e.message || "Chưa mua được"); }
+    setBusy(null);
+  }
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16 }} refreshControl={refreshControl}>
+      <View style={{ alignItems: "center", marginBottom: 8 }}>
+        <Misa mood="anmung" size={80} still />
+        <Text style={{ fontFamily: F.displayX, fontSize: T.title, color: C.ink, marginTop: 4 }}>Cửa hàng</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginTop: 8 }}>
+          <Coin size={22} /><Text style={{ fontFamily: F.displayX, fontSize: 19, color: "#8a5a13" }}>{bal}</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 13, color: "#8a5a13" }}>xu</Text>
+        </View>
+        <Text style={{ fontFamily: F.med, fontSize: 12.5, color: C.ink2, marginTop: 4 }}>Luyện mỗi bài +5 xu · làm nhiệm vụ nhận thêm</Text>
+      </View>
+      {!!msg && <Text style={{ textAlign: "center", color: C.primary, fontFamily: F.semi, fontSize: 13, marginBottom: 6 }}>{msg}</Text>}
+      {items.map((it) => (
+        <View key={it.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair }}>
+          <View style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center" }}>{SHOP_ICON[it.icon] ?? <Coin size={26} />}</View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.title, fontSize: 15, color: C.ink }}>{it.label}</Text>
+            <Text style={{ fontFamily: F.body, fontSize: 12.5, color: C.ink2, marginTop: 1 }}>{it.desc}</Text>
+          </View>
+          <TouchableOpacity onPress={() => buy(it.id)} disabled={busy === it.id || bal < it.cost}
+            style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: bal < it.cost ? C.sunken : C.spot, borderRadius: 12, borderBottomWidth: bal < it.cost ? 0 : 3, borderBottomColor: "#E09B18", paddingHorizontal: 13, paddingVertical: 9 }}>
+            {busy === it.id ? <ActivityIndicator size="small" color="#5a3d00" /> : <Coin size={16} />}
+            <Text style={{ fontFamily: F.title, fontSize: 14, color: bal < it.cost ? C.ink2 : "#5a3d00" }}>{it.cost}</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
 // ===== SHOWREEL (C1) — trong Hồ sơ =====
 function ClipPlayer({ url, title, meta }: { url: string; title: string; meta: string }) {
   const [playing, setPlaying] = useState(false);
