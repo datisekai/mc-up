@@ -8,13 +8,13 @@
 
 ## 1. McUp là gì
 
-App mobile **luyện MC / kỹ năng nói game-hoá kiểu Duolingo** cho thị trường Việt Nam.
+App mobile **luyện MC / kỹ năng nói game-hoá** cho thị trường Việt Nam.
 Startup của **Finn** — có sẵn mạng lưới MC thật (đây là *moat*).
 
 - **Vòng lặp lõi:** học viên chọn bài → quay clip nói vào mic → **AI chấm phần "Xác"** (âm lượng, tốc độ, từ đệm) tức thì → nhận gợi ý → giữ streak/XP.
 - **"Vé Vàng":** học viên tiêu vé để gửi clip cho **MC thật nhận xét bằng giọng** (phần "Hồn") → nhận **Thẻ MC bảo chứng** chia sẻ được.
-- **Định vị:** "ELSA cho tiếng Việt & nghề MC".
-- **Bản đồ leo "sân khấu"** (concept-b-stage-climb): lộ trình dạng map Duolingo, không phải list.
+- **Định vị:** app luyện nói & nghề MC hàng đầu cho người Việt.
+- **Bản đồ leo "sân khấu"** (concept-b-stage-climb): lộ trình dạng map leo cấp, không phải list.
 
 **Repo:** `git@github.com:datisekai/mc-up.git` (nhánh `main`). Thư mục code: `mcup/`.
 Thư mục kế hoạch BMad: `_bmad-output/planning-artifacts/`.
@@ -291,7 +291,7 @@ Finn duyệt plan admin 4 pha ("mọi thứ quản lý trên admin") → build *
 | `src/RecordScreen.tsx` | Màn quay "Reels ấm": 3-2-1, waveform metering, teleprompter, processing (P1) |
 | `src/Onboarding.tsx` | Onboarding ấm 5 bước, priming mic, prefs → AsyncStorage (P2) |
 | `src/BadgeCardView.tsx` | Thẻ bảo chứng 3 skin + share ảnh view-shot (P1) |
-| `src/StageMap.tsx` | Bản đồ leo "sân khấu" (Duolingo-style) |
+| `src/StageMap.tsx` | Bản đồ leo "sân khấu" (map leo cấp) |
 | `src/api.ts` | API client. `API_BASE` = IP LAN (hiện `http://192.168.1.215:8000`). `submitMock/submitMockContent/contentPaths/contentLessons`, `submitAudio(...,content_lesson_id?)` |
 | `src/theme.ts`, `src/icons.tsx`, `src/MiniChart.tsx` | Tokens, icon SVG tự vẽ, biểu đồ |
 

@@ -1,4 +1,4 @@
-// McUp — widget streak kiểu Duolingo (WidgetKit).
+// McUp — widget streak (WidgetKit).
 // Data do app ghi vào App Group (ExtensionStorage) mỗi lần refresh tiến độ:
 //   streak (Int) · lastPracticeDay ("yyyy-MM-dd", set khi ĐÃ luyện hôm đó)
 //   energy (Int) · xp (Int) · isPro (Bool)

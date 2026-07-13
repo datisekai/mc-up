@@ -13,7 +13,7 @@ router = APIRouter(tags=["leaderboard"])
 
 @router.get("/leaderboard", response_model=list[LeaderboardEntry])
 async def leaderboard(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
-    """Top 20 học viên theo XP (đua nhau như giải đấu Duolingo)."""
+    """Top 20 học viên theo XP (bảng đua thi đua)."""
     rows = (await session.execute(
         select(User.id, User.display_name, Progress.xp, Progress.streak)
         .join(Progress, Progress.user_id == User.id)

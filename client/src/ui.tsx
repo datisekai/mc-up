@@ -58,7 +58,7 @@ export function Btn3D({ label, onPress, kind = "primary", icon, small, disabled,
   );
 }
 
-// Thanh tiến độ dày kiểu Duolingo — track 14px bo tròn, fill có "mặt bóng" mảnh phía trên
+// Thanh tiến độ dày — track 14px bo tròn, fill có "mặt bóng" mảnh phía trên
 export function ProgressBar({ value, color = C.spot, height = 14, style }: {
   value: number;               // 0..1
   color?: string;

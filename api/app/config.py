@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     max_clip_mb: float = 12.0        # chặn upload clip quá lớn
     cache_ttl_sec: int = 30          # cache đọc nóng (content/paths, mentors) giảm tải DB
 
-    # Thanh năng lượng (Duolingo-style): max 30, mỗi bài tốn 10 → 3 bài/lần đầy.
+    # Thanh năng lượng: max 30, mỗi bài tốn 10 → 3 bài/lần đầy.
     # Hồi 1 điểm / 15 phút → ~1 bài mỗi 2.5h, đầy lại toàn bộ sau ~7.5h. Pro = không tiêu.
     # (Chỉnh ENERGY_REGEN_MIN trong .env để nhanh/chậm hơn — nhỏ = hồi nhanh.)
     energy_max: int = 30

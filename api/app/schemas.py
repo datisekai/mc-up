@@ -67,7 +67,7 @@ class ProgressOut(BaseModel):
     tickets: int
     tier: str = "Đồng"
     practiced_today: bool = False
-    # Thanh năng lượng (Duolingo-style)
+    # Thanh năng lượng
     energy: int = 30
     energy_max: int = 30
     energy_cost: int = 10

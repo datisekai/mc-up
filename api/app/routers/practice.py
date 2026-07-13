@@ -34,7 +34,7 @@ async def _check_quota(session: AsyncSession, user: User) -> None:
 
 
 async def _check_energy(session: AsyncSession, user: User) -> None:
-    """Chặn bắt đầu bài khi hết năng lượng (Duolingo-style). Pro = miễn."""
+    """Chặn bắt đầu bài khi hết năng lượng. Pro = miễn."""
     if user.is_pro or _s.energy_cost <= 0:
         return
     prog = await session.get(Progress, user.id)

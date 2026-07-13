@@ -503,7 +503,7 @@ export default function App() {
   // Minimal UI: header 1 dòng (logo + 1 cụm chip) · KHÔNG tab trên đầu ·
   // tab bar icon ở ĐÁY (chuẩn native, EXPERIENCE.md IA) · vuốt ngang đổi tab từ mọi màn
   // (trừ đang luyện/Reels để không vuốt nhầm).
-  // Thanh năng lượng (Duolingo-style): đủ để học thêm bài không?
+  // Thanh năng lượng (hồi theo thời gian): đủ để học thêm bài không?
   const energy = prog.energy ?? prog.energy_max ?? 30;
   const energyMax = prog.energy_max ?? 30;
   const energyCost = prog.energy_cost ?? 10;
@@ -705,7 +705,7 @@ export default function App() {
   );
 }
 
-// Màn "Hết năng lượng" (Duolingo-style) — đếm ngược tới lúc hồi thêm, CTA Pro. Không phán xét.
+// Màn "Hết năng lượng" — đếm ngược tới lúc hồi thêm, CTA Pro. Không phán xét.
 function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh, onUpgrade, price, busy }: { energy: number; energyMax: number; energyCost: number; secs: number; onClose: () => void; onRefresh: () => void; onUpgrade: () => void; price: string | null; busy: boolean }) {
   const [left, setLeft] = useState(secs);
   useEffect(() => {

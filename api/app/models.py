@@ -91,7 +91,7 @@ class Progress(Base):
     streak: Mapped[int] = mapped_column(default=0)
     tickets: Mapped[int] = mapped_column(default=0)  # số Vé Vàng đang có
     last_day: Mapped[date | None] = mapped_column(nullable=True)
-    # Thanh năng lượng kiểu Duolingo (feedback): mỗi bài tốn năng lượng, hồi dần theo thời gian.
+    # Thanh năng lượng: mỗi bài tốn năng lượng, hồi dần theo thời gian.
     # Pro = không tiêu. energy = giá trị lúc energy_at; hiện tại = energy + hồi từ đó.
     energy: Mapped[int] = mapped_column(default=30)
     energy_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

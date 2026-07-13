@@ -36,7 +36,7 @@ def utc_day_start(d: date) -> datetime:
 
 
 def energy_now(prog: Progress) -> tuple[int, int]:
-    """Năng lượng hiện tại + số giây tới điểm hồi kế (Duolingo-style, hồi theo thời gian).
+    """Năng lượng hiện tại + số giây tới điểm hồi kế (hồi theo thời gian).
     Trả (current, secs_to_next). Không ghi DB — chỉ tính; ghi khi tiêu (consume_energy)."""
     mx = settings.energy_max
     regen = max(0, settings.energy_regen_min) * 60
@@ -247,7 +247,7 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
                 prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
                 prog.last_day = today
             prog.xp += lesson_xp
-            # Tiêu năng lượng cho bài hoàn thành (Duolingo-style). Pro không tiêu.
+            # Tiêu năng lượng cho bài hoàn thành. Pro không tiêu.
             mc_user = await s.get(User, user_id)
             await consume_energy(s, prog, bool(mc_user and mc_user.is_pro))
             # Vé Vàng HIẾM (feedback #7): lần luyện ĐẦU (trải nghiệm MC 1 lần) + mỗi MỐC streak.
@@ -383,7 +383,7 @@ async def submit_mc_review(s: AsyncSession, mc: User, req: ReviewRequest, note: 
 
 
 def tier_of(xp: int) -> str:
-    """Hạng giải đấu theo XP (giống division Duolingo)."""
+    """Hạng giải đấu theo XP (chia hạng tăng dần)."""
     if xp >= 300:
         return "Kim cương"
     if xp >= 150:
