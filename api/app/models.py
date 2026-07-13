@@ -107,6 +107,10 @@ class Progress(Base):
     quests_claimed: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     # Nhắc streak: ngày đã bắn push nhắc (chống gửi trùng)
     streak_pinged_day: Mapped[date | None] = mapped_column(nullable=True)
+    # Trang trí linh vật Misa (shop cosmetics)
+    misa_color: Mapped[str] = mapped_column(String, default="coral", server_default="coral")
+    misa_outfit: Mapped[str | None] = mapped_column(String, nullable=True)  # phụ kiện đang mặc
+    owned_cosmetics: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # {itemId: true} đã sở hữu
 
     user: Mapped["User"] = relationship(back_populates="progress")
 

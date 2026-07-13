@@ -49,18 +49,55 @@ async def get_league(user: User = Depends(current_user), session: AsyncSession =
     return out
 
 
-# ===== Xu / Shop (B1) =====
-SHOP = [
-    {"id": "freeze", "label": "Băng giữ streak", "desc": "Giữ chuỗi khi bạn lỡ 1 ngày", "cost": 50, "icon": "freeze"},
-    {"id": "energy", "label": "Đổ đầy năng lượng", "desc": "Học tiếp ngay, không phải chờ", "cost": 40, "icon": "bolt"},
-    {"id": "skin_night", "label": "Misa Đèn Đêm", "desc": "Bộ cánh Misa ban đêm", "cost": 120, "icon": "skin"},
+# ===== Xu / Shop (B1 mở rộng) — trợ giúp + trang trí linh vật Misa =====
+# kind: "powerup" (tiêu hao, mua nhiều lần) · "color" (đổi màu Misa) · "outfit" (phụ kiện)
+POWERUPS = [
+    {"id": "freeze", "kind": "powerup", "label": "Băng giữ streak", "desc": "Giữ chuỗi khi lỡ 1 ngày", "cost": 50, "icon": "freeze"},
+    {"id": "energy", "kind": "powerup", "label": "Đổ đầy năng lượng", "desc": "Học tiếp ngay không chờ", "cost": 40, "icon": "bolt"},
 ]
+# màu thân Misa — coral là mặc định miễn phí (đã sở hữu sẵn)
+COLORS = [
+    {"id": "coral", "kind": "color", "label": "San hô", "cost": 0, "color": "#FF6B5B"},
+    {"id": "mint", "kind": "color", "label": "Bạc hà", "cost": 80, "color": "#3FB984"},
+    {"id": "sky", "kind": "color", "label": "Trời xanh", "cost": 80, "color": "#5AA9E6"},
+    {"id": "grape", "kind": "color", "label": "Nho tím", "cost": 120, "color": "#9B6FD4"},
+    {"id": "gold", "kind": "color", "label": "Hoàng kim", "cost": 200, "color": "#F5B841"},
+    {"id": "rose", "kind": "color", "label": "Hồng đào", "cost": 120, "color": "#F48AB0"},
+]
+# phụ kiện đội/mặc cho Misa
+OUTFITS = [
+    {"id": "bowtie", "kind": "outfit", "label": "Nơ cổ", "desc": "Lịch lãm dẫn tiệc", "cost": 60, "icon": "outfit"},
+    {"id": "tophat", "kind": "outfit", "label": "Mũ chóp", "desc": "Quý ông sân khấu", "cost": 100, "icon": "outfit"},
+    {"id": "party", "kind": "outfit", "label": "Mũ sinh nhật", "desc": "Tiệc tùng tưng bừng", "cost": 90, "icon": "outfit"},
+    {"id": "crown", "kind": "outfit", "label": "Vương miện", "desc": "Ông hoàng bà chúa MC", "cost": 250, "icon": "outfit"},
+    {"id": "glasses", "kind": "outfit", "label": "Kính râm", "desc": "Ngầu như sao", "cost": 70, "icon": "outfit"},
+    {"id": "headset", "kind": "outfit", "label": "Tai nghe", "desc": "MC livestream", "cost": 80, "icon": "outfit"},
+    {"id": "scarf", "kind": "outfit", "label": "Khăn quàng", "desc": "Ấm áp phong cách", "cost": 90, "icon": "outfit"},
+]
+ALL_ITEMS = {x["id"]: x for x in POWERUPS + COLORS + OUTFITS}
+
+
+def _owned(prog: Progress, item_id: str) -> bool:
+    if item_id == "coral":  # màu mặc định luôn có
+        return True
+    return bool((prog.owned_cosmetics or {}).get(item_id))
 
 
 @router.get("/shop")
 async def get_shop(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
     prog = await session.get(Progress, user.id)
-    return {"coins": prog.coins, "items": SHOP}
+
+    def deco(x):
+        return {**x, "owned": _owned(prog, x["id"]),
+                "equipped": (x["kind"] == "color" and prog.misa_color == x["id"])
+                or (x["kind"] == "outfit" and prog.misa_outfit == x["id"])}
+    return {
+        "coins": prog.coins,
+        "misa_color": prog.misa_color, "misa_outfit": prog.misa_outfit,
+        "powerups": POWERUPS,
+        "colors": [deco(x) for x in COLORS],
+        "outfits": [deco(x) for x in OUTFITS],
+    }
 
 
 class BuyIn(BaseModel):
@@ -71,21 +108,56 @@ class BuyIn(BaseModel):
 async def buy(body: BuyIn, user: User = Depends(current_user),
               session: AsyncSession = Depends(get_session)):
     prog = await session.get(Progress, user.id)
-    item = next((x for x in SHOP if x["id"] == body.item_id), None)
+    item = ALL_ITEMS.get(body.item_id)
     if not item:
         raise HTTPException(404, {"error": {"code": "no_item", "message": "Không có món này"}})
+    # cosmetic đã sở hữu → mua = TRANG BỊ (không trừ xu lần nữa)
+    if item["kind"] in ("color", "outfit") and _owned(prog, body.item_id):
+        _equip(prog, item)
+        await session.commit()
+        return {"ok": True, "coins": prog.coins, "equipped": body.item_id}
     if prog.coins < item["cost"]:
         raise HTTPException(400, {"error": {"code": "not_enough", "message": "Chưa đủ xu — luyện thêm nhé!"}})
     prog.coins -= item["cost"]
-    if body.item_id == "freeze":
-        prog.streak_freezes = min(prog.streak_freezes + 1, 5)
-    elif body.item_id == "energy":
-        from datetime import datetime, timezone
-        prog.energy = settings.energy_max
-        prog.energy_at = datetime.now(timezone.utc)
-    # skin: cờ lưu ở client (chưa cần cột riêng cho V1)
+    if item["kind"] == "powerup":
+        if body.item_id == "freeze":
+            prog.streak_freezes = min(prog.streak_freezes + 1, 5)
+        elif body.item_id == "energy":
+            from datetime import datetime, timezone
+            prog.energy = settings.energy_max
+            prog.energy_at = datetime.now(timezone.utc)
+    else:  # color/outfit: ghi sở hữu rồi trang bị luôn
+        prog.owned_cosmetics = {**(prog.owned_cosmetics or {}), body.item_id: True}
+        _equip(prog, item)
     await session.commit()
     return {"ok": True, "coins": prog.coins}
+
+
+class EquipIn(BaseModel):
+    item_id: str
+    kind: str  # "color" | "outfit" | "outfit_off"
+
+
+@router.post("/shop/equip")
+async def equip(body: EquipIn, user: User = Depends(current_user),
+                session: AsyncSession = Depends(get_session)):
+    prog = await session.get(Progress, user.id)
+    if body.kind == "outfit_off":
+        prog.misa_outfit = None
+    else:
+        item = ALL_ITEMS.get(body.item_id)
+        if not item or not _owned(prog, body.item_id):
+            raise HTTPException(400, {"error": {"code": "not_owned", "message": "Bạn chưa có món này"}})
+        _equip(prog, item)
+    await session.commit()
+    return {"ok": True, "misa_color": prog.misa_color, "misa_outfit": prog.misa_outfit}
+
+
+def _equip(prog: Progress, item: dict) -> None:
+    if item["kind"] == "color":
+        prog.misa_color = item["id"]
+    elif item["kind"] == "outfit":
+        prog.misa_outfit = item["id"]
 
 
 # ===== Showreel (C1): clip ĐẠT điểm cao gom lại, chia sẻ =====

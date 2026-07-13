@@ -78,6 +78,8 @@ class ProgressOut(BaseModel):
     streak_freezes: int = 0
     league_tier: int = 0
     league_name: str = "Đồng"
+    misa_color: str = "coral"
+    misa_outfit: str | None = None
 
 
 class Achievement(BaseModel):

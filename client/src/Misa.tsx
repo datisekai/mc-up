@@ -7,20 +7,37 @@
 // tắt khi máy bật Giảm chuyển động hoặc prop `still`.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated } from "react-native";
-import Svg, { Circle, Ellipse, G, Path, Polygon, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, Ellipse, G, Line, Path, Polygon, Rect, Text as SvgText } from "react-native-svg";
 
 export type MisaMood = "chao" | "covu" | "anmung" | "lo" | "ngu" | "tambiet";
 
-const CORAL = "#FF6B5B";
-const CORAL_D = "#C7462F";
 const PLUM = "#3B2A4A";
 const GOLD = "#FFC24B";
+// bảng màu thân Misa (shop): [thân, tối, má hồng]
+const SKINS: Record<string, [string, string, string]> = {
+  coral: ["#FF6B5B", "#C7462F", "#FF9C90"],
+  mint: ["#3FB984", "#2E9668", "#8FE0C4"],
+  sky: ["#5AA9E6", "#3B7CB8", "#A9D4F5"],
+  grape: ["#9B6FD4", "#6E48A8", "#C9AEEB"],
+  gold: ["#F5B841", "#C7900B", "#FCE0A0"],
+  rose: ["#F48AB0", "#C25E86", "#FBC2D8"],
+};
+let _skinColor = "coral";
+let _skinOutfit: string | null = null;
+export function setMisaSkin(color?: string | null, outfit?: string | null) {
+  _skinColor = color && SKINS[color] ? color : "coral";
+  _skinOutfit = outfit ?? null;
+}
 
-export type MisaAccessory = "bowtie" | "headset" | null;
+export type MisaAccessory = "bowtie" | "headset" | "tophat" | "party" | "crown" | "glasses" | "scarf" | null;
 
-export default function Misa({ mood = "chao", size = 96, still = false, accessory = null }: {
-  mood?: MisaMood; size?: number; still?: boolean; accessory?: MisaAccessory;
+export default function Misa({ mood = "chao", size = 96, still = false, accessory, color }: {
+  mood?: MisaMood; size?: number; still?: boolean; accessory?: MisaAccessory; color?: string;
 }) {
+  // nếu không truyền → dùng skin user đang mặc (đặt qua setMisaSkin)
+  const skinId = color ?? _skinColor;
+  const [CORAL, CORAL_D, CHEEK] = SKINS[skinId] ?? SKINS.coral;
+  const outfit: MisaAccessory = accessory !== undefined ? accessory : (_skinOutfit as MisaAccessory);
   const [reduced, setReduced] = useState(false);
   const bob = useRef(new Animated.Value(0)).current;   // thở — mọi mood
   const aux = useRef(new Animated.Value(0)).current;   // cử động riêng theo mood
@@ -110,7 +127,7 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
         {/* đầu mic */}
         <Circle cx="50" cy="37" r="27" fill={CORAL} stroke={PLUM} strokeWidth={4.5} />
         {/* lưới mic mờ */}
-        <Path d="M29 29 q21 -10 42 0 M26 39 h48 M29 49 q21 10 42 0" stroke="#E85445" strokeWidth={2.6} fill="none" />
+        <Path d="M29 29 q21 -10 42 0 M26 39 h48 M29 49 q21 10 42 0" stroke={CORAL_D} strokeWidth={2.6} fill="none" />
 
         {/* mặt theo mood */}
         {mood === "anmung" ? (
@@ -118,7 +135,7 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
             <Polygon points="41,30 43,34.5 48,35 44.5,38.5 45.5,43.5 41,40.8 36.5,43.5 37.5,38.5 34,35 39,34.5" fill="#fff" />
             <Polygon points="59,30 61,34.5 66,35 62.5,38.5 63.5,43.5 59,40.8 54.5,43.5 55.5,38.5 52,35 57,34.5" fill="#fff" />
             <Ellipse cx="50" cy="50" rx="7" ry="7.5" fill={PLUM} />
-            <Ellipse cx="50" cy="53" rx="4" ry="3" fill="#FF9C90" />
+            <Ellipse cx="50" cy="53" rx="4" ry="3" fill={CHEEK} />
           </>
         ) : mood === "covu" ? (
           <>
@@ -153,25 +170,58 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
             <Circle cx="41" cy="35" r="6" fill="#fff" /><Circle cx="42.5" cy="36" r="3.2" fill={PLUM} />
             <Circle cx="59" cy="35" r="6" fill="#fff" /><Circle cx="60.5" cy="36" r="3.2" fill={PLUM} />
             <Path d="M42 47 q8 7 16 0" stroke={PLUM} strokeWidth={3.6} fill="none" strokeLinecap="round" />
-            <Ellipse cx="33" cy="45" rx="3.6" ry="2.4" fill="#FF9C90" />
-            <Ellipse cx="67" cy="45" rx="3.6" ry="2.4" fill="#FF9C90" />
+            <Ellipse cx="33" cy="45" rx="3.6" ry="2.4" fill={CHEEK} />
+            <Ellipse cx="67" cy="45" rx="3.6" ry="2.4" fill={CHEEK} />
           </>
         )}
 
         {/* phụ kiện theo ngữ cảnh bài (P2) */}
-        {accessory === "bowtie" && (
+        {outfit === "bowtie" && (
           <G>
             <Polygon points="50,62 38,55 38,69" fill={CORAL_D} />
             <Polygon points="50,62 62,55 62,69" fill={CORAL_D} />
             <Circle cx="50" cy="62" r="4.5" fill={GOLD} />
           </G>
         )}
-        {accessory === "headset" && (
+        {outfit === "headset" && (
           <G>
             <Path d="M25 34 a25 25 0 0 1 50 0" stroke={PLUM} strokeWidth={5} fill="none" />
             <Rect x="20" y="32" width="9" height="14" rx="4.5" fill={PLUM} />
             <Rect x="71" y="32" width="9" height="14" rx="4.5" fill={PLUM} />
             <Path d="M76 46 q2 10 -8 12" stroke={PLUM} strokeWidth={3.5} fill="none" />
+          </G>
+        )}
+        {outfit === "tophat" && (
+          <G>
+            <Rect x="26" y="15" width="48" height="6" rx="3" fill={PLUM} />
+            <Rect x="34" y="-4" width="32" height="22" rx="3" fill={PLUM} />
+            <Rect x="34" y="10" width="32" height="5" fill={GOLD} />
+          </G>
+        )}
+        {outfit === "party" && (
+          <G>
+            <Polygon points="50,-6 40,16 60,16" fill={CORAL} stroke={PLUM} strokeWidth={2} />
+            <Circle cx="50" cy="-6" r="4" fill={GOLD} />
+            <Circle cx="46" cy="8" r="2" fill="#fff" /><Circle cx="54" cy="4" r="2" fill={GOLD} /><Circle cx="50" cy="12" r="2" fill="#fff" />
+          </G>
+        )}
+        {outfit === "crown" && (
+          <G>
+            <Path d="M30 14 L34 0 L42 10 L50 -4 L58 10 L66 0 L70 14 Z" fill={GOLD} stroke="#C7900B" strokeWidth={2} strokeLinejoin="round" />
+            <Circle cx="42" cy="8" r="2.4" fill={CORAL} /><Circle cx="50" cy="4" r="2.6" fill="#E24B4A" /><Circle cx="58" cy="8" r="2.4" fill={CORAL} />
+          </G>
+        )}
+        {outfit === "glasses" && (
+          <G>
+            <Rect x="30" y="30" width="16" height="11" rx="4" fill="#2A2036" opacity={0.9} />
+            <Rect x="54" y="30" width="16" height="11" rx="4" fill="#2A2036" opacity={0.9} />
+            <Line x1="46" y1="34" x2="54" y2="34" stroke={PLUM} strokeWidth={3} />
+          </G>
+        )}
+        {outfit === "scarf" && (
+          <G>
+            <Path d="M28 60 q22 12 44 0 l0 8 q-22 10 -44 0 Z" fill="#E24B4A" stroke={PLUM} strokeWidth={2} />
+            <Path d="M60 66 l8 20 l-7 2 l-6 -18 Z" fill="#C7382F" stroke={PLUM} strokeWidth={2} />
           </G>
         )}
 
@@ -211,7 +261,7 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
 export function MisaHead({ size = 22 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Circle cx="24" cy="24" r="21" fill={CORAL} stroke={PLUM} strokeWidth={4} />
+      <Circle cx="24" cy="24" r="21" fill="#FF6B5B" stroke={PLUM} strokeWidth={4} />
       <Circle cx="17" cy="22" r="4.6" fill="#fff" /><Circle cx="18.2" cy="23" r="2.5" fill={PLUM} />
       <Circle cx="31" cy="22" r="4.6" fill="#fff" /><Circle cx="32.2" cy="23" r="2.5" fill={PLUM} />
       <Path d="M17.5 31 q6.5 5.5 13 0" stroke={PLUM} strokeWidth={3} fill="none" strokeLinecap="round" />

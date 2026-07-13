@@ -15,7 +15,7 @@ import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
 import { BoltSticker, Cert, ChevronUp, Coin, Dumbbell, FireSticker, Mail, MapIcon, Medal, Mic, Play, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
 import { Btn3D, ProgressBar } from "./src/ui";
-import Misa, { MisaHead } from "./src/Misa";
+import Misa, { MisaHead, setMisaSkin } from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
 import RecordScreen from "./src/RecordScreen";
 import ScoreReveal from "./src/ScoreReveal";
@@ -66,7 +66,7 @@ export default function App() {
   const [authBusy, setAuthBusy] = useState(false);
 
   const [tab, setTab] = useState<"hv" | "bxh" | "shop" | "mc" | "hs">("hv");
-  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string }>({ xp: 0, streak: 0, tickets: 0 });
+  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string; misa_color?: string; misa_outfit?: string | null }>({ xp: 0, streak: 0, tickets: 0 });
   const [showEnergy, setShowEnergy] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -268,6 +268,7 @@ export default function App() {
   // Set tiến độ + đồng bộ widget màn hình chính (iOS, best-effort)
   function applyProg(p: any, scoreList?: any[]) {
     setProg(p);
+    setMisaSkin(p.misa_color, p.misa_outfit); // Misa mặc đồ user đang chọn ở mọi nơi
     // các ngày từng luyện (giờ máy) — widget vẽ 7 chấm tuần (V4-4)
     const days = (scoreList ?? scores).map((x: any) => {
       const t = new Date(x.created_at);
@@ -657,6 +658,8 @@ export default function App() {
       {/* ── Trang 3: Shop (B1) ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
         <ShopScreen token={token!} coins={prog.coins ?? 0} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))}
+          misaColor={prog.misa_color} misaOutfit={prog.misa_outfit}
+          onEquip={(color, outfit) => setProg((p) => ({ ...p, misa_color: color ?? p.misa_color, misa_outfit: outfit === undefined ? p.misa_outfit : outfit }))}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 

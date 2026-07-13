@@ -6,7 +6,7 @@ import { Audio } from "expo-av";
 import { C, F, T } from "./theme";
 import { Btn3D, ProgressBar } from "./ui";
 import { Api } from "./api";
-import Misa from "./Misa";
+import Misa, { MisaAccessory, setMisaSkin } from "./Misa";
 import { Cert, Check, Coin, Dumbbell, Heart, Medal, Pause, Play, Snow, StarSticker, TicketSticker, X } from "./icons";
 
 const LEAGUE_COLORS = ["#C77F00", "#B8BCC4", "#FFC24B", "#7FB5D8", "#8FE0D0"];
@@ -133,47 +133,129 @@ export function ShopModal({ token, coins, onClose, onCoins }: { token: string; c
   );
 }
 
-// ===== SHOP dạng TAB (B1) — trang riêng, không phải modal =====
-export function ShopScreen({ token, coins, onCoins, refreshControl }: { token: string; coins: number; onCoins: (n: number) => void; refreshControl?: any }) {
-  const [items, setItems] = useState<any[]>([]);
+// ===== SHOP dạng TAB (B1) — trợ giúp + trang trí Misa, có preview + trang bị =====
+const CAT = [
+  { key: "outfits", label: "Trang phục", },
+  { key: "colors", label: "Màu Misa", },
+  { key: "powerups", label: "Trợ giúp", },
+];
+export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEquip, refreshControl }: {
+  token: string; coins: number; onCoins: (n: number) => void;
+  misaColor?: string; misaOutfit?: string | null; onEquip?: (color?: string, outfit?: string | null) => void; refreshControl?: any;
+}) {
+  const [data, setData] = useState<any>(null);
   const [bal, setBal] = useState(coins);
+  const [cat, setCat] = useState("outfits");
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
-  async function load() { try { const d = await Api.shop(token); setItems(d.items); setBal(d.coins); onCoins(d.coins); } catch {} }
+  // preview: Misa mặc đúng thứ đang chọn
+  const [prevColor, setPrevColor] = useState(misaColor ?? "coral");
+  const [prevOutfit, setPrevOutfit] = useState<string | null>(misaOutfit ?? null);
+
+  async function load() {
+    try { const d = await Api.shop(token); setData(d); setBal(d.coins); onCoins(d.coins);
+      setPrevColor(d.misa_color); setPrevOutfit(d.misa_outfit); } catch {}
+  }
   useEffect(() => { load(); }, []);
-  async function buy(id: string) {
-    setBusy(id); setMsg("");
-    try { const r = await Api.buyItem(token, id); setBal(r.coins); onCoins(r.coins); setMsg("Đã mua! 🎉"); }
-    catch (e: any) { setMsg(e.message || "Chưa mua được"); }
+
+  async function act(item: any) {
+    setBusy(item.id); setMsg("");
+    try {
+      if (item.owned || item.cost === 0) {
+        // đã có → trang bị
+        const kind = item.kind === "color" ? "color" : "outfit";
+        const r = await Api.equipItem(token, item.id, kind);
+        setPrevColor(r.misa_color); setPrevOutfit(r.misa_outfit);
+        setMisaSkin(r.misa_color, r.misa_outfit); onEquip?.(r.misa_color, r.misa_outfit);
+      } else {
+        const r = await Api.buyItem(token, item.id);
+        setBal(r.coins); onCoins(r.coins); setMsg("Đã mua & mặc luôn! 🎉");
+        await load();
+        if (item.kind === "color") { setPrevColor(item.id); setMisaSkin(item.id, prevOutfit); onEquip?.(item.id, prevOutfit); }
+        if (item.kind === "outfit") { setPrevOutfit(item.id); setMisaSkin(prevColor, item.id); onEquip?.(prevColor, item.id); }
+      }
+    } catch (e: any) { setMsg(e.message || "Chưa được"); }
     setBusy(null);
   }
+  async function takeOff() {
+    try { const r = await Api.equipItem(token, "", "outfit_off"); setPrevOutfit(null); setMisaSkin(prevColor, null); onEquip?.(prevColor, null); await load(); } catch {}
+  }
+
+  if (!data) return <ActivityIndicator color={C.primary} style={{ marginTop: 40 }} />;
+  const list = cat === "colors" ? data.colors : cat === "outfits" ? data.outfits : data.powerups;
+
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }} refreshControl={refreshControl}>
-      <View style={{ alignItems: "center", marginBottom: 8 }}>
-        <Misa mood="anmung" size={80} still />
-        <Text style={{ fontFamily: F.displayX, fontSize: T.title, color: C.ink, marginTop: 4 }}>Cửa hàng</Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, marginTop: 8 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 30 }} refreshControl={refreshControl}>
+      {/* preview Misa lớn + số dư */}
+      <View style={{ alignItems: "center", backgroundColor: C.raised, borderRadius: 20, paddingVertical: 16, borderWidth: 1, borderColor: C.hair }}>
+        <Misa mood="anmung" size={120} still color={prevColor} accessory={(prevOutfit as MisaAccessory) ?? null} />
+        {prevOutfit ? <TouchableOpacity onPress={takeOff}><Text style={{ color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", marginTop: 2 }}>Cởi phụ kiện</Text></TouchableOpacity> : null}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 }}>
           <Coin size={22} /><Text style={{ fontFamily: F.displayX, fontSize: 19, color: "#8a5a13" }}>{bal}</Text>
           <Text style={{ fontFamily: F.med, fontSize: 13, color: "#8a5a13" }}>xu</Text>
         </View>
-        <Text style={{ fontFamily: F.med, fontSize: 12.5, color: C.ink2, marginTop: 4 }}>Luyện mỗi bài +5 xu · làm nhiệm vụ nhận thêm</Text>
       </View>
-      {!!msg && <Text style={{ textAlign: "center", color: C.primary, fontFamily: F.semi, fontSize: 13, marginBottom: 6 }}>{msg}</Text>}
-      {items.map((it) => (
-        <View key={it.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair }}>
-          <View style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center" }}>{SHOP_ICON[it.icon] ?? <Coin size={26} />}</View>
+      {!!msg && <Text style={{ textAlign: "center", color: C.primary, fontFamily: F.semi, fontSize: 13, marginTop: 6 }}>{msg}</Text>}
+
+      {/* chọn nhóm */}
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 14, marginBottom: 4 }}>
+        {CAT.map((cc) => (
+          <TouchableOpacity key={cc.key} onPress={() => setCat(cc.key)}
+            style={{ flex: 1, alignItems: "center", paddingVertical: 9, borderRadius: 12, backgroundColor: cat === cc.key ? C.ink : C.sunken }}>
+            <Text style={{ fontFamily: F.title, fontSize: 13.5, color: cat === cc.key ? "#fff" : C.ink2 }}>{cc.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {cat === "powerups" ? list.map((it: any) => (
+        <View key={it.id} style={st_row}>
+          <View style={{ width: 46, height: 46, alignItems: "center", justifyContent: "center" }}>{SHOP_ICON[it.icon] ?? <Coin size={26} />}</View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: F.title, fontSize: 15, color: C.ink }}>{it.label}</Text>
-            <Text style={{ fontFamily: F.body, fontSize: 12.5, color: C.ink2, marginTop: 1 }}>{it.desc}</Text>
+            <Text style={{ fontFamily: F.body, fontSize: 12.5, color: C.ink2 }}>{it.desc}</Text>
           </View>
-          <TouchableOpacity onPress={() => buy(it.id)} disabled={busy === it.id || bal < it.cost}
-            style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: bal < it.cost ? C.sunken : C.spot, borderRadius: 12, borderBottomWidth: bal < it.cost ? 0 : 3, borderBottomColor: "#E09B18", paddingHorizontal: 13, paddingVertical: 9 }}>
-            {busy === it.id ? <ActivityIndicator size="small" color="#5a3d00" /> : <Coin size={16} />}
-            <Text style={{ fontFamily: F.title, fontSize: 14, color: bal < it.cost ? C.ink2 : "#5a3d00" }}>{it.cost}</Text>
-          </TouchableOpacity>
+          <BuyBtn label={String(it.cost)} disabled={busy === it.id || bal < it.cost} busy={busy === it.id} onPress={() => act(it)} />
         </View>
-      ))}
+      )) : (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 6 }}>
+          {list.map((it: any) => {
+            const equipped = it.equipped;
+            const owned = it.owned || it.cost === 0;
+            return (
+              <View key={it.id} style={{ width: "31%", alignItems: "center", backgroundColor: equipped ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 8, borderWidth: equipped ? 2 : 1, borderColor: equipped ? C.spot : C.hair }}>
+                <View style={{ height: 78, justifyContent: "center" }}>
+                  {cat === "colors"
+                    ? <Misa mood="chao" size={62} still color={it.id} accessory={null} />
+                    : <Misa mood="chao" size={62} still color={prevColor} accessory={it.id as MisaAccessory} />}
+                </View>
+                <Text style={{ fontFamily: F.semi, fontSize: 12, color: C.ink, marginTop: 2 }} numberOfLines={1}>{it.label}</Text>
+                <TouchableOpacity onPress={() => act(it)} disabled={busy === it.id || (!owned && bal < it.cost)}
+                  style={{ marginTop: 5, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 3, alignSelf: "stretch",
+                    backgroundColor: equipped ? C.sunken : owned ? C.success : (bal < it.cost ? C.sunken : C.spot),
+                    borderRadius: 10, borderBottomWidth: equipped ? 0 : 3, borderBottomColor: owned ? C.successDown : "#E09B18", paddingVertical: 6 }}>
+                  {busy === it.id ? <ActivityIndicator size="small" color="#5a3d00" />
+                    : equipped ? <Text style={{ fontFamily: F.title, fontSize: 12, color: C.ink2 }}>Đang mặc</Text>
+                    : owned ? <Text style={{ fontFamily: F.title, fontSize: 12, color: "#fff" }}>Mặc</Text>
+                    : (<><Coin size={13} /><Text style={{ fontFamily: F.title, fontSize: 12.5, color: bal < it.cost ? C.ink2 : "#5a3d00" }}>{it.cost}</Text></>)}
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+        </View>
+      )}
     </ScrollView>
+  );
+}
+const st_row: any = { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginTop: 8, borderWidth: 1, borderColor: C.hair };
+function BuyBtn({ label, onPress, disabled, busy }: any) {
+  return (
+    <TouchableOpacity onPress={onPress} disabled={disabled}
+      style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: disabled && !busy ? C.sunken : C.spot, borderRadius: 12, borderBottomWidth: disabled && !busy ? 0 : 3, borderBottomColor: "#E09B18", paddingHorizontal: 13, paddingVertical: 9 }}>
+      {busy ? <ActivityIndicator size="small" color="#5a3d00" /> : <Coin size={15} />}
+      <Text style={{ fontFamily: F.title, fontSize: 14, color: disabled && !busy ? C.ink2 : "#5a3d00" }}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 

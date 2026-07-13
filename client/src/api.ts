@@ -90,6 +90,7 @@ export const Api = {
   league: (token: string) => req("/me/league", { token }),
   shop: (token: string) => req("/shop", { token }),
   buyItem: (token: string, item_id: string) => req("/shop/buy", { method: "POST", token, body: { item_id } }),
+  equipItem: (token: string, item_id: string, kind: string) => req("/shop/equip", { method: "POST", token, body: { item_id, kind } }),
   showreel: (token: string) => req("/me/showreel", { token }),
   certificates: (token: string) => req("/me/certificates", { token }),
   weak: (token: string) => req("/me/weak", { token }),

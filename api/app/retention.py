@@ -135,4 +135,6 @@ def retention_snapshot(prog: Progress) -> dict:
         "streak_freezes": prog.streak_freezes,
         "league_tier": prog.league_tier,
         "league_name": LEAGUES[min(prog.league_tier, len(LEAGUES) - 1)],
+        "misa_color": prog.misa_color,
+        "misa_outfit": prog.misa_outfit,
     }
