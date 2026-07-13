@@ -84,6 +84,17 @@ export const Api = {
   setPushToken: (token: string, pushToken: string) =>
     req("/me/push-token", { method: "POST", token, body: { token: pushToken } }),
   iapRefresh: (token: string) => req("/iap/refresh", { method: "POST", token }),
+  // ===== Bộ máy giữ chân =====
+  quests: (token: string) => req("/me/quests", { token }),
+  claimQuest: (token: string, quest_id: string) => req("/me/quests/claim", { method: "POST", token, body: { quest_id } }),
+  league: (token: string) => req("/me/league", { token }),
+  shop: (token: string) => req("/shop", { token }),
+  buyItem: (token: string, item_id: string) => req("/shop/buy", { method: "POST", token, body: { item_id } }),
+  showreel: (token: string) => req("/me/showreel", { token }),
+  certificates: (token: string) => req("/me/certificates", { token }),
+  weak: (token: string) => req("/me/weak", { token }),
+  challenge: (token: string) => req("/challenge", { token }),
+  likeEntry: (token: string, entry_id: string) => req("/challenge/like/" + entry_id, { method: "POST", token }),
 };
 
 // Upload clip audio thật (multipart) — expo-av trả về uri file cục bộ
@@ -115,6 +126,18 @@ export async function submitMcVoice(token: string, request_id: string, uri: stri
     headers: { Authorization: "Bearer " + token },
     body: fd,
     signal: withTimeout(90_000),
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);
+  return data;
+}
+
+// Nộp clip thử thách MC tuần (multipart)
+export async function submitChallenge(token: string, uri: string) {
+  const fd = new FormData();
+  fd.append("file", { uri, name: "challenge.m4a", type: "audio/m4a" } as any);
+  const r = await fetch(API_BASE + "/challenge/submit", {
+    method: "POST", headers: { Authorization: "Bearer " + token }, body: fd, signal: withTimeout(90_000),
   });
   const data = await r.json().catch(() => null);
   if (!r.ok) throw new ApiError(data?.detail?.error?.message || "HTTP " + r.status, r.status);

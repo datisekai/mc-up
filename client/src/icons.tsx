@@ -98,6 +98,55 @@ export const ListIcon = ({ size, color = "#3B2A4A" }: P) => (
   </Svg>
 );
 
+export const Coin = ({ size }: { size?: number }) => (
+  <Svg {...S(size)}>
+    <G transform="translate(0, 1.6)"><Circle cx="12" cy="12" r="9" fill="#C77F00" /></G>
+    <Circle cx="12" cy="12" r="9" fill="#FFC24B" stroke="#C77F00" strokeWidth={1.6} />
+    <Circle cx="12" cy="12" r="5.5" fill="none" stroke="#C77F00" strokeWidth={1.4} />
+    <Path d="M12 8.5v7 M10 10.2h3.2a1.4 1.4 0 0 1 0 2.8H10.4h3a1.4 1.4 0 0 1 0 2.8H10" stroke="#8a5a13" strokeWidth={1.4} fill="none" strokeLinecap="round" />
+  </Svg>
+);
+export const Snow = ({ size, color = "#4BA3D8" }: P) => (
+  <Svg {...S(size)}>
+    <Line x1="12" y1="3" x2="12" y2="21" {...stroke(color)} strokeWidth={1.8} />
+    <Line x1="4" y1="7.5" x2="20" y2="16.5" {...stroke(color)} strokeWidth={1.8} />
+    <Line x1="20" y1="7.5" x2="4" y2="16.5" {...stroke(color)} strokeWidth={1.8} />
+    <Path d="M12 3l2 2M12 3l-2 2M12 21l2-2M12 21l-2-2" {...stroke(color)} strokeWidth={1.8} />
+    <Path d="M4 7.5l.3 2.7M4 7.5l2.7-.3M20 16.5l-.3-2.7M20 16.5l-2.7.3" {...stroke(color)} strokeWidth={1.8} />
+    <Path d="M20 7.5l-2.7-.3M20 7.5l-.3 2.7M4 16.5l2.7.3M4 16.5l.3-2.7" {...stroke(color)} strokeWidth={1.8} />
+  </Svg>
+);
+export const Medal = ({ size }: { size?: number }) => (
+  <Svg {...S(size)}>
+    <Path d="M8 3h8l-2.5 7h-3z" fill="#FF6B5B" />
+    <G transform="translate(0, 1.6)"><Circle cx="12" cy="15" r="6.5" fill="#C77F00" /></G>
+    <Circle cx="12" cy="15" r="6.5" fill="#FFC24B" stroke="#C77F00" strokeWidth={1.6} />
+    <Polygon points="12,11.5 13,13.8 15.5,14 13.6,15.6 14.2,18 12,16.7 9.8,18 10.4,15.6 8.5,14 11,13.8" fill="#fff" />
+  </Svg>
+);
+export const Cert = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Rect x="3" y="4" width="18" height="13" rx="2" {...stroke(color)} />
+    <Line x1="7" y1="8" x2="13" y2="8" {...stroke(color)} />
+    <Line x1="7" y1="11" x2="11" y2="11" {...stroke(color)} />
+    <Circle cx="17" cy="16" r="3.4" fill="#FFC24B" stroke={color} strokeWidth={1.6} />
+    <Path d="M15 19l-1 3 3-1.6 3 1.6-1-3" {...stroke("#FF6B5B")} />
+  </Svg>
+);
+export const Heart = ({ size, color = "#FF6B5B", fill }: P) => (
+  <Svg {...S(size)}>
+    <Path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z"
+      fill={fill ? color : "none"} stroke={color} strokeWidth={2} strokeLinejoin="round" />
+  </Svg>
+);
+export const Dumbbell = ({ size, color = "#3B2A4A" }: P) => (
+  <Svg {...S(size)}>
+    <Line x1="7" y1="12" x2="17" y2="12" {...stroke(color)} />
+    <Rect x="3" y="9" width="3.5" height="6" rx="1.2" {...stroke(color)} />
+    <Rect x="17.5" y="9" width="3.5" height="6" rx="1.2" {...stroke(color)} />
+  </Svg>
+);
+
 export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
   <Svg {...S(size)}>
     <Path d="M20 11a8 8 0 1 0-2.2 6.3" {...stroke(color)} />

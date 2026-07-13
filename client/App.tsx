@@ -13,7 +13,7 @@ import { C, F, T } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
-import { BoltSticker, ChevronUp, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
+import { BoltSticker, ChevronUp, Coin, FireSticker, Mail, MapIcon, Mic, Refresh, SoundOff, SoundOn, StarSticker, TicketSticker, Trophy, TrophySticker, User } from "./src/icons";
 import { Btn3D, ProgressBar } from "./src/ui";
 import Misa, { MisaHead } from "./src/Misa";
 import Onboarding, { OnboardPrefs } from "./src/Onboarding";
@@ -27,6 +27,7 @@ import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./
 import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
+import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopModal, Showreel, WeakChip } from "./src/Engage";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
 
 const WIN_W = Dimensions.get("window").width;
@@ -65,8 +66,10 @@ export default function App() {
   const [authBusy, setAuthBusy] = useState(false);
 
   const [tab, setTab] = useState<"hv" | "bxh" | "mc" | "hs">("hv");
-  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean }>({ xp: 0, streak: 0, tickets: 0 });
-  const [showEnergy, setShowEnergy] = useState(false);  // màn "hết năng lượng"
+  const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string }>({ xp: 0, streak: 0, tickets: 0 });
+  const [showEnergy, setShowEnergy] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
@@ -562,6 +565,8 @@ export default function App() {
       <View style={{ width: WIN_W, flex: 1 }}>
         {screen === "feed" ? (
           <View style={{ flex: 1 }}>
+            <QuestsCard token={token!} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))} />
+            <WeakChip token={token!} onPick={(lid) => { const full = lessons.find((x: any) => x.id === lid); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />
             {paths.length > 0 && (
               <View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
@@ -644,7 +649,7 @@ export default function App() {
 
       {/* ── Trang 2: Xếp hạng (V4-5) ── */}
       <View style={{ width: WIN_W, flex: 1 }}>
-        <RankView board={board} achs={achs}
+        <RankView token={token!} achs={achs} onOpenChallenge={() => setShowChallenge(true)}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />} />
       </View>
 
@@ -660,7 +665,7 @@ export default function App() {
           contentContainerStyle={{ padding: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={safeRefresh} tintColor={C.primary} colors={[C.primary]} />}
         >
-          <ProfileView prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />
+          <ProfileView token={token!} prog={prog} reviews={reviews} board={board} achs={achs} scores={scores} isGuest={isGuest} onUpgrade={doUpgrade} onBuyPro={upgradeToPro} onRestorePro={restorePurchases} proPrice={proPrice} proBusy={proBusy} soundOn={soundOn} onToggleSound={toggleSound} onLogout={logout} />
         </ScrollView>
       </View>
       </Animated.ScrollView>
@@ -696,6 +701,8 @@ export default function App() {
       )}
 
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
+      {showShop && <ShopModal token={token!} coins={prog.coins ?? 0} onClose={() => setShowShop(false)} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))} />}
+      {showChallenge && <ChallengeScreen token={token!} onClose={() => setShowChallenge(false)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
         price={proPrice} busy={proBusy} onUpgrade={upgradeToPro}
@@ -735,27 +742,24 @@ function EnergyModal({ energy, energyMax, energyCost, secs, onClose, onRefresh, 
 }
 
 // Tab XẾP HẠNG (V4-5): thi đua tách khỏi Hồ sơ — BXH + huy hiệu ở một sân riêng
-function RankView({ board, achs, refreshControl }: { board: any[]; achs: any[]; refreshControl: any }) {
+function RankView({ token, achs, refreshControl, onOpenChallenge }: { token: string; achs: any[]; refreshControl: any; onOpenChallenge: () => void }) {
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }} refreshControl={refreshControl}>
       <View style={{ alignItems: "center", marginBottom: 4 }}>
         <Misa mood="anmung" size={82} />
         <Text style={{ fontFamily: F.displayX, fontSize: T.title, color: C.ink, marginTop: 4 }}>Đấu trường sân khấu</Text>
       </View>
-      <Kicker>Bảng xếp hạng tuần</Kicker>
-      {board.length === 0 && <Text style={s.emptyHint}>Chưa có ai trên bảng — luyện một bài là bạn có tên ngay 🏆</Text>}
-      {board.map((e) => (
-        <View key={e.rank} style={[s.rankRow, e.is_me && { borderColor: C.spot, borderWidth: 1.5 }]}>
-          <View style={[s.rankMedal, e.rank === 1 && { backgroundColor: C.spot }, e.rank === 2 && { backgroundColor: "#D9D4E8" }, e.rank === 3 && { backgroundColor: "#EBC5A8" }]}>
-            <Text style={[s.rankNum, e.rank <= 3 && { color: "#5a3d00" }]}>{e.rank}</Text>
-          </View>
-          <Text style={{ flex: 1, fontWeight: e.is_me ? "800" : "600", color: C.ink, fontSize: 15 }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-            <FireSticker size={14} /><Text style={{ color: C.ink2, fontSize: 13, marginRight: 8 }}>{e.streak}</Text>
-            <StarSticker size={15} /><Text style={{ fontWeight: "800", fontSize: 14 }}>{e.xp}</Text>
-          </View>
+      <LeagueBoard token={token} />
+      <TouchableOpacity onPress={onOpenChallenge} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.ink, borderRadius: 16, padding: 14, marginTop: 8, borderBottomWidth: 4, borderBottomColor: "#241A2E" }}>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}><TrophySticker size={26} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.title, fontSize: 15.5, color: C.spot }}>Thử thách MC tuần</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#C9B8D6" }}>Nộp clip theo chủ đề — MC tuyên dương top</Text>
         </View>
-      ))}
+        <Text style={{ color: C.spot, fontFamily: F.title, fontSize: 18 }}>›</Text>
+      </TouchableOpacity>
+      <Kicker>Chứng nhận</Kicker>
+      <Certificates token={token} />
       <Kicker>Huy hiệu · {achs.filter((a) => a.earned).length}/{achs.length}</Kicker>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {achs.map((a) => (
@@ -770,7 +774,7 @@ function RankView({ board, achs, refreshControl }: { board: any[]; achs: any[]; 
   );
 }
 
-function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, onBuyPro, onRestorePro, proPrice, proBusy, soundOn, onToggleSound, onLogout }: { prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onBuyPro: () => void; onRestorePro: () => void; proPrice: string | null; proBusy: boolean; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
+function ProfileView({ token, prog, reviews, board, achs, scores, isGuest, onUpgrade, onBuyPro, onRestorePro, proPrice, proBusy, soundOn, onToggleSound, onLogout }: { token: string; prog: { xp: number; streak: number; tickets: number; tier?: string; ai_scores_left?: number; is_pro?: boolean }; reviews: any[]; board: any[]; achs: any[]; scores: any[]; isGuest: boolean; onUpgrade: (email: string, pw: string, name: string) => void; onBuyPro: () => void; onRestorePro: () => void; proPrice: string | null; proBusy: boolean; soundOn: boolean; onToggleSound: () => void; onLogout: () => void }) {
   const badges = reviews.filter((r) => r.badge);
   const waiting = reviews.some((r) => !r.badge);
   const [upEmail, setUpEmail] = useState("");
@@ -840,6 +844,8 @@ function ProfileView({ prog, reviews, board, achs, scores, isGuest, onUpgrade, o
       ) : (
         <Text style={s.emptyHint}>Luyện thêm vài bài để xem đường tiến bộ từ đệm của bạn nhé 📉</Text>
       )}
+      <Kicker>Showreel của bạn</Kicker>
+      <Showreel token={token} />
       <Kicker>Thẻ MC bảo chứng</Kicker>
       {badges.length === 0 && !waiting && (
         <Text style={{ color: C.ink2, paddingHorizontal: 4 }}>Chưa có. Luyện xong rồi gửi Vé Vàng cho MC để nhận nhận xét nhé!</Text>
