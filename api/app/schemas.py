@@ -73,6 +73,11 @@ class ProgressOut(BaseModel):
     energy_cost: int = 10
     energy_secs_to_next: int = 0   # giây tới khi hồi thêm 1 điểm
     is_pro: bool = False
+    # Bộ máy giữ chân
+    coins: int = 0
+    streak_freezes: int = 0
+    league_tier: int = 0
+    league_name: str = "Đồng"
 
 
 class Achievement(BaseModel):

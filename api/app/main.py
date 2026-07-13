@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .db import init_db
-from .routers import admin, auth, content, iap, leaderboard, lessons, mc, media, practice, stats, vevang
+from .routers import admin, auth, content, engage, iap, leaderboard, lessons, mc, media, practice, stats, vevang
 from .seed import seed_admin, seed_curriculum, seed_genres, seed_lessons, seed_mc, seed_rubrics
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -39,7 +39,23 @@ async def lifespan(_: FastAPI):
         log.error("⚠️⚠️ JWT_SECRET đang là giá trị mặc định trên Postgres — ĐỔI NGAY trong .env!")
     log.info("McUp API sẵn sàng (DB=%s) — mở http://localhost:8000/app",
              settings.database_url.split("://")[0])
+    # Scheduler nhắc streak (A1) — loop nhẹ trong process, không cần cron ngoài.
+    import asyncio as _asyncio
+    from .push import streak_reminder_tick
+
+    async def _streak_loop():
+        while True:
+            try:
+                from datetime import datetime
+                if datetime.now().hour >= 19:  # chỉ nhắc buổi tối (giờ máy chủ)
+                    await streak_reminder_tick()
+            except Exception as exc:
+                log.warning("streak loop lỗi (%s)", exc)
+            await _asyncio.sleep(3600)  # mỗi giờ
+
+    _task = _asyncio.create_task(_streak_loop())
     yield
+    _task.cancel()
 
 
 app = FastAPI(title="McUp API", version=settings.app_version, lifespan=lifespan)
@@ -88,6 +104,7 @@ app.include_router(media.router)
 app.include_router(admin.router)
 app.include_router(content.router)
 app.include_router(iap.router)
+app.include_router(engage.router)
 
 
 @app.get("/", include_in_schema=False)

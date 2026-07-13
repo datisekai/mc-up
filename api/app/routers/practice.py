@@ -131,9 +131,16 @@ async def get_clip(clip_id: str, user: User = Depends(current_user),
 @router.get("/me/progress", response_model=ProgressOut)
 async def my_progress(user: User = Depends(current_user), session: AsyncSession = Depends(get_session)):
     prog = await session.get(Progress, user.id)
+    from ..retention import retention_snapshot, sync_week
+    was_week = prog.week_start
+    await sync_week(session, prog)  # lazy reset giải đấu khi sang tuần
+    # Pro (B2): mỗi tuần mới tặng 1 băng giữ streak (tối đa 3 tồn)
+    if user.is_pro and was_week != prog.week_start and prog.streak_freezes < 3:
+        prog.streak_freezes += 1
+    await session.commit()
     return ProgressOut(xp=prog.xp, streak=prog.streak, tickets=prog.tickets,
                        tier=tier_of(prog.xp), practiced_today=(prog.last_day == date.today()),
-                       **energy_snapshot(prog, user.is_pro))
+                       **energy_snapshot(prog, user.is_pro), **retention_snapshot(prog))
 
 
 class PushTokenIn(BaseModel):

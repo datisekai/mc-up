@@ -95,6 +95,18 @@ class Progress(Base):
     # Pro = không tiêu. energy = giá trị lúc energy_at; hiện tại = energy + hồi từ đó.
     energy: Mapped[int] = mapped_column(default=30)
     energy_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    # ===== Bộ máy giữ chân (2026-07-13) =====
+    coins: Mapped[int] = mapped_column(default=0, server_default="0")            # xu: kiếm khi luyện/quest, tiêu ở shop
+    streak_freezes: Mapped[int] = mapped_column(default=0, server_default="0")   # băng giữ streak đang có
+    # Giải đấu tuần (lazy reset — không cần cron): league_xp cộng theo XP tuần này
+    league_xp: Mapped[int] = mapped_column(default=0, server_default="0")
+    league_tier: Mapped[int] = mapped_column(default=0, server_default="0")      # 0=Đồng..4=Kim cương
+    week_start: Mapped[date | None] = mapped_column(nullable=True)               # thứ 2 của tuần đang tính
+    # Nhiệm vụ ngày: ngày áp dụng + JSON các quest đã NHẬN thưởng
+    quests_day: Mapped[date | None] = mapped_column(nullable=True)
+    quests_claimed: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Nhắc streak: ngày đã bắn push nhắc (chống gửi trùng)
+    streak_pinged_day: Mapped[date | None] = mapped_column(nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="progress")
 
@@ -178,6 +190,27 @@ class ContentLesson(Base):
     sample_voice_key: Mapped[str | None] = mapped_column(String, nullable=True)  # giọng MC mẫu đọc theo (P1-4)
     order_index: Mapped[int] = mapped_column(default=0)
     status: Mapped[str] = mapped_column(String, default="draft")
+
+
+class WeeklyChallenge(Base):
+    """Thử thách MC tuần (C2): 1 chủ đề/tuần, user nộp clip, MC/admin chấm top."""
+    __tablename__ = "weekly_challenge"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    week_start: Mapped[date] = mapped_column()          # thứ 2 tuần áp dụng
+    title: Mapped[str] = mapped_column(String)
+    prompt: Mapped[str] = mapped_column(String, default="")
+    status: Mapped[str] = mapped_column(String, default="open")  # open | judged
+
+
+class ChallengeEntry(Base):
+    __tablename__ = "challenge_entry"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    challenge_id: Mapped[str] = mapped_column(ForeignKey("weekly_challenge.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("app_user.id"))
+    audio_key: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    likes: Mapped[int] = mapped_column(default=0, server_default="0")
+    award: Mapped[str | None] = mapped_column(String, nullable=True)  # "top" | "honorable" — MC chấm
 
 
 class AuditLog(Base):

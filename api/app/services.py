@@ -241,12 +241,23 @@ async def run_scoring(clip_id: str, user_id: str, duration: float, lesson_xp: in
         s.add(Score(clip_id=clip_id, **result))  # phần Xác, tách khỏi MCReview (AD-5)
 
         if passed:
+            from .retention import add_league_xp  # tránh vòng import ở top
             prog = await s.get(Progress, user_id)
             today = date.today()
             if prog.last_day != today:  # idempotent theo ngày (AD-3)
-                prog.streak = prog.streak + 1 if prog.last_day == today - timedelta(days=1) else 1
+                gap = (today - prog.last_day).days if prog.last_day else 99
+                if gap == 1 or prog.last_day is None:
+                    prog.streak = prog.streak + 1
+                elif gap == 2 and prog.streak_freezes > 0:
+                    # BĂNG GIỮ STREAK (A3): lỡ đúng 1 ngày → tiêu 1 băng, chuỗi KHÔNG đứt
+                    prog.streak_freezes -= 1
+                    prog.streak = prog.streak + 1
+                else:
+                    prog.streak = 1  # đứt chuỗi
                 prog.last_day = today
             prog.xp += lesson_xp
+            prog.coins += 5                          # xu mỗi bài đạt (B1)
+            await add_league_xp(s, prog, lesson_xp)  # điểm giải đấu tuần (A4)
             # Tiêu năng lượng cho bài hoàn thành. Pro không tiêu.
             mc_user = await s.get(User, user_id)
             await consume_energy(s, prog, bool(mc_user and mc_user.is_pro))
