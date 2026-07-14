@@ -13,7 +13,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
@@ -108,11 +108,43 @@ app.include_router(engage.router)
 app.include_router(market.router)
 
 
+_WEB = Path(__file__).parent / "web"
+
+
 @app.get("/", include_in_schema=False)
 @app.get("/landing", include_in_schema=False)
 async def landing():
     """Landing page giới thiệu app + MC hợp tác (feedback #6)."""
-    return FileResponse(Path(__file__).parent / "web" / "landing.html")
+    return FileResponse(_WEB / "landing.html")
+
+
+# ===== SEO: ảnh chia sẻ, favicon, robots, sitemap =====
+@app.get("/og.png", include_in_schema=False)
+async def og_image():
+    return FileResponse(_WEB / "og.png", media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/favicon.svg", include_in_schema=False)
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(_WEB / "favicon.svg", media_type="image/svg+xml",
+                        headers={"Cache-Control": "public, max-age=604800"})
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots():
+    body = "User-agent: *\nAllow: /\nDisallow: /admin-web\nDisallow: /app\n\nSitemap: https://mcup.fun/sitemap.xml\n"
+    return PlainTextResponse(body)
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    urls = [("https://mcup.fun/", "1.0"), ("https://mcup.fun/privacy", "0.3"),
+            ("https://mcup.fun/terms", "0.3")]
+    items = "".join(f"<url><loc>{u}</loc><priority>{p}</priority></url>" for u, p in urls)
+    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
+    return Response(xml, media_type="application/xml")
 
 
 @app.get("/privacy", include_in_schema=False)
