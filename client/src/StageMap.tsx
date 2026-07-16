@@ -90,7 +90,7 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
     }
   }, [openIdx, height]);
 
-  // đường trail: phần ĐÃ LEO (từ node đang mở xuống đáy) tô đặc xanh; phần SẮP TỚI (lên sân khấu) gạch đứt
+  // đường trail: phần ĐÃ LEO (từ node đang mở xuống đáy) tô đặc san hô nhạt; phần SẮP TỚI (lên sân khấu) gạch đứt
   const toPath = (arr: { x: number; y: number }[]) => arr.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const climbedStart = openIdx < 0 ? 0 : openIdx;
   const dashed = toPath(pts.slice(0, climbedStart + 1));
@@ -104,7 +104,7 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
         {/* trail */}
         <Svg width={width} height={totalH} style={StyleSheet.absoluteFill}>
           <Path d={dashed} stroke="#E7DBC8" strokeWidth={7} strokeLinecap="round" strokeDasharray="2 14" fill="none" />
-          <Path d={solid} stroke="#7FD3AD" strokeWidth={7} strokeLinecap="round" fill="none" />
+          <Path d={solid} stroke="#FFB4A6" strokeWidth={7} strokeLinecap="round" fill="none" />
         </Svg>
 
         {/* ĐỈNH: sân khấu tốt nghiệp */}

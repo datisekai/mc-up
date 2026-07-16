@@ -347,12 +347,12 @@ export function Certificates({ token }: { token: string }) {
   if (!data) return null;
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-      {data.certificates.map((c: any) => (
-        <View key={c.path_id} style={{ width: "48%", backgroundColor: c.earned ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: c.earned ? C.spot : C.hair, opacity: c.earned ? 1 : 0.75 }}>
+      {data.certificates.map((c: any, i: number) => (
+        <FadeInUp key={c.path_id} delay={i * 50} style={{ width: "48%" }}><View style={{ width: "100%", backgroundColor: c.earned ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: c.earned ? C.spot : C.hair, opacity: c.earned ? 1 : 0.75 }}>
           <Cert size={26} color={c.earned ? "#B8860B" : C.ink2} />
           <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink, marginTop: 6 }} numberOfLines={1}>{c.genre}</Text>
           <Text style={{ fontFamily: F.med, fontSize: 12, color: C.ink2, marginTop: 2 }}>{c.earned ? "Đã hoàn thành 🎓" : `${c.done}/${c.total} bài`}</Text>
-        </View>
+        </View></FadeInUp>
       ))}
     </View>
   );

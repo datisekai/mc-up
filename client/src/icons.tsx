@@ -102,8 +102,9 @@ export const Coin = ({ size }: { size?: number }) => (
   <Svg {...S(size)}>
     <G transform="translate(0, 1.6)"><Circle cx="12" cy="12" r="9" fill="#C77F00" /></G>
     <Circle cx="12" cy="12" r="9" fill="#FFC24B" stroke="#C77F00" strokeWidth={1.6} />
-    <Circle cx="12" cy="12" r="5.5" fill="none" stroke="#C77F00" strokeWidth={1.4} />
-    <Path d="M12 8.5v7 M10 10.2h3.2a1.4 1.4 0 0 1 0 2.8H10.4h3a1.4 1.4 0 0 1 0 2.8H10" stroke="#8a5a13" strokeWidth={1.4} fill="none" strokeLinecap="round" />
+    <Circle cx="12" cy="12" r="6" fill="none" stroke="#C77F00" strokeWidth={1.2} opacity={0.6} />
+    {/* tia lấp lánh 4 cánh — xu quý, không giống crypto */}
+    <Path d="M12 7.5 L13 11 L16.5 12 L13 13 L12 16.5 L11 13 L7.5 12 L11 11 Z" fill="#8a5a13" />
   </Svg>
 );
 export const Snow = ({ size, color = "#9DB0BA" }: P) => (
