@@ -578,7 +578,7 @@ export function RouteOverview({ lessons, onPick, onClose }: { lessons: any[]; on
                       <TouchableOpacity key={l.id} disabled={!l.unlocked && !l.done}
                         onPress={() => { onClose(); onPick(l.id); }}
                         style={{ width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
-                          backgroundColor: l.done ? C.success : open ? "#fff" : "#E4D5C0",
+                          backgroundColor: l.done ? C.success : open ? "#fff" : C.lock,
                           borderWidth: isCurrent ? 2.5 : 0, borderColor: C.primary }}>
                         {l.done ? <Check size={16} color="#fff" /> : <Text style={{ fontFamily: F.title, fontSize: 12, color: open ? C.ink : C.ink3 }}>{l.buoi}</Text>}
                       </TouchableOpacity>

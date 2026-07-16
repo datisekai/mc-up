@@ -213,7 +213,7 @@ const st = StyleSheet.create({
     position: "absolute", width: 280, flexDirection: "row", alignItems: "center", gap: 12, zIndex: 4,
     backgroundColor: C.ink, borderRadius: 18, padding: 14, borderBottomWidth: 5, borderBottomColor: "#241A2E",
   },
-  chapterLock: { backgroundColor: "#EFE6DA", borderBottomColor: "#E0D4C4" },
+  chapterLock: { backgroundColor: C.lock, borderBottomColor: C.hairDown },
   chapterPoster: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#FFEFC9", alignItems: "center", justifyContent: "center" },
   chapterKick: { fontSize: 12, fontFamily: F.semi, color: "#CFC3B0", letterSpacing: 0.5 },
   chapterName: { fontSize: 17, fontFamily: F.displayX, color: "#FFC24B", marginTop: 1 },
@@ -228,7 +228,9 @@ const st = StyleSheet.create({
   eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised, flexDirection: "row", alignItems: "center", gap: 1 },
   eBadgeNo: { backgroundColor: C.primary },
   eBadgeT: { fontSize: 12.5, fontFamily: F.title, color: "#8a5a13" },
-  glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(255,194,75,0.28)", zIndex: 1 },
+  // V8: quầng "tới lượt bạn" = SAN HÔ, không phải vàng. Vàng là màu THƯỞNG; đây là
+  // lời GỌI HÀNH ĐỘNG → primary. (Vệt vàng nhạt 240px cũ là mảng lờ đờ to nhất màn hình.)
+  glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(242,80,60,0.16)", zIndex: 1 },
   cta: { position: "absolute", width: 120, alignItems: "center", zIndex: 5 },
   ctaT: { backgroundColor: C.primary, color: "#fff", fontWeight: "900", fontSize: 12.5, letterSpacing: 0.4,
     paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, overflow: "hidden" },

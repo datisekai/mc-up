@@ -339,7 +339,7 @@ const st = StyleSheet.create({
   endBtn: { backgroundColor: C.sunken, borderRadius: 999, paddingHorizontal: 22, paddingVertical: 12, marginTop: 20 },
   endBtnT: { color: C.ink, fontFamily: F.title, fontSize: 13 },
 
-  lockCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: "#E4D5C0", alignItems: "center", justifyContent: "center" },
+  lockCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: C.lock, alignItems: "center", justifyContent: "center" },
   lockT: { fontSize: 14, fontFamily: F.semi, color: C.ink2, marginTop: 14 },
 
   exit: {
