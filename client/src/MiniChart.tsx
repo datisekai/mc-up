@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
-import { C } from "./theme";
+import { C, shadow } from "./theme";
 
 // Biểu đồ đường tối giản (react-native-svg) — vd số từ đệm theo thời gian.
 export default function MiniChart({ data, label }: { data: number[]; label: string }) {
@@ -17,7 +17,7 @@ export default function MiniChart({ data, label }: { data: number[]; label: stri
   }));
   const poly = pts.map((p) => `${p.x},${p.y}`).join(" ");
   return (
-    <View style={{ backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10 }}>
+    <View style={{ backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10, ...shadow.card }}>
       <Text style={{ color: C.ink2, fontSize: 12, fontWeight: "700", marginBottom: 6 }}>{label}</Text>
       <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         <Polyline points={poly} fill="none" stroke={C.primary} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />

@@ -37,15 +37,23 @@ export const C = {
   goldInk: "#8a5a13",   // chữ trên nền vàng nhạt
 };
 
-// Bóng mềm cho thẻ nổi khỏi nền (A· chiều sâu). Dùng: style={[card, shadow.card]}
+// Bóng cho thẻ nổi khỏi nền (A· chiều sâu). Dùng: style={[card, shadow.card]}
+// V8.1 (feedback: "UI nên nổi lên, giờ chìm chìm"): nền đã chuyển sang TRẮNG THẬT
+// → bóng cũ (opacity .06-.08) tinh chỉnh cho nền kem giờ gần như vô hình (trắng
+// trên trắng). Tăng đô rõ rệt để thẻ thật sự tách khỏi nền, không chỉ dựa viền mảnh.
 export const shadow = {
   card: {
-    shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08, shadowRadius: 10, elevation: 3,
+    shadowColor: "#2E2239", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14, shadowRadius: 14, elevation: 5,
   },
   soft: {
-    shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    shadowColor: "#2E2239", shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10, shadowRadius: 8, elevation: 3,
+  },
+  // Thanh nav/dock đứng đáy màn — bóng hắt NGƯỢC LÊN để tách khỏi nội dung phía trên
+  nav: {
+    shadowColor: "#2E2239", shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.10, shadowRadius: 10, elevation: 8,
   },
 };
 

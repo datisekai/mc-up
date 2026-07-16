@@ -1047,7 +1047,7 @@ const s = StyleSheet.create({
   bottomBar: {
     position: "absolute", bottom: 0, left: 0, right: 0, flexDirection: "row",
     backgroundColor: C.raised, borderTopWidth: 1, borderTopColor: C.hair,
-    paddingTop: 8, paddingBottom: 26,
+    paddingTop: 8, paddingBottom: 26, ...shadow.nav,
   },
   tabIndicator: {
     position: "absolute", top: -1, left: 0, width: WIN_W / 5, height: 3,
@@ -1059,7 +1059,7 @@ const s = StyleSheet.create({
   stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
   stateChipT: { fontSize: 12, fontFamily: F.semi, color: C.ink2 },
   energyBg: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(59,42,74,0.55)", alignItems: "center", justifyContent: "center", zIndex: 99, padding: 30 },
-  energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340 },
+  energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340, ...shadow.card },
   energyTitle: { fontFamily: F.displayX, fontSize: 20, color: C.ink, marginTop: 8 },
   energyTrack: { height: 12, backgroundColor: C.sunken, borderRadius: 999, marginTop: 14, width: "100%", overflow: "hidden" },
   energyFill: { height: "100%", backgroundColor: "#FFC24B", borderRadius: 999 },
@@ -1086,7 +1086,7 @@ const s = StyleSheet.create({
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 7, marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
-  rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
+  rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6, ...shadow.soft },
   rankMedal: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center", marginRight: 10 },
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },

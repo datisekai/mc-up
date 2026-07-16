@@ -3,7 +3,7 @@
 // KHÔNG hiển thị "(giả lập)" cho học viên (§2.5). KHÔNG đỏ khi luyện.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { C, F } from "./theme";
+import { C, F, shadow } from "./theme";
 import { Mic } from "./icons";
 import Misa from "./Misa";
 import { sfx } from "./sound";
@@ -222,7 +222,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
 }
 
 const st = StyleSheet.create({
-  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
   row: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.hair,
@@ -246,7 +246,7 @@ const st = StyleSheet.create({
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
-  summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
+  summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
   sumHead: { fontFamily: F.title, fontSize: 12.5, color: C.ink2, letterSpacing: 0.8, marginBottom: 6 },
   sumRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 4 },
   sumOk: { color: "#3FB984", fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },

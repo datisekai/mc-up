@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
-import { C, F } from "./theme";
+import { C, F, shadow } from "./theme";
 import { ChevronDown, ChevronUp, FireSticker, Lock, Mic, X } from "./icons";
 import Misa from "./Misa";
 import ScoreReveal, { ScoreData } from "./ScoreReveal";
@@ -306,7 +306,7 @@ const st = StyleSheet.create({
   centerPage: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 },
   kicker: { fontSize: 12, fontFamily: F.title, letterSpacing: 1, color: C.ink2 },
   prompt: { fontSize: 17, fontFamily: F.title, color: C.ink, lineHeight: 24, marginTop: 6 },
-  stepsCard: { backgroundColor: C.raised, borderRadius: 14, padding: 12, marginTop: 14 },
+  stepsCard: { backgroundColor: C.raised, borderRadius: 14, padding: 12, marginTop: 14, ...shadow.card },
   step: { fontSize: 13.5, color: C.ink, lineHeight: 23 },
   stepN: { color: C.primary, fontFamily: F.title },
   mic: {

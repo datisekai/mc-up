@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 import { Audio } from "expo-av";
-import { C, F } from "./theme";
+import { C, F, shadow } from "./theme";
 import { ChevronLeft, Fire, MapIcon, Mic, Star, Trophy } from "./icons";
 import Misa from "./Misa";
 
@@ -264,7 +264,7 @@ const st = StyleSheet.create({
   proofT: { fontSize: 12, color: C.ink2, fontFamily: F.semi },
   valCard: {
     flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: C.raised,
-    borderRadius: 16, padding: 14, marginTop: 12,
+    borderRadius: 16, padding: 14, marginTop: 12, ...shadow.card,
   },
   valIcon: { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center" },
   valTitle: { fontSize: 14.5, fontFamily: F.title, color: C.ink },
@@ -276,7 +276,7 @@ const st = StyleSheet.create({
   chipT: { fontSize: 13, fontFamily: F.semi, color: C.ink },
   previewCard: {
     flexDirection: "row", alignItems: "center", gap: 9, backgroundColor: C.raised,
-    borderRadius: 14, borderWidth: 1.5, padding: 13, marginTop: 18,
+    borderRadius: 14, borderWidth: 1.5, padding: 13, marginTop: 18, ...shadow.soft,
   },
   previewDot: { width: 10, height: 10, borderRadius: 5 },
   previewT: { flex: 1, fontSize: 13, fontFamily: F.body, color: C.ink, lineHeight: 19 },

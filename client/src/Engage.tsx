@@ -149,7 +149,7 @@ export function ShopModal({ token, coins, onClose, onCoins }: { token: string; c
             </View>
           </View>
           {items.map((it) => (
-            <View key={it.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair }}>
+            <View key={it.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair, ...shadow.soft }}>
               <View style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center" }}>{SHOP_ICON[it.icon] ?? <Coin size={26} />}</View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: F.title, fontSize: 15, color: C.ink }}>{it.label}</Text>
@@ -223,7 +223,7 @@ export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEqu
   return (
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 30 }} refreshControl={refreshControl}>
       {/* preview Misa lớn + số dư */}
-      <View style={{ alignItems: "center", backgroundColor: C.raised, borderRadius: 20, paddingVertical: 16, borderWidth: 1, borderColor: C.hair }}>
+      <View style={{ alignItems: "center", backgroundColor: C.raised, borderRadius: 20, paddingVertical: 16, borderWidth: 1, borderColor: C.hair, ...shadow.card }}>
         <Misa mood="anmung" size={120} still color={prevColor} accessory={(prevOutfit as MisaAccessory) ?? null} />
         {prevOutfit ? <TouchableOpacity onPress={takeOff}><Text style={{ color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", marginTop: 2 }}>Cởi phụ kiện</Text></TouchableOpacity> : null}
       </View>
@@ -313,7 +313,7 @@ function ClipPlayer({ url, title, meta }: { url: string; title: string; meta: st
     } catch { setPlaying(false); }
   }
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 14, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.hair }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 14, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.hair, ...shadow.soft }}>
       <TouchableOpacity onPress={toggle} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.primary, alignItems: "center", justifyContent: "center", borderBottomWidth: 3, borderBottomColor: C.primaryDown }}>
         {playing ? <Pause size={16} color="#fff" /> : <Play size={16} color="#fff" />}
       </TouchableOpacity>
@@ -517,7 +517,7 @@ export function ReferralSheet({ token, onClose }: { token: string; onClose: () =
             {data ? `Bạn bè đạt bài đầu tiên: bạn +${data.referrer_reward} xu, họ +${data.referee_reward} xu` : "..."}
           </Text>
           {data && (<>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, borderWidth: 2, borderColor: C.spot, borderStyle: "dashed", paddingHorizontal: 20, paddingVertical: 14, marginTop: 16 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, borderWidth: 2, borderColor: C.spot, borderStyle: "dashed", paddingHorizontal: 20, paddingVertical: 14, marginTop: 16, ...shadow.soft }}>
               <Text style={{ fontFamily: F.displayX, fontSize: 26, color: C.primary, letterSpacing: 3 }}>{data.code}</Text>
             </View>
             <View style={{ flexDirection: "row", gap: 18, marginTop: 14 }}>
