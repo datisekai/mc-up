@@ -48,34 +48,57 @@ async def send_push(token: str | None, title: str, body: str,
         return False
 
 
-# ===== Nhắc streak (A1): bắn 1 lần/ngày cho ai chưa luyện, có streak, sau 19h =====
-async def streak_reminder_tick() -> int:
-    """Quét user cần nhắc giữ chuỗi. Gọi định kỳ (scheduler trong lifespan).
-    Trả số push đã gửi. Idempotent theo ngày qua Progress.streak_pinged_day."""
-    from datetime import date
+# ===== Push giữ chân (A1 + V5-4): streak · comeback · giải đấu reset =====
+async def retention_tick() -> int:
+    """Quét & gửi push giữ chân. Gọi định kỳ (scheduler trong lifespan), giờ tối.
+    - Streak: chưa luyện hôm nay + có streak → 'chuỗi sắp tắt' (guard streak_pinged_day).
+    - Comeback: vắng ≥3 ngày → 'Misa nhớ bạn' (guard last_nudge_day, tối đa 1 nudge/ngày).
+    - Giải đấu reset: tối Chủ nhật → 'giải đấu sắp reset, leo hạng đi' (guard last_nudge_day).
+    Trả tổng số push đã gửi."""
+    from datetime import date, timedelta
     from sqlalchemy import select
     from .db import SessionLocal
     from .models import Progress, User
 
     sent = 0
+    today = date.today()
+    is_sunday = today.weekday() == 6
     async with SessionLocal() as s:
-        today = date.today()
         rows = (await s.execute(
             select(Progress, User).join(User, User.id == Progress.user_id)
-            .where(Progress.streak > 0,
-                   Progress.last_day != today,          # chưa luyện hôm nay
-                   Progress.streak_pinged_day != today, # chưa nhắc hôm nay
-                   User.push_token.is_not(None)))).all()
+            .where(User.push_token.is_not(None), User.role == "hoc_vien"))).all()
         for prog, user in rows:
-            ok = await send_push(
-                user.push_token,
-                f"Chuỗi {prog.streak} ngày sắp tắt! 🔥",
-                "Luyện 1 bài ngắn thôi là giữ được lửa. Misa đang chờ bạn 🎤",
-                data={"type": "streak"})
-            prog.streak_pinged_day = today  # đánh dấu dù gửi lỗi — không spam lại trong ngày
-            if ok:
-                sent += 1
+            practiced_today = prog.last_day == today
+            # 1) Nhắc streak (ưu tiên cao nhất, guard riêng)
+            if prog.streak > 0 and not practiced_today and prog.streak_pinged_day != today:
+                if await send_push(user.push_token, f"Chuỗi {prog.streak} ngày sắp tắt! 🔥",
+                                   "Luyện 1 bài ngắn thôi là giữ được lửa. Misa đang chờ bạn 🎤",
+                                   data={"type": "streak"}):
+                    sent += 1
+                prog.streak_pinged_day = today
+                continue  # 1 người tối đa 1 push/tối
+            # 2) các nudge khác — tối đa 1/ngày
+            if prog.last_nudge_day == today or practiced_today:
+                continue
+            gap = (today - prog.last_day).days if prog.last_day else 999
+            if gap >= 3:  # comeback — vắng lâu
+                if await send_push(user.push_token, "Misa nhớ bạn lắm! 🥺",
+                                   "Lâu rồi chưa gặp — quay lại luyện 1 bài cho ấm giọng nhé?",
+                                   data={"type": "comeback"}):
+                    sent += 1
+                prog.last_nudge_day = today
+            elif is_sunday and prog.league_xp > 0:  # giải đấu sắp reset tối CN
+                if await send_push(user.push_token, "Giải đấu sắp khép lại! 🏆",
+                                   "Luyện thêm vài bài tối nay để giữ/leo hạng trước khi reset nhé.",
+                                   data={"type": "league"}):
+                    sent += 1
+                prog.last_nudge_day = today
         await s.commit()
     if sent:
-        log.info("Nhắc streak: đã gửi %d push", sent)
+        log.info("Push giữ chân: đã gửi %d", sent)
     return sent
+
+
+# giữ tên cũ cho tương thích
+async def streak_reminder_tick() -> int:
+    return await retention_tick()

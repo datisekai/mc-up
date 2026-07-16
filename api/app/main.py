@@ -41,14 +41,14 @@ async def lifespan(_: FastAPI):
              settings.database_url.split("://")[0])
     # Scheduler nhắc streak (A1) — loop nhẹ trong process, không cần cron ngoài.
     import asyncio as _asyncio
-    from .push import streak_reminder_tick
+    from .push import retention_tick
 
     async def _streak_loop():
         while True:
             try:
                 from datetime import datetime
                 if datetime.now().hour >= 19:  # chỉ nhắc buổi tối (giờ máy chủ)
-                    await streak_reminder_tick()
+                    await retention_tick()
             except Exception as exc:
                 log.warning("streak loop lỗi (%s)", exc)
             await _asyncio.sleep(3600)  # mỗi giờ
