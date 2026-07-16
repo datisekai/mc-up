@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { C, F, T } from "./theme";
 import { Btn3D } from "./ui";
+import { FadeInUp, SkeletonList } from "./anim";
 import { Api } from "./api";
 import Misa from "./Misa";
 import { Calendar, Check, Heart, Mic, Video, X } from "./icons";
@@ -47,10 +48,10 @@ export function MarketScreen({ token, onClose }: { token: string; onClose: () =>
 
         <ScrollView contentContainerStyle={{ padding: 16 }}>
           {tab === "browse" ? (
-            !services ? <ActivityIndicator color={C.primary} style={{ marginTop: 30 }} /> :
+            !services ? <SkeletonList rows={4} avatar={false} /> :
             services.length === 0 ? <Empty text="Chưa có dịch vụ nào — quay lại sau nhé!" /> :
-            services.map((s) => (
-              <View key={s.id} style={card}>
+            services.map((s, i) => (
+              <FadeInUp key={s.id} delay={i * 50}><View style={card}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   {s.mode === "live" ? <Video size={18} color={C.primary} /> : <Mic size={18} color={C.primary} />}
                   <Text style={{ fontFamily: F.title, fontSize: 15.5, color: C.ink, flex: 1 }}>{s.title}</Text>
@@ -66,10 +67,10 @@ export function MarketScreen({ token, onClose }: { token: string; onClose: () =>
                     <Text style={{ fontFamily: F.title, fontSize: 14, color: "#5a3d00" }}>Đặt buổi</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </View></FadeInUp>
             ))
           ) : (
-            !bookings ? <ActivityIndicator color={C.primary} style={{ marginTop: 30 }} /> :
+            !bookings ? <SkeletonList rows={3} /> :
             bookings.length === 0 ? <Empty text="Bạn chưa đặt buổi nào. Chọn một MC để bắt đầu nhé!" /> :
             bookings.map((b) => <BookingCard key={b.id} b={b} token={token} isMc={false} onChange={load} />)
           )}
@@ -205,7 +206,7 @@ export function McMarketPanel({ token }: { token: string }) {
         ))}
       </View>
       {tab === "bookings" ? (
-        !bookings ? <ActivityIndicator color={C.primary} /> :
+        !bookings ? <SkeletonList rows={2} /> :
         bookings.length === 0 ? <Empty text="Chưa có ai đặt buổi. Thêm dịch vụ hấp dẫn để thu hút học viên nhé!" /> :
         bookings.map((b) => <BookingCard key={b.id} b={b} token={token} isMc onChange={load} />)
       ) : (

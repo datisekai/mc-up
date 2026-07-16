@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Audio } from "expo-av";
 import { C, F, T } from "./theme";
+import { FadeInUp, Skeleton, SkeletonList, useCountUp } from "./anim";
 import { Btn3D, ProgressBar } from "./ui";
 import { Api } from "./api";
 import Misa, { MisaAccessory, setMisaSkin } from "./Misa";
@@ -96,7 +97,7 @@ export function QuestsCard({ token, onCoins, noMargin }: { token: string; onCoin
 export function LeagueBoard({ token }: { token: string }) {
   const [data, setData] = useState<any>(null);
   useEffect(() => { Api.league(token).then(setData).catch(() => {}); }, []);
-  if (!data) return <ActivityIndicator color={C.primary} style={{ marginVertical: 20 }} />;
+  if (!data) return <View style={{ paddingTop: 10 }}><Skeleton w={66} h={66} r={33} style={{ alignSelf: "center", marginBottom: 10 }} /><SkeletonList rows={6} /></View>;
   const col = LEAGUE_COLORS[Math.min(data.tier, 4)];
   return (
     <View>
@@ -108,7 +109,7 @@ export function LeagueBoard({ token }: { token: string }) {
         <Text style={{ fontFamily: F.med, fontSize: 13, color: C.ink2 }}>Top 5 tuần này lên hạng · reset thứ Hai</Text>
       </View>
       {data.entries.map((e: any, i: number) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 9, paddingHorizontal: 10, borderRadius: 12, marginBottom: 4,
+        <FadeInUp key={i} delay={i * 45}><View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 9, paddingHorizontal: 10, borderRadius: 12, marginBottom: 4,
           backgroundColor: e.is_me ? "#FFF3DA" : "transparent", borderWidth: e.is_me ? 1.5 : 0, borderColor: C.spot }}>
           <View style={{ width: 28, alignItems: "center" }}>
             {e.promote ? <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#E7F6EE", alignItems: "center", justifyContent: "center" }}><Text style={{ fontFamily: F.displayX, fontSize: 13, color: "#2E9668" }}>{e.rank}</Text></View>
@@ -116,7 +117,7 @@ export function LeagueBoard({ token }: { token: string }) {
           </View>
           <Text style={{ flex: 1, fontFamily: e.is_me ? F.title : F.semi, fontSize: 15, color: C.ink, marginLeft: 8 }} numberOfLines={1}>{e.name}{e.is_me ? " (bạn)" : ""}</Text>
           <StarSticker size={15} /><Text style={{ fontFamily: F.title, fontSize: 14, marginLeft: 3 }}>{e.league_xp}</Text>
-        </View>
+        </View></FadeInUp>
       ))}
       {data.entries.length <= 1 && <Text style={{ color: C.ink2, textAlign: "center", padding: 12, fontSize: 13 }}>Luyện vài bài để leo hạng cùng mọi người nhé 🏆</Text>}
     </View>
@@ -216,7 +217,7 @@ export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEqu
     try { const r = await Api.equipItem(token, "", "outfit_off"); setPrevOutfit(null); setMisaSkin(prevColor, null); onEquip?.(prevColor, null); await load(); } catch {}
   }
 
-  if (!data) return <ActivityIndicator color={C.primary} style={{ marginTop: 40 }} />;
+  if (!data) return <View style={{ padding: 16 }}><Skeleton w={120} h={156} r={20} style={{ alignSelf: "center", marginBottom: 16 }} /><SkeletonList rows={4} avatar={false} /></View>;
   const list = cat === "colors" ? data.colors : cat === "outfits" ? data.outfits : data.powerups;
 
   return (
@@ -432,7 +433,7 @@ export function ChallengeScreen({ token, onClose }: { token: string; onClose: ()
           <Text style={{ flex: 1, textAlign: "center", fontFamily: F.displayX, fontSize: 19, color: C.ink, marginRight: 26 }}>Thử thách MC tuần</Text>
         </View>
         <ScrollView contentContainerStyle={{ padding: 16 }}>
-          {!data ? <ActivityIndicator color={C.primary} style={{ marginTop: 30 }} /> : (<>
+          {!data ? <View><Skeleton w={"100%"} h={120} r={18} style={{ marginBottom: 12 }} /><SkeletonList rows={3} /></View> : (<>
             <View style={{ backgroundColor: C.ink, borderRadius: 18, padding: 16, borderBottomWidth: 5, borderBottomColor: "#241A2E" }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <Misa mood="covu" size={52} accessory="bowtie" />

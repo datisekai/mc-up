@@ -51,12 +51,9 @@ export default function Celebration({ kind, value, onClose }: {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then((v) => mounted && setReduced(v));
 
-    // haptic theo cường độ (§1.5)
-    if (kind === "ticket" || kind === "tier") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    } else {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    }
+    // haptic mạnh hơn (§1.5) — cú "bốp" ăn mừng: Heavy + Success nối tiếp
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}), 240);
 
     // âm "ting!" (§1.6) — qua sound.ts: preload sẵn + tôn trọng công tắc Bật/Tắt
     const tingT = setTimeout(() => sfx("ting"), 180);
@@ -64,7 +61,7 @@ export default function Celebration({ kind, value, onClose }: {
     Animated.timing(backdrop, { toValue: 1, duration: 180, useNativeDriver: true }).start();
     Animated.spring(spot, { toValue: 1, damping: 14, delay: 120, useNativeDriver: true }).start();
     Animated.spring(icon, { toValue: 1, damping: 11, delay: 240, useNativeDriver: true }).start();
-    Animated.timing(text, { toValue: 1, duration: 420, delay: 360, useNativeDriver: true }).start();
+    Animated.spring(text, { toValue: 1, damping: 9, stiffness: 140, delay: 320, useNativeDriver: true }).start();
 
     const t = setTimeout(close, AUTO_DISMISS_MS);
     return () => { mounted = false; clearTimeout(t); clearTimeout(tingT); };
@@ -80,7 +77,10 @@ export default function Celebration({ kind, value, onClose }: {
     : { opacity: icon, transform: [{ translateY: icon.interpolate({ inputRange: [0, 1], outputRange: [-24, 0] }) }] };
   const textStyle = reduced
     ? { opacity: text }
-    : { opacity: text, transform: [{ translateY: text.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }] };
+    : { opacity: text, transform: [
+        { scale: text.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) },
+        { translateY: text.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) },
+      ] };
 
   return (
     <Animated.View style={[st.backdrop, { opacity: backdrop }]}>
@@ -91,7 +91,7 @@ export default function Celebration({ kind, value, onClose }: {
         <IconCmp size={44} />
       </Animated.View>
       <Animated.View style={[textStyle, { alignItems: "center" }]}>
-        <Misa mood="anmung" size={92} />
+        <Misa mood="anmung" size={116} />
         <Text style={st.title} accessibilityRole="header">{title}</Text>
         <Text style={st.sub}>{sub}</Text>
         <TouchableOpacity style={st.btn} onPress={close} accessibilityLabel="Đóng">

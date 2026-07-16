@@ -237,9 +237,16 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
 
       <View style={st.stageFoot}>
         <View style={st.wave} accessibilityLabel="Sóng âm — app đang nghe bạn">
-          {levels.map((lv, i) => (
-            <View key={i} style={[st.bar, { height: reduced ? 14 : 6 + lv * 46 }]} />
-          ))}
+          {levels.map((lv, i) => {
+            const mid = (levels.length - 1) / 2;
+            const dist = Math.abs(i - mid) / (mid || 1);
+            return (
+              <View key={i} style={[st.bar, {
+                height: reduced ? 16 : 10 + lv * 52,
+                opacity: 0.5 + (1 - dist) * 0.5,   // sáng ở giữa, mờ dần ra rìa
+              }]} />
+            );
+          })}
         </View>
         <TouchableOpacity style={st.stopBtn} onPress={stopAndSubmit} accessibilityLabel="Dừng và nộp">
           <View style={st.stopSquare} />
@@ -405,8 +412,8 @@ const st = StyleSheet.create({
   teleCur: { color: C.primary, fontWeight: "800" },
   teleDone: { color: "#B7ADBE" },
 
-  wave: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 3, height: 60, marginTop: 18 },
-  bar: { width: 4, borderRadius: 2, backgroundColor: C.primary },
+  wave: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, height: 72, marginTop: 18 },
+  bar: { width: 5, borderRadius: 3, backgroundColor: C.primary },
 
   stopBtn: {
     width: 68, height: 68, borderRadius: 34, backgroundColor: "#fff",
