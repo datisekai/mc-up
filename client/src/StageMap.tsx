@@ -215,7 +215,7 @@ const st = StyleSheet.create({
   },
   chapterLock: { backgroundColor: "#EFE6DA", borderBottomColor: "#E0D4C4" },
   chapterPoster: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" },
-  chapterKick: { fontSize: 12, fontFamily: F.semi, color: "#C9B8D6", letterSpacing: 0.5 },
+  chapterKick: { fontSize: 12, fontFamily: F.semi, color: "#CFC3B0", letterSpacing: 0.5 },
   chapterName: { fontSize: 17, fontFamily: F.displayX, color: "#FFC24B", marginTop: 1 },
   chapterLv: { fontSize: 12, fontFamily: F.semi, color: "#9A8EA5", marginTop: 1 },
   node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3, borderBottomWidth: 5, borderBottomColor: "#D8CCBA" },

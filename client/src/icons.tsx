@@ -106,7 +106,7 @@ export const Coin = ({ size }: { size?: number }) => (
     <Path d="M12 8.5v7 M10 10.2h3.2a1.4 1.4 0 0 1 0 2.8H10.4h3a1.4 1.4 0 0 1 0 2.8H10" stroke="#8a5a13" strokeWidth={1.4} fill="none" strokeLinecap="round" />
   </Svg>
 );
-export const Snow = ({ size, color = "#4BA3D8" }: P) => (
+export const Snow = ({ size, color = "#9DB0BA" }: P) => (
   <Svg {...S(size)}>
     <Line x1="12" y1="3" x2="12" y2="21" {...stroke(color)} strokeWidth={1.8} />
     <Line x1="4" y1="7.5" x2="20" y2="16.5" {...stroke(color)} strokeWidth={1.8} />

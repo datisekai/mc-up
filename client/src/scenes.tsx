@@ -7,14 +7,16 @@ const PLUM = "#3B2A4A";
 const CORAL = "#FF6B5B";
 const GOLD = "#FFC24B";
 const CREAM = "#FFF3DA";
+const WARM = "#F2D9C4";      // be ấm trung tính (thay hồng/lam/xanh lạ)
+const CORALSOFT = "#FFD9D0"; // san hô nhạt
 
 // Sân khấu đám cưới: cổng hoa + đôi nhẫn
 const Wedding = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.42} viewBox="0 0 300 126">
     <Rect x="0" y="98" width="300" height="28" fill="#F6EDE2" />
-    <Path d="M60 110 V52 a90 62 0 0 1 180 0 V110" fill="none" stroke="#E8B4C8" strokeWidth="14" />
+    <Path d="M60 110 V52 a90 62 0 0 1 180 0 V110" fill="none" stroke={CORALSOFT} strokeWidth="14" />
     <Circle cx="60" cy="58" r="9" fill={CORAL} /><Circle cx="240" cy="58" r="9" fill={CORAL} />
-    <Circle cx="86" cy="26" r="8" fill="#F4C0D1" /><Circle cx="214" cy="26" r="8" fill="#F4C0D1" />
+    <Circle cx="86" cy="26" r="8" fill={CORALSOFT} /><Circle cx="214" cy="26" r="8" fill={CORALSOFT} />
     <Circle cx="150" cy="12" r="9" fill={CORAL} />
     <Circle cx="138" cy="74" r="15" fill="none" stroke={GOLD} strokeWidth="5.5" />
     <Circle cx="163" cy="74" r="15" fill="none" stroke={GOLD} strokeWidth="5.5" />
@@ -32,7 +34,7 @@ const Event = ({ w }: { w: number }) => (
     <Rect x="138" y="34" width="24" height="34" rx="6" fill={CORAL} />
     <Circle cx="150" cy="26" r="12" fill={CORAL} stroke={PLUM} strokeWidth="3" />
     <Circle cx="56" cy="30" r="5" fill={CORAL} /><Rect x="242" y="20" width="9" height="9" rx="2" fill={GOLD} />
-    <Circle cx="270" cy="52" r="4" fill="#7FD3AD" /><Rect x="30" y="60" width="8" height="8" rx="2" fill="#E8B4C8" />
+    <Circle cx="270" cy="52" r="4" fill={WARM} /><Rect x="30" y="60" width="8" height="8" rx="2" fill={CORALSOFT} />
   </Svg>
 );
 
@@ -46,7 +48,7 @@ const Live = ({ w }: { w: number }) => (
     <Rect x="143" y="66" width="14" height="20" rx="6" fill={CORAL} />
     <Rect x="126" y="24" width="26" height="12" rx="6" fill={CORAL} />
     <Path d="M210 84 c8 -10 22 -2 12 10 l-12 10 l-12 -10 c-10 -12 4 -20 12 -10z" fill={CORAL} />
-    <Path d="M236 48 c6 -8 17 -1 9 8 l-9 8 l-9 -8 c-8 -9 3 -16 9 -8z" fill="#E8B4C8" />
+    <Path d="M236 48 c6 -8 17 -1 9 8 l-9 8 l-9 -8 c-8 -9 3 -16 9 -8z" fill={CORALSOFT} />
     <Path d="M74 62 c6 -8 17 -1 9 8 l-9 8 l-9 -8 c-8 -9 3 -16 9 -8z" fill={GOLD} />
   </Svg>
 );
@@ -59,8 +61,8 @@ const Stage = ({ w }: { w: number }) => (
     <Rect x="126" y="58" width="48" height="44" rx="7" fill={PLUM} />
     <Rect x="146" y="34" width="8" height="26" rx="4" fill={PLUM} />
     <Rect x="139" y="20" width="22" height="20" rx="10" fill={CORAL} stroke={PLUM} strokeWidth="3" />
-    <Circle cx="52" cy="108" r="10" fill="#C9B8D6" /><Circle cx="86" cy="112" r="10" fill="#E8B4C8" />
-    <Circle cx="216" cy="112" r="10" fill="#A8D8C5" /><Circle cx="250" cy="108" r="10" fill="#F4C0D1" />
+    <Circle cx="52" cy="108" r="10" fill={WARM} /><Circle cx="86" cy="112" r="10" fill={CORALSOFT} />
+    <Circle cx="216" cy="112" r="10" fill={WARM} /><Circle cx="250" cy="108" r="10" fill={CORALSOFT} />
     <Line x1="126" y1="70" x2="174" y2="70" stroke={GOLD} strokeWidth="4" />
   </Svg>
 );

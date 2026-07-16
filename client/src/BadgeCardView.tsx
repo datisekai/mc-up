@@ -22,7 +22,7 @@ const APP_URL = "https://mcup.fun"; // landing/deep-link — đổi khi có doma
 type Skin = "cream" | "night" | "coral";
 const SKINS: Record<Skin, { bg: string; raised: string; text: string; sub: string; quote: string; accent: string; hair: string; ok: string }> = {
   cream: { bg: "#FFF8F0", raised: "#FFFFFF", text: "#3B2A4A", sub: "#7A6E82", quote: "#3B2A4A", accent: "#FF6B5B", hair: "#EDE3D6", ok: "#1f8f63" },
-  night: { bg: "#2E2239", raised: "#3A2C48", text: "#F5EEFA", sub: "#C9BBD6", quote: "#FFE9C7", accent: "#FFC24B", hair: "#4A3A5C", ok: "#7FE3B8" },
+  night: { bg: "#2E2239", raised: "#3A2C48", text: "#F5EEFA", sub: "#CFC3B0", quote: "#FFE9C7", accent: "#FFC24B", hair: "#4A3A5C", ok: "#7FE3B8" },
   coral: { bg: "#FF6B5B", raised: "#FF8073", text: "#FFF3E9", sub: "#FFE0D6", quote: "#FFFFFF", accent: "#FFC24B", hair: "#FF8073", ok: "#FFFFFF" },
 };
 const SKIN_LABEL: Record<Skin, string> = { cream: "Kem sân khấu", night: "Đèn đêm", coral: "San hô rực" };

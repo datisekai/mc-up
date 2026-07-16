@@ -9,7 +9,7 @@ import { Api } from "./api";
 import Misa, { MisaAccessory, setMisaSkin } from "./Misa";
 import { Cert, Check, Coin, Dumbbell, Heart, Medal, Pause, Play, Snow, StarSticker, Target, TicketSticker, X } from "./icons";
 
-const LEAGUE_COLORS = ["#C77F00", "#B8BCC4", "#FFC24B", "#7FB5D8", "#8FE0D0"];
+const LEAGUE_COLORS = ["#C77F00", "#B4ABA0", "#FFC24B", "#D8CFC0", "#ECD9A6"];  // đồng·bạc·vàng·bạch kim·kim cương — hệ ấm/trung tính (V5)
 
 // ===== NHIỆM VỤ NGÀY (A2) — thanh GỌN 1 dòng, bấm mở bottom-sheet =====
 export function QuestsCard({ token, onCoins }: { token: string; onCoins?: (n: number) => void }) {
@@ -426,11 +426,11 @@ export function ChallengeScreen({ token, onClose }: { token: string; onClose: ()
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <Misa mood="covu" size={52} accessory="bowtie" />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: F.semi, fontSize: 12.5, color: "#C9B8D6", letterSpacing: 0.5 }}>CHỦ ĐỀ TUẦN NÀY</Text>
+                  <Text style={{ fontFamily: F.semi, fontSize: 12.5, color: "#CFC3B0", letterSpacing: 0.5 }}>CHỦ ĐỀ TUẦN NÀY</Text>
                   <Text style={{ fontFamily: F.displayX, fontSize: 19, color: C.spot, marginTop: 1 }}>{data.title}</Text>
                 </View>
               </View>
-              <Text style={{ fontFamily: F.body, fontSize: 15, color: "#E9DFF2", lineHeight: 23, marginTop: 10 }}>{data.prompt}</Text>
+              <Text style={{ fontFamily: F.body, fontSize: 15, color: "#EDE4D2", lineHeight: 23, marginTop: 10 }}>{data.prompt}</Text>
             </View>
 
             {rec ? (

@@ -261,9 +261,9 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
           {lesson.tip ? <View style={[st.tipBox, { flex: 1 }]}><Text style={st.tipT}>{lesson.tip}</Text></View>
             : <Text style={[st.tipT, { flex: 1 }]}>Bạn làm được mà — nói như kể cho một người bạn nghe.</Text>}
         </View>
-        <L icon={<Mic size={15} color="#C7462F" />} t="Đề bài" />
+        <L icon={<Mic size={15} color={C.ink2} />} t="Đề bài" />
         <Text style={st.taskPrompt}>{lesson.prompt}</Text>
-        {steps.length ? (<><L icon={<ListIcon size={15} color="#B8860B" />} t="Dàn ý" />{steps.map((s, i) => (
+        {steps.length ? (<><L icon={<ListIcon size={15} color={C.ink2} />} t="Dàn ý" />{steps.map((s, i) => (
           <View key={i} style={st.stepRow}>
             <View style={st.stepNum}><Text style={st.stepNumT}>{i + 1}</Text></View>
             <Text style={st.taskBullet}>{s}</Text>
@@ -271,9 +271,9 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
         ))}</>) : null}
         {showFull ? (
           <>
-            {lesson.brief?.objective ? (<><L icon={<Target size={15} color="#1E7A52" />} t="Mục tiêu" /><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
-            {lesson.brief?.context ? (<><L icon={<Pin size={15} color="#7A5CA8" />} t="Tình huống" /><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
-            {lesson.criteria?.length ? (<><L icon={<Check size={15} color="#1E7A52" />} t="Tiêu chí đạt" />{lesson.criteria.map((c, i) => (
+            {lesson.brief?.objective ? (<><L icon={<Target size={15} color={C.ink2} />} t="Mục tiêu" /><Text style={st.taskText}>{lesson.brief.objective}</Text></>) : null}
+            {lesson.brief?.context ? (<><L icon={<Pin size={15} color={C.ink2} />} t="Tình huống" /><Text style={st.taskText}>{lesson.brief.context}</Text></>) : null}
+            {lesson.criteria?.length ? (<><L icon={<Check size={15} color={C.ink2} />} t="Tiêu chí đạt" />{lesson.criteria.map((c, i) => (
               <View key={i} style={st.critRow}><View style={st.critDot} /><Text style={st.taskText}>{c}</Text></View>
             ))}</>) : null}
           </>
@@ -418,7 +418,7 @@ const st = StyleSheet.create({
   countStage: { flex: 1, backgroundColor: "#241A2E", alignItems: "center", justifyContent: "center" },
   countSpot: { position: "absolute", width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,194,75,0.14)" },
   countNum: { fontSize: 110, fontFamily: F.displayX, color: C.spot, lineHeight: 128 },
-  countSub: { fontSize: 16, color: "#E9DFF2", marginTop: 8, fontFamily: F.semi },
+  countSub: { fontSize: 16, color: "#EDE4D2", marginTop: 8, fontFamily: F.semi },
   countCancel: { fontSize: 13, color: "#9A8EA5", marginTop: 22 },
 
   stageHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 58, paddingHorizontal: 20, paddingBottom: 4 },

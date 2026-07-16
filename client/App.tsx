@@ -789,7 +789,7 @@ function RankView({ token, achs, refreshControl, onOpenChallenge }: { token: str
         <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}><TrophySticker size={26} /></View>
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.title, fontSize: 15.5, color: C.spot }}>Thử thách MC tuần</Text>
-          <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#C9B8D6" }}>Nộp clip theo chủ đề — MC tuyên dương top</Text>
+          <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#CFC3B0" }}>Nộp clip theo chủ đề — MC tuyên dương top</Text>
         </View>
         <Text style={{ color: C.spot, fontFamily: F.title, fontSize: 18 }}>›</Text>
       </TouchableOpacity>
@@ -1067,8 +1067,8 @@ const s = StyleSheet.create({
   energyLink: { fontFamily: F.semi, fontSize: 13, color: C.ink2, textDecorationLine: "underline", marginTop: 12 },
   proCard: { backgroundColor: "#2E2239", borderRadius: 16, padding: 16, marginBottom: 4 },
   proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
-  proLine: { fontSize: 12.5, color: "#E9DFF2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
-  proRestore: { color: "#C9BBDA", fontSize: 12.5, fontFamily: F.med, textDecorationLine: "underline" },
+  proLine: { fontSize: 12.5, color: "#EDE4D2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
+  proRestore: { color: "#CFC3B0", fontSize: 12.5, fontFamily: F.med, textDecorationLine: "underline" },
   pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 12.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
