@@ -12,7 +12,7 @@ import { Cert, Check, Coin, Dumbbell, Heart, Medal, Pause, Play, Snow, StarStick
 const LEAGUE_COLORS = ["#C77F00", "#B4ABA0", "#FFC24B", "#D8CFC0", "#ECD9A6"];  // đồng·bạc·vàng·bạch kim·kim cương — hệ ấm/trung tính (V5)
 
 // ===== NHIỆM VỤ NGÀY (A2) — thanh GỌN 1 dòng, bấm mở bottom-sheet =====
-export function QuestsCard({ token, onCoins }: { token: string; onCoins?: (n: number) => void }) {
+export function QuestsCard({ token, onCoins, noMargin }: { token: string; onCoins?: (n: number) => void; noMargin?: boolean }) {
   const [data, setData] = useState<any>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export function QuestsCard({ token, onCoins }: { token: string; onCoins?: (n: nu
     <>
       {/* thanh gọn trên bản đồ */}
       <TouchableOpacity onPress={() => setOpen(true)} activeOpacity={0.8}
-        style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: claimable.length ? C.spot : C.hair }}>
+        style={{ flex: noMargin ? 1 : undefined, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, marginHorizontal: noMargin ? 0 : 16, marginTop: noMargin ? 0 : 10, borderWidth: 1, borderColor: claimable.length ? C.spot : C.hair }}>
         <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}>
           <Target size={17} color="#B8860B" />
         </View>
@@ -357,20 +357,31 @@ export function Certificates({ token }: { token: string }) {
   );
 }
 
-// ===== ÔN BÀI YẾU (D1) — chip trên màn Lộ trình =====
-export function WeakChip({ token, onPick }: { token: string; onPick: (lessonId: string) => void }) {
+// ===== ÔN BÀI YẾU (D1) — nút GỌN đứng cùng hàng nhiệm vụ =====
+export function WeakChip({ token, onPick, compact }: { token: string; onPick: (lessonId: string) => void; compact?: boolean }) {
   const [weak, setWeak] = useState<any[]>([]);
   useEffect(() => { Api.weak(token).then((d) => setWeak(d.weak)).catch(() => {}); }, []);
   if (!weak.length) return null;
+  if (compact) {
+    return (
+      <TouchableOpacity onPress={() => onPick(weak[0].lesson_id)}
+        style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: C.primarySoft, borderWidth: 1, borderColor: C.hair, alignItems: "center", justifyContent: "center" }}>
+        <Dumbbell size={20} color={C.primary} />
+        <View style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: C.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 }}>
+          <Text style={{ color: "#fff", fontFamily: F.title, fontSize: 11 }}>{weak.length}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
   return (
     <TouchableOpacity onPress={() => onPick(weak[0].lesson_id)}
-      style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF0EC", borderRadius: 14, padding: 12, marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: "#F5D5CC" }}>
-      <Dumbbell size={20} color="#C7462F" />
+      style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: C.primarySoft, borderRadius: 14, padding: 12, marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: C.hair }}>
+      <Dumbbell size={20} color={C.primary} />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontFamily: F.title, fontSize: 14, color: "#8a3d33" }}>Ôn lại điểm yếu</Text>
-        <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#A5685E" }}>{weak.length} bài cần luyện lại · "{weak[0].title}"</Text>
+        <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink }}>Ôn lại điểm yếu</Text>
+        <Text style={{ fontFamily: F.med, fontSize: 12.5, color: C.ink2 }}>{weak.length} bài cần luyện lại</Text>
       </View>
-      <Text style={{ fontFamily: F.title, color: "#C7462F", fontSize: 18 }}>›</Text>
+      <Text style={{ fontFamily: F.title, color: C.primary, fontSize: 18 }}>›</Text>
     </TouchableOpacity>
   );
 }
@@ -516,6 +527,68 @@ export function ReferralSheet({ token, onClose }: { token: string; onClose: () =
           </>)}
           <Btn3D kind="white" label="Đóng" onPress={onClose} style={{ alignSelf: "stretch" }} />
         </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ===== TOÀN CẢNH LỘ TRÌNH (V5-2) — xem bao quát các chặng, khỏi kéo map =====
+import { Lock, MicSticker } from "./icons";
+const SHOW_NAMES = ["MC lớp học", "Tiệc cưới & sự kiện", "Gala · Truyền hình"];
+export function RouteOverview({ lessons, onPick, onClose }: { lessons: any[]; onPick: (lessonId: string) => void; onClose: () => void }) {
+  // gom theo cấp độ (level) → chặng
+  const chapters: { level: string; items: any[] }[] = [];
+  lessons.forEach((l) => {
+    const last = chapters[chapters.length - 1];
+    if (!last || last.level !== l.level) chapters.push({ level: l.level, items: [l] });
+    else last.items.push(l);
+  });
+  const firstOpen = lessons.find((l: any) => l.unlocked && !l.done);
+  return (
+    <Modal visible animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: C.base }}>
+        <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 56, paddingHorizontal: 16, paddingBottom: 8 }}>
+          <TouchableOpacity onPress={onClose} style={{ padding: 4 }}><X size={22} color={C.ink} /></TouchableOpacity>
+          <Text style={{ flex: 1, textAlign: "center", fontFamily: F.displayX, fontSize: 19, color: C.ink, marginRight: 26 }}>Toàn cảnh lộ trình</Text>
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          {chapters.map((ch, ci) => {
+            const done = ch.items.filter((l) => l.done).length;
+            const started = ch.items.some((l) => l.unlocked || l.done);
+            return (
+              <View key={ci} style={{ backgroundColor: started ? C.raised : C.sunken, borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: C.hair }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.spotSoft, alignItems: "center", justifyContent: "center" }}>
+                    {started ? <MicSticker size={24} /> : <Lock size={20} color={C.ink3} />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: F.semi, fontSize: 12, color: C.ink2 }}>CHẶNG {ci + 1} · SHOW</Text>
+                    <Text style={{ fontFamily: F.displayX, fontSize: 16, color: started ? C.ink : C.ink3 }}>{SHOW_NAMES[ci] ?? ch.level}</Text>
+                  </View>
+                  <Text style={{ fontFamily: F.title, fontSize: 13, color: C.ink2 }}>{done}/{ch.items.length}</Text>
+                </View>
+                <ProgressBar value={done / ch.items.length} height={8} color={C.primary} />
+                {/* các bài trong chặng — nút gọn, bấm vào bài mở được */}
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                  {ch.items.map((l) => {
+                    const open = l.unlocked && !l.done;
+                    const isCurrent = firstOpen && l.id === firstOpen.id;
+                    return (
+                      <TouchableOpacity key={l.id} disabled={!l.unlocked && !l.done}
+                        onPress={() => { onClose(); onPick(l.id); }}
+                        style={{ width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+                          backgroundColor: l.done ? C.success : open ? "#fff" : "#EAE1D3",
+                          borderWidth: isCurrent ? 2.5 : 0, borderColor: C.primary }}>
+                        {l.done ? <Check size={16} color="#fff" /> : <Text style={{ fontFamily: F.title, fontSize: 12, color: open ? C.ink : C.ink3 }}>{l.buoi}</Text>}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          })}
+          {lessons.length === 0 && <Text style={{ color: C.ink2, textAlign: "center", padding: 20 }}>Chưa có bài — chọn thể loại khác nhé!</Text>}
+        </ScrollView>
       </View>
     </Modal>
   );

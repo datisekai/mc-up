@@ -27,7 +27,7 @@ import { initSound, setMusicScene, setSoundEnabled, sfx, soundEnabled } from "./
 import { STREAK_GREET, fill, pick } from "./src/variety";
 import { registerForPush } from "./src/push";
 import { updateWidget } from "./src/widget";
-import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, ShopScreen, Showreel, WeakChip } from "./src/Engage";
+import { Certificates, ChallengeScreen, LeagueBoard, QuestsCard, RouteOverview, ShopScreen, Showreel, WeakChip } from "./src/Engage";
 import { McMarketPanel, MarketScreen } from "./src/Market";
 import { ReferralSheet } from "./src/Engage";
 import { buyPro, configureIAP, getProPrice, iapConfigured, restorePro } from "./src/iap";
@@ -73,7 +73,8 @@ export default function App() {
   const [prog, setProg] = useState<{ xp: number; streak: number; tickets: number; tier?: string; practiced_today?: boolean; energy?: number; energy_max?: number; energy_cost?: number; energy_secs_to_next?: number; is_pro?: boolean; coins?: number; streak_freezes?: number; league_name?: string; misa_color?: string; misa_outfit?: string | null }>({ xp: 0, streak: 0, tickets: 0 });
   const [showEnergy, setShowEnergy] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
-  const [showMarket, setShowMarket] = useState(false);  // màn "hết năng lượng"
+  const [showMarket, setShowMarket] = useState(false);
+  const [showOverview, setShowOverview] = useState(false);  // màn "hết năng lượng"
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [board, setBoard] = useState<any[]>([]);
@@ -579,30 +580,29 @@ export default function App() {
       <View style={{ width: WIN_W, flex: 1 }}>
         {screen === "feed" ? (
           <View style={{ flex: 1 }}>
-            <QuestsCard token={token!} onCoins={(n) => setProg((p) => ({ ...p, coins: n }))} />
-            <WeakChip token={token!} onPick={(lid) => { const full = lessons.find((x: any) => x.id === lid); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />
+            {/* Thanh thể loại + nút toàn cảnh */}
             {paths.length > 0 && (
-              <View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 48 }} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 8, alignItems: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 46 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 8, paddingVertical: 6, gap: 8, alignItems: "center" }}>
                   {paths.map((p) => <PathPill key={p.id} active={selPath === p.id} label={p.genre} color={p.color} onPress={() => pickPath(p.id)} />)}
                 </ScrollView>
-                {/* giảm nhiễu: tagline chỉ hiện khi đã chọn thể loại */}
-                {(() => { const tag = selPath ? (paths.find((p) => p.id === selPath)?.tagline || "") : ""; return tag ? <Text style={s.pathTagline}>{tag}</Text> : null; })()}
+                <TouchableOpacity onPress={() => setShowOverview(true)} accessibilityLabel="Xem toàn cảnh lộ trình"
+                  style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center", marginRight: 12 }}>
+                  <MapIcon size={20} color={C.ink2} />
+                </TouchableOpacity>
               </View>
             )}
+            {/* MỘT hàng gọn: nhiệm vụ (flex) + ôn tập (nút icon) — không chiếm nhiều chỗ */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginHorizontal: 16, marginTop: 8 }}>
+              <QuestsCard token={token!} noMargin onCoins={(n) => setProg((p) => ({ ...p, coins: n }))} />
+              <WeakChip token={token!} compact onPick={(lid) => { const full = lessons.find((x: any) => x.id === lid); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />
+            </View>
             {/* mạng/máy chủ lỗi → banner giữ phiên + thử lại (không đá ra) */}
             {loadError && (
               <TouchableOpacity style={s.errorBanner} onPress={safeRefresh} accessibilityLabel="Thử tải lại">
                 <Text style={{ flex: 1, color: "#8a3d33", fontWeight: "700", fontSize: 13 }}>Chưa tải được dữ liệu — chạm để thử lại</Text>
                 <Refresh size={16} color="#8a3d33" />
               </TouchableOpacity>
-            )}
-            {/* giảm nhiễu: nhắc streak chỉ hiện sau 17h — lúc thật sự cần cứu chuỗi */}
-            {prog.practiced_today === false && new Date().getHours() >= 17 && (
-              <View style={s.reminder}>
-                <FireSticker size={20} />
-                <Text style={{ flex: 1, fontWeight: "700", color: C.ink, fontSize: 13 }}>{streakGreet}</Text>
-              </View>
             )}
             {lessons.length === 0 && !loadError ? (
               <View style={s.emptyFeed}>
@@ -737,6 +737,7 @@ export default function App() {
       {celeb && <Celebration kind={celeb.kind} value={celeb.value} onClose={() => setCeleb(null)} />}
       {showChallenge && <ChallengeScreen token={token!} onClose={() => setShowChallenge(false)} />}
       {showMarket && <MarketScreen token={token!} onClose={() => setShowMarket(false)} />}
+      {showOverview && <RouteOverview lessons={lessons} onClose={() => setShowOverview(false)} onPick={(lid) => { const full = lessons.find((x:any) => x.id === lid); if (full) tryEnterLesson(() => { setCur(full); setScreen("practice"); }); }} />}
       {showReferral && <ReferralSheet token={token!} onClose={() => setShowReferral(false)} />}
       {showEnergy && <EnergyModal energy={energy} energyMax={energyMax} energyCost={energyCost}
         secs={prog.energy_secs_to_next ?? 0} onClose={() => setShowEnergy(false)}
