@@ -21,9 +21,9 @@ const APP_URL = "https://mcup.fun"; // landing/deep-link — đổi khi có doma
 
 type Skin = "cream" | "night" | "coral";
 const SKINS: Record<Skin, { bg: string; raised: string; text: string; sub: string; quote: string; accent: string; hair: string; ok: string }> = {
-  cream: { bg: "#FFF8F0", raised: "#FFFFFF", text: "#3B2A4A", sub: "#7A6E82", quote: "#3B2A4A", accent: "#FF6B5B", hair: "#EDE3D6", ok: "#1f8f63" },
+  cream: { bg: "#FFF8F0", raised: "#FFFFFF", text: "#2E2239", sub: "#6B5F73", quote: "#2E2239", accent: "#F2503C", hair: "#E0D2BC", ok: "#1f8f63" },
   night: { bg: "#2E2239", raised: "#3A2C48", text: "#F5EEFA", sub: "#CFC3B0", quote: "#FFE9C7", accent: "#FFC24B", hair: "#4A3A5C", ok: "#7FE3B8" },
-  coral: { bg: "#FF6B5B", raised: "#FF8073", text: "#FFF3E9", sub: "#FFE0D6", quote: "#FFFFFF", accent: "#FFC24B", hair: "#FF8073", ok: "#FFFFFF" },
+  coral: { bg: "#F2503C", raised: "#FF8073", text: "#FFF3E9", sub: "#FFE0D6", quote: "#FFFFFF", accent: "#FFC24B", hair: "#FF8073", ok: "#FFFFFF" },
 };
 const SKIN_LABEL: Record<Skin, string> = { cream: "Kem sân khấu", night: "Đèn đêm", coral: "San hô rực" };
 
@@ -155,7 +155,7 @@ export default function BadgeCardView({ badge, audioBase }: { badge: BadgeData; 
         <View style={[st.footer, { borderTopColor: k.hair }]}>
           <Text style={[st.watermark, { color: k.accent }]}>Luyện MC cùng McUp · @mcup</Text>
           <View style={st.qr}>
-            <QRCode value={APP_URL} size={32} backgroundColor="#FFFFFF" color="#3B2A4A" />
+            <QRCode value={APP_URL} size={32} backgroundColor="#FFFFFF" color="#2E2239" />
           </View>
         </View>
       </View>

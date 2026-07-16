@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Audio } from "expo-av";
-import { C, F, T } from "./theme";
+import { C, F, shadow, T } from "./theme";
 import { FadeInUp, Skeleton, SkeletonList, useCountUp } from "./anim";
 import { Btn3D, ProgressBar } from "./ui";
 import { Api } from "./api";
@@ -35,8 +35,8 @@ export function QuestsCard({ token, onCoins, noMargin }: { token: string; onCoin
     <>
       {/* thanh gọn trên bản đồ */}
       <TouchableOpacity onPress={() => setOpen(true)} activeOpacity={0.8}
-        style={{ flex: noMargin ? 1 : undefined, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, marginHorizontal: noMargin ? 0 : 16, marginTop: noMargin ? 0 : 10, borderWidth: 1, borderColor: claimable.length ? C.spot : C.hair }}>
-        <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}>
+        style={{ flex: noMargin ? 1 : undefined, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, marginHorizontal: noMargin ? 0 : 16, marginTop: noMargin ? 0 : 10, borderWidth: claimable.length ? 1.5 : 0, borderColor: C.spot, ...shadow.card }}>
+        <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFEFC9", alignItems: "center", justifyContent: "center" }}>
           <Target size={17} color="#B8860B" />
         </View>
         <View style={{ flex: 1 }}>
@@ -110,7 +110,7 @@ export function LeagueBoard({ token }: { token: string }) {
       </View>
       {data.entries.map((e: any, i: number) => (
         <FadeInUp key={i} delay={i * 45}><View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 9, paddingHorizontal: 10, borderRadius: 12, marginBottom: 4,
-          backgroundColor: e.is_me ? "#FFF3DA" : "transparent", borderWidth: e.is_me ? 1.5 : 0, borderColor: C.spot }}>
+          backgroundColor: e.is_me ? "#FFEFC9" : "transparent", borderWidth: e.is_me ? 1.5 : 0, borderColor: C.spot }}>
           <View style={{ width: 28, alignItems: "center" }}>
             {e.promote ? <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#E7F6EE", alignItems: "center", justifyContent: "center" }}><Text style={{ fontFamily: F.displayX, fontSize: 13, color: "#2E9668" }}>{e.rank}</Text></View>
               : <Text style={{ fontFamily: F.displayX, fontSize: 15, color: C.ink2 }}>{e.rank}</Text>}
@@ -144,7 +144,7 @@ export function ShopModal({ token, coins, onClose, onCoins }: { token: string; c
         <View style={{ backgroundColor: C.base, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 20, paddingBottom: 34 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <Text style={{ fontFamily: F.displayX, fontSize: 22, color: C.ink }}>Cửa hàng</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#FFEFC9", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
               <Coin size={20} /><Text style={{ fontFamily: F.displayX, fontSize: 17, color: "#8a5a13" }}>{bal}</Text>
             </View>
           </View>
@@ -228,7 +228,7 @@ export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEqu
         {prevOutfit ? <TouchableOpacity onPress={takeOff}><Text style={{ color: C.ink2, fontSize: 12.5, fontFamily: F.semi, textDecorationLine: "underline", marginTop: 2 }}>Cởi phụ kiện</Text></TouchableOpacity> : null}
       </View>
       <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFEFC9", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 }}>
           <Coin size={22} /><Text style={{ fontFamily: F.displayX, fontSize: 19, color: "#8a5a13" }}>{bal}</Text>
           <Text style={{ fontFamily: F.med, fontSize: 13, color: "#8a5a13" }}>xu</Text>
         </View>
@@ -260,7 +260,7 @@ export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEqu
             const equipped = it.equipped;
             const owned = it.owned || it.cost === 0;
             return (
-              <View key={it.id} style={{ width: "31%", alignItems: "center", backgroundColor: equipped ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 8, borderWidth: equipped ? 2 : 1, borderColor: equipped ? C.spot : C.hair }}>
+              <View key={it.id} style={{ width: "31%", alignItems: "center", backgroundColor: equipped ? "#FFEFC9" : C.raised, borderRadius: 14, padding: 8, borderWidth: equipped ? 2 : 1, borderColor: equipped ? C.spot : C.hair }}>
                 <View style={{ height: 78, justifyContent: "center" }}>
                   {cat === "colors"
                     ? <Misa mood="chao" size={62} still color={it.id} accessory={null} />
@@ -284,7 +284,7 @@ export function ShopScreen({ token, coins, onCoins, misaColor, misaOutfit, onEqu
     </ScrollView>
   );
 }
-const st_row: any = { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginTop: 8, borderWidth: 1, borderColor: C.hair };
+const st_row: any = { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 16, padding: 12, marginTop: 8, ...shadow.card };
 function BuyBtn({ label, onPress, disabled, busy }: any) {
   return (
     <TouchableOpacity onPress={onPress} disabled={disabled}
@@ -348,7 +348,7 @@ export function Certificates({ token }: { token: string }) {
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
       {data.certificates.map((c: any, i: number) => (
-        <FadeInUp key={c.path_id} delay={i * 50} style={{ width: "48%" }}><View style={{ width: "100%", backgroundColor: c.earned ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: c.earned ? C.spot : C.hair, opacity: c.earned ? 1 : 0.75 }}>
+        <FadeInUp key={c.path_id} delay={i * 50} style={{ width: "48%" }}><View style={{ width: "100%", backgroundColor: c.earned ? "#FFEFC9" : C.raised, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: c.earned ? C.spot : C.hair, opacity: c.earned ? 1 : 0.75 }}>
           <Cert size={26} color={c.earned ? "#B8860B" : C.ink2} />
           <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink, marginTop: 6 }} numberOfLines={1}>{c.genre}</Text>
           <Text style={{ fontFamily: F.med, fontSize: 12, color: C.ink2, marginTop: 2 }}>{c.earned ? "Đã hoàn thành 🎓" : `${c.done}/${c.total} bài`}</Text>
@@ -481,7 +481,7 @@ function ChallengeEntryRow({ entry, onLike }: { entry: any; onLike: () => void }
     } catch { setPlaying(false); }
   }
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: entry.award ? "#FFF3DA" : C.raised, borderRadius: 14, padding: 11, marginBottom: 8, borderWidth: 1, borderColor: entry.award ? C.spot : C.hair }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: entry.award ? "#FFEFC9" : C.raised, borderRadius: 14, padding: 11, marginBottom: 8, borderWidth: 1, borderColor: entry.award ? C.spot : C.hair }}>
       <TouchableOpacity onPress={toggle} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.primary, alignItems: "center", justifyContent: "center", borderBottomWidth: 3, borderBottomColor: C.primaryDown }}>
         {playing ? <Pause size={15} color="#fff" /> : <Play size={15} color="#fff" />}
       </TouchableOpacity>
@@ -490,7 +490,7 @@ function ChallengeEntryRow({ entry, onLike }: { entry: any; onLike: () => void }
         {entry.award === "top" && <Text style={{ fontFamily: F.semi, fontSize: 12, color: "#B8860B" }}>🏆 MC tuyên dương</Text>}
       </View>
       <TouchableOpacity onPress={onLike} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 6, paddingVertical: 4 }}>
-        <Heart size={20} color="#FF6B5B" fill={entry.likes > 0} />
+        <Heart size={20} color="#F2503C" fill={entry.likes > 0} />
         <Text style={{ fontFamily: F.title, fontSize: 14, color: C.ink2 }}>{entry.likes}</Text>
       </TouchableOpacity>
     </View>
@@ -578,7 +578,7 @@ export function RouteOverview({ lessons, onPick, onClose }: { lessons: any[]; on
                       <TouchableOpacity key={l.id} disabled={!l.unlocked && !l.done}
                         onPress={() => { onClose(); onPick(l.id); }}
                         style={{ width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
-                          backgroundColor: l.done ? C.success : open ? "#fff" : "#EAE1D3",
+                          backgroundColor: l.done ? C.success : open ? "#fff" : "#E4D5C0",
                           borderWidth: isCurrent ? 2.5 : 0, borderColor: C.primary }}>
                         {l.done ? <Check size={16} color="#fff" /> : <Text style={{ fontFamily: F.title, fontSize: 12, color: open ? C.ink : C.ink3 }}>{l.buoi}</Text>}
                       </TouchableOpacity>

@@ -2,7 +2,7 @@
 // Học viên: xem dịch vụ → đặt → theo dõi lịch. MC: quản lý dịch vụ + booking đến.
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Linking, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { C, F, T } from "./theme";
+import { C, F, shadow, T } from "./theme";
 import { Btn3D } from "./ui";
 import { FadeInUp, SkeletonList } from "./anim";
 import { Api } from "./api";
@@ -14,7 +14,7 @@ const STATUS: Record<string, [string, string]> = {
   requested: ["Chờ MC xác nhận", "#B8860B"],
   confirmed: ["Đã xác nhận", "#1E7A52"],
   done: ["Đã hoàn thành", C.ink2],
-  cancelled: ["Đã huỷ", "#C7462F"],
+  cancelled: ["Đã huỷ", "#B33724"],
 };
 
 // ===== HỌC VIÊN: chợ dịch vụ + đặt =====
@@ -102,7 +102,7 @@ function BookSheet({ token, service, onClose, onDone }: { token: string; service
           <TextInput value={pref} onChangeText={setPref} placeholder="VD: tối T7 hoặc CN sáng" placeholderTextColor={C.ink2} style={input} />
           <Text style={label}>Lời nhắn cho MC (tuỳ chọn)</Text>
           <TextInput value={note} onChangeText={setNote} placeholder="Bạn muốn luyện điều gì?" placeholderTextColor={C.ink2} multiline style={[input, { height: 72, textAlignVertical: "top" }]} />
-          <View style={{ backgroundColor: "#FFF3DA", borderRadius: 12, padding: 11, marginTop: 10 }}>
+          <View style={{ backgroundColor: "#FFEFC9", borderRadius: 12, padding: 11, marginTop: 10 }}>
             <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#8a5a13" }}>Sau khi bạn gửi, MC sẽ xác nhận giờ + gửi link buổi học. Thanh toán trao đổi trực tiếp với MC.</Text>
           </View>
           <Btn3D kind="gold" loading={busy} label="Gửi yêu cầu đặt buổi" onPress={submit} />
@@ -280,6 +280,6 @@ function Empty({ text }: { text: string }) {
     </View>
   );
 }
-const card: any = { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.hair };
+const card: any = { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card };
 const label: any = { fontFamily: F.semi, fontSize: 12.5, color: C.ink2, marginTop: 12, marginBottom: 4 };
 const input: any = { backgroundColor: C.raised, borderRadius: 12, borderWidth: 1, borderColor: C.hair, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: C.ink, fontFamily: F.body };

@@ -11,11 +11,11 @@ import Svg, { Circle, Ellipse, G, Line, Path, Polygon, Rect, Text as SvgText } f
 
 export type MisaMood = "chao" | "covu" | "anmung" | "lo" | "ngu" | "tambiet";
 
-const PLUM = "#3B2A4A";
+const PLUM = "#2E2239";
 const GOLD = "#FFC24B";
 // bảng màu thân Misa (shop): [thân, tối, má hồng]
 const SKINS: Record<string, [string, string, string]> = {
-  coral: ["#FF6B5B", "#C7462F", "#FF9C90"],
+  coral: ["#F2503C", "#B33724", "#FF9C90"],
   mint: ["#3FB984", "#2E9668", "#8FE0C4"],
   sky: ["#5AA9E6", "#3B7CB8", "#A9D4F5"],
   grape: ["#9B6FD4", "#6E48A8", "#C9AEEB"],
@@ -155,7 +155,7 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
           <>
             <Path d="M36 38 q5 -4 10 0 M54 38 q5 -4 10 0" stroke={PLUM} strokeWidth={3.4} fill="none" strokeLinecap="round" />
             <Ellipse cx="50" cy="51" rx="4.5" ry="3.6" fill={PLUM} />
-            <SvgText x="72" y="16" fontSize="14" fontWeight="bold" fill="#7A6E82">z</SvgText>
+            <SvgText x="72" y="16" fontSize="14" fontWeight="bold" fill="#6B5F73">z</SvgText>
             <SvgText x="81" y="9" fontSize="11" fontWeight="bold" fill="#9A8EA5">z</SvgText>
           </>
         ) : mood === "tambiet" ? (
@@ -261,7 +261,7 @@ export default function Misa({ mood = "chao", size = 96, still = false, accessor
 export function MisaHead({ size = 22 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Circle cx="24" cy="24" r="21" fill="#FF6B5B" stroke={PLUM} strokeWidth={4} />
+      <Circle cx="24" cy="24" r="21" fill="#F2503C" stroke={PLUM} strokeWidth={4} />
       <Circle cx="17" cy="22" r="4.6" fill="#fff" /><Circle cx="18.2" cy="23" r="2.5" fill={PLUM} />
       <Circle cx="31" cy="22" r="4.6" fill="#fff" /><Circle cx="32.2" cy="23" r="2.5" fill={PLUM} />
       <Path d="M17.5 31 q6.5 5.5 13 0" stroke={PLUM} strokeWidth={3} fill="none" strokeLinecap="round" />

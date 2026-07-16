@@ -241,7 +241,7 @@ function LessonPage({ lesson, unlocked, result, rec, onMic, onStop, onRetry }: {
   if (!unlocked) {
     return (
       <View style={st.centerPage}>
-        <View style={st.lockCircle}><Lock size={30} color="#A99C8C" /></View>
+        <View style={st.lockCircle}><Lock size={30} color="#8A7A6E" /></View>
         <Text style={st.lockT}>Hoàn thành bài trước để mở</Text>
         <Text style={st.swipeHint}>vuốt xuống — quay lại bài đang mở</Text>
       </View>
@@ -326,7 +326,7 @@ const st = StyleSheet.create({
   procT: { fontSize: 14, fontFamily: F.semi, color: C.ink2, marginTop: 10 },
   retry: { backgroundColor: C.sunken, borderRadius: 999, padding: 12, alignItems: "center", marginTop: 6 },
   retryT: { color: C.ink, fontFamily: F.title, fontSize: 13 },
-  swipeHint: { fontSize: 12.5, color: "#BFB4C4", fontFamily: F.med, marginTop: 10 },
+  swipeHint: { fontSize: 12.5, color: "#9C8FA6", fontFamily: F.med, marginTop: 10 },
 
   bulb: { width: 62, height: 62, borderRadius: 31, backgroundColor: C.spot, alignItems: "center", justifyContent: "center" },
   breatherLabel: { fontSize: 12, fontFamily: F.title, letterSpacing: 1.5, color: C.ink2, marginTop: 16 },
@@ -339,7 +339,7 @@ const st = StyleSheet.create({
   endBtn: { backgroundColor: C.sunken, borderRadius: 999, paddingHorizontal: 22, paddingVertical: 12, marginTop: 20 },
   endBtnT: { color: C.ink, fontFamily: F.title, fontSize: 13 },
 
-  lockCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: "#EAE1D3", alignItems: "center", justifyContent: "center" },
+  lockCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: "#E4D5C0", alignItems: "center", justifyContent: "center" },
   lockT: { fontSize: 14, fontFamily: F.semi, color: C.ink2, marginTop: 14 },
 
   exit: {

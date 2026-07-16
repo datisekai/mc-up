@@ -32,8 +32,8 @@ export const StarSticker = ({ size }: PS) => {
   const pts = "12,2 15,8.6 22,9.4 17,14.2 18.3,21.2 12,17.7 5.7,21.2 7,14.2 2,9.4 9,8.6";
   return (
     <Svg {...S(size)}>
-      <G transform="translate(0, 1.6)"><Polygon points={pts} fill="#C7462F" /></G>
-      <Polygon points={pts} fill="#FF6B5B" stroke="#C7462F" strokeWidth={1.6} strokeLinejoin="round" />
+      <G transform="translate(0, 1.6)"><Polygon points={pts} fill="#B33724" /></G>
+      <Polygon points={pts} fill="#F2503C" stroke="#B33724" strokeWidth={1.6} strokeLinejoin="round" />
     </Svg>
   );
 };
@@ -65,29 +65,29 @@ export const TrophySticker = ({ size }: PS) => (
 export const MicSticker = ({ size }: PS) => (
   <Svg {...S(size)}>
     <G transform="translate(0, 1.6)">
-      <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#C7462F" />
+      <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#B33724" />
     </G>
-    <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#FF6B5B" stroke="#C7462F" strokeWidth={1.6} />
-    <Path d="M5.6 10.5a6.4 6.4 0 0 0 12.8 0" fill="none" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
-    <Line x1="12" y1="17" x2="12" y2="20.5" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
-    <Line x1="8.5" y1="20.8" x2="15.5" y2="20.8" stroke="#C7462F" strokeWidth={2.2} strokeLinecap="round" />
+    <Rect x="8.6" y="2.5" width="6.8" height="11.5" rx="3.4" fill="#F2503C" stroke="#B33724" strokeWidth={1.6} />
+    <Path d="M5.6 10.5a6.4 6.4 0 0 0 12.8 0" fill="none" stroke="#B33724" strokeWidth={2.2} strokeLinecap="round" />
+    <Line x1="12" y1="17" x2="12" y2="20.5" stroke="#B33724" strokeWidth={2.2} strokeLinecap="round" />
+    <Line x1="8.5" y1="20.8" x2="15.5" y2="20.8" stroke="#B33724" strokeWidth={2.2} strokeLinecap="round" />
   </Svg>
 );
 
-export const Target = ({ size, color = "#3B2A4A" }: P) => (
+export const Target = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Circle cx="12" cy="12" r="8.5" {...stroke(color)} />
     <Circle cx="12" cy="12" r="4" {...stroke(color)} />
     <Circle cx="12" cy="12" r="1.2" fill={color} />
   </Svg>
 );
-export const Pin = ({ size, color = "#3B2A4A" }: P) => (
+export const Pin = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 1 1 13 0C18.5 15.4 12 21 12 21z" {...stroke(color)} />
     <Circle cx="12" cy="10.5" r="2.4" {...stroke(color)} />
   </Svg>
 );
-export const ListIcon = ({ size, color = "#3B2A4A" }: P) => (
+export const ListIcon = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Line x1="9" y1="6" x2="20" y2="6" {...stroke(color)} />
     <Line x1="9" y1="12" x2="20" y2="12" {...stroke(color)} />
@@ -119,28 +119,28 @@ export const Snow = ({ size, color = "#9DB0BA" }: P) => (
 );
 export const Medal = ({ size }: { size?: number }) => (
   <Svg {...S(size)}>
-    <Path d="M8 3h8l-2.5 7h-3z" fill="#FF6B5B" />
+    <Path d="M8 3h8l-2.5 7h-3z" fill="#F2503C" />
     <G transform="translate(0, 1.6)"><Circle cx="12" cy="15" r="6.5" fill="#C77F00" /></G>
     <Circle cx="12" cy="15" r="6.5" fill="#FFC24B" stroke="#C77F00" strokeWidth={1.6} />
     <Polygon points="12,11.5 13,13.8 15.5,14 13.6,15.6 14.2,18 12,16.7 9.8,18 10.4,15.6 8.5,14 11,13.8" fill="#fff" />
   </Svg>
 );
-export const Cert = ({ size, color = "#3B2A4A" }: P) => (
+export const Cert = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="3" y="4" width="18" height="13" rx="2" {...stroke(color)} />
     <Line x1="7" y1="8" x2="13" y2="8" {...stroke(color)} />
     <Line x1="7" y1="11" x2="11" y2="11" {...stroke(color)} />
     <Circle cx="17" cy="16" r="3.4" fill="#FFC24B" stroke={color} strokeWidth={1.6} />
-    <Path d="M15 19l-1 3 3-1.6 3 1.6-1-3" {...stroke("#FF6B5B")} />
+    <Path d="M15 19l-1 3 3-1.6 3 1.6-1-3" {...stroke("#F2503C")} />
   </Svg>
 );
-export const Heart = ({ size, color = "#FF6B5B", fill }: P) => (
+export const Heart = ({ size, color = "#F2503C", fill }: P) => (
   <Svg {...S(size)}>
     <Path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z"
       fill={fill ? color : "none"} stroke={color} strokeWidth={2} strokeLinejoin="round" />
   </Svg>
 );
-export const Dumbbell = ({ size, color = "#3B2A4A" }: P) => (
+export const Dumbbell = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Line x1="7" y1="12" x2="17" y2="12" {...stroke(color)} />
     <Rect x="3" y="9" width="3.5" height="6" rx="1.2" {...stroke(color)} />
@@ -148,7 +148,7 @@ export const Dumbbell = ({ size, color = "#3B2A4A" }: P) => (
   </Svg>
 );
 
-export const Calendar = ({ size, color = "#3B2A4A" }: P) => (
+export const Calendar = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="3.5" y="5" width="17" height="16" rx="2.5" {...stroke(color)} />
     <Line x1="3.5" y1="9.5" x2="20.5" y2="9.5" {...stroke(color)} />
@@ -156,30 +156,30 @@ export const Calendar = ({ size, color = "#3B2A4A" }: P) => (
     <Line x1="16" y1="3" x2="16" y2="6.5" {...stroke(color)} />
   </Svg>
 );
-export const Video = ({ size, color = "#3B2A4A" }: P) => (
+export const Video = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="3" y="6.5" width="13" height="11" rx="2.5" {...stroke(color)} />
     <Path d="M16 10.5 L21 7.5 v9 L16 13.5" {...stroke(color)} />
   </Svg>
 );
-export const Refresh = ({ size, color = "#3B2A4A" }: P) => (
+export const Refresh = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M20 11a8 8 0 1 0-2.2 6.3" {...stroke(color)} />
     <Polyline points="20 4 20 11 13 11" {...stroke(color)} />
   </Svg>
 );
 
-export const ChevronUp = ({ size, color = "#3B2A4A" }: P) => (
+export const ChevronUp = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}><Polyline points="5 15 12 8 19 15" {...stroke(color)} /></Svg>
 );
-export const ChevronDown = ({ size, color = "#3B2A4A" }: P) => (
+export const ChevronDown = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}><Polyline points="5 9 12 16 19 9" {...stroke(color)} /></Svg>
 );
-export const ChevronLeft = ({ size, color = "#3B2A4A" }: P) => (
+export const ChevronLeft = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}><Polyline points="15 5 8 12 15 19" {...stroke(color)} /></Svg>
 );
 
-export const X = ({ size, color = "#3B2A4A" }: P) => (
+export const X = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Line x1="6" y1="6" x2="18" y2="18" {...stroke(color)} />
     <Line x1="18" y1="6" x2="6" y2="18" {...stroke(color)} />
@@ -196,14 +196,14 @@ export const Pause = ({ size, color = "#fff" }: P) => (
   </Svg>
 );
 
-export const SoundOn = ({ size, color = "#3B2A4A" }: P) => (
+export const SoundOn = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" {...stroke(color)} />
     <Path d="M15.5 9a4.2 4.2 0 0 1 0 6" {...stroke(color)} />
     <Path d="M18 6.5a8 8 0 0 1 0 11" {...stroke(color)} />
   </Svg>
 );
-export const SoundOff = ({ size, color = "#3B2A4A" }: P) => (
+export const SoundOff = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" {...stroke(color)} />
     <Line x1="15.5" y1="9.5" x2="20.5" y2="14.5" {...stroke(color)} />
@@ -211,7 +211,7 @@ export const SoundOff = ({ size, color = "#3B2A4A" }: P) => (
   </Svg>
 );
 
-export const Mail = ({ size, color = "#3B2A4A" }: P) => (
+export const Mail = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="3" y="5" width="18" height="14" rx="2.5" {...stroke(color)} />
     <Polyline points="4 7.5 12 13 20 7.5" {...stroke(color)} />
@@ -233,7 +233,7 @@ export const Bolt = ({ size, color = "#F5A623" }: P) => (
   </Svg>
 );
 
-export const Mic = ({ size, color = "#3B2A4A" }: P) => (
+export const Mic = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="9" y="3" width="6" height="11" rx="3" {...stroke(color)} />
     <Path d="M6 11a6 6 0 0 0 12 0" {...stroke(color)} />
@@ -241,7 +241,7 @@ export const Mic = ({ size, color = "#3B2A4A" }: P) => (
     <Line x1="8" y1="21" x2="16" y2="21" {...stroke(color)} />
   </Svg>
 );
-export const Lock = ({ size, color = "#3B2A4A" }: P) => (
+export const Lock = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Rect x="5" y="10.5" width="14" height="9.5" rx="2.2" {...stroke(color)} />
     <Path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" {...stroke(color)} />
@@ -263,12 +263,12 @@ export const Ticket = ({ size, color = "#E0A62F" }: P) => (
     <Line x1="12.5" y1="7" x2="12.5" y2="17" {...stroke(color)} strokeDasharray="1.6 2.2" />
   </Svg>
 );
-export const Star = ({ size, color = "#FF6B5B", fill }: P) => (
+export const Star = ({ size, color = "#F2503C", fill }: P) => (
   <Svg {...S(size)}>
     <Polygon points="12 3.2 14.5 9 20.7 9.6 16 13.9 17.5 20 12 16.8 6.5 20 8 13.9 3.3 9.6 9.5 9" {...(fill ? { fill: color } : stroke(color))} />
   </Svg>
 );
-export const Cap = ({ size, color = "#3B2A4A" }: P) => (
+export const Cap = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M2 9.2 12 5l10 4.2-10 4.2Z" {...stroke(color)} />
     <Path d="M6 11v4.8c0 1.6 2.7 3 6 3s6-1.4 6-3V11" {...stroke(color)} />
@@ -281,13 +281,13 @@ export const Flag = ({ size, color = "#C7A86F" }: P) => (
     <Path d="M6 4h11l-2.5 3.5L17 11H6Z" {...stroke(color)} />
   </Svg>
 );
-export const Chart = ({ size, color = "#3B2A4A" }: P) => (
+export const Chart = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M4 17l5-5 3 3 7.5-8" {...stroke(color)} />
     <Path d="M20 7v4h-4" {...stroke(color)} />
   </Svg>
 );
-export const Trophy = ({ size, color = "#3B2A4A" }: P) => (
+export const Trophy = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" {...stroke(color)} />
     <Path d="M7 6H4a2 2 0 0 0 2 4M17 6h3a2 2 0 0 1-2 4" {...stroke(color)} />
@@ -295,13 +295,13 @@ export const Trophy = ({ size, color = "#3B2A4A" }: P) => (
     <Path d="M8 20h8M9.5 20v-3h5v3" {...stroke(color)} />
   </Svg>
 );
-export const User = ({ size, color = "#3B2A4A" }: P) => (
+export const User = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Circle cx="12" cy="8" r="3.5" {...stroke(color)} />
     <Path d="M5.5 20a6.5 6.5 0 0 1 13 0" {...stroke(color)} />
   </Svg>
 );
-export const MapIcon = ({ size, color = "#3B2A4A" }: P) => (
+export const MapIcon = ({ size, color = "#2E2239" }: P) => (
   <Svg {...S(size)}>
     <Path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4Z" {...stroke(color)} />
     <Line x1="9" y1="4" x2="9" y2="17" {...stroke(color)} />

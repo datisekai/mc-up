@@ -10,7 +10,7 @@ import {
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { C, F, T } from "./theme";
+import { C, F, shadow, T } from "./theme";
 import { Bolt, Check, ListIcon, Mic, Pause, Pin, Play, Target } from "./icons";
 import Misa from "./Misa";
 import GenreScene from "./scenes";
@@ -362,7 +362,7 @@ export default function RecordScreen({ lesson, busy, energyCost = 0, doneCount =
 const WCARD = Dimensions.get("window").width - 32; // thẻ padding 16 hai bên
 
 const st = StyleSheet.create({
-  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
   tipBox: { backgroundColor: C.sunken, borderRadius: 12, padding: 11 },
   tipT: { color: C.ink, fontSize: 15 },
   taskLabel: { fontWeight: "800", color: C.ink2, fontSize: 12.5, letterSpacing: 0.6, marginTop: 14, marginBottom: 4 },
@@ -377,7 +377,7 @@ const st = StyleSheet.create({
   critDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3DBE7A", marginTop: 6 },
   sampleBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: C.ink, borderRadius: 14, borderBottomWidth: 4, borderBottomColor: "#241A2E", paddingVertical: 11, marginTop: 12 },
   sampleBtnT: { color: "#FFC24B", fontFamily: F.title, fontSize: 15 },
-  prompter: { backgroundColor: "#FFF3DA", borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 2, borderColor: "#F5DFAE" },
+  prompter: { backgroundColor: "#FFEFC9", borderRadius: 16, padding: 16, marginTop: 12, borderWidth: 2, borderColor: "#F5DFAE" },
   prompterLabel: { fontWeight: "800", fontSize: 12, color: "#8a5a13", letterSpacing: 0.4 },
   prompterHide: { color: "#8a5a13", fontWeight: "800", fontSize: 13, textDecorationLine: "underline" },
   prompterText: { color: C.ink, fontSize: T.prompter, lineHeight: 34, marginTop: 8, fontFamily: F.med },
@@ -393,10 +393,10 @@ const st = StyleSheet.create({
     shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
   },
   underBtn: { fontSize: 15, fontWeight: "800", color: C.ink, marginTop: 10 },
-  energyTag: { backgroundColor: "#FFF3DA", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, marginTop: 8, flexDirection: "row", alignItems: "center" },
+  energyTag: { backgroundColor: "#FFEFC9", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, marginTop: 8, flexDirection: "row", alignItems: "center" },
   energyTagT: { fontSize: 12, fontFamily: F.semi, color: "#8a5a13" },
   calm: { fontSize: 13.5, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 20 },
-  skipT: { fontSize: 12, color: "#BFB4C4", marginTop: 12, textDecorationLine: "underline" },
+  skipT: { fontSize: 12, color: "#9C8FA6", marginTop: 12, textDecorationLine: "underline" },
 
   recHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 4 },
   recDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: C.primary },
@@ -404,11 +404,11 @@ const st = StyleSheet.create({
   clock: { fontSize: 17, fontFamily: F.display, color: C.ink },
   progTrack: { height: 5, backgroundColor: "#F0E6D8", borderRadius: 999, marginTop: 8, overflow: "hidden" },
   progFill: { height: "100%", backgroundColor: C.primary, borderRadius: 999 },
-  progHint: { fontSize: 12, color: "#BFB4C4", marginTop: 5 },
+  progHint: { fontSize: 12, color: "#9C8FA6", marginTop: 5 },
 
   tele: { backgroundColor: C.raised, borderRadius: 14, padding: 13, marginTop: 16 },
   teleLabel: { fontWeight: "800", color: C.ink2, fontSize: 12, letterSpacing: 1, marginBottom: 6 },
-  teleStep: { fontSize: 14, lineHeight: 24, color: "#BFB4C4", fontWeight: "500" },
+  teleStep: { fontSize: 14, lineHeight: 24, color: "#9C8FA6", fontWeight: "500" },
   teleCur: { color: C.primary, fontWeight: "800" },
   teleDone: { color: "#B7ADBE" },
 
