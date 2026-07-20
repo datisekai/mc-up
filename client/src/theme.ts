@@ -2,59 +2,26 @@
 // V5 (feedback: quá nhiều màu → rối): KỶ LUẬT bảng màu = san hô (primary) + vàng (CHỈ thưởng)
 // + mận/xám (chữ) + kem/trắng (nền). Xanh dương/tím/hồng đã bị XOÁ; giữ 1 xanh lá muted
 // DUY NHẤT cho dấu "đạt". Mọi màu semantic khác quy về primary/vàng/trung tính.
-// V7 (feedback: enhance màu/UI — Finn chọn A+B): cắt màu xong app bị PHẲNG & NHẠT
-// → bù bằng CHIỀU SÂU + TƯƠNG PHẢN, KHÔNG thêm màu mới.
-// V8 (feedback: "nền kem làm buồn ngủ" — Finn nói 2 lần, và Finn ĐÚNG):
-//   Nền kem/trắng-ấm = ĐÚNG sắc mà Night Shift dùng để ru người ta ngủ. Không thể
-//   vừa phủ warm-tint toàn trường nhìn vừa mong app tỉnh táo. Tăng độ sáng KHÔNG cứu
-//   được — thủ phạm là SẮC ÁM, không phải độ sáng.
-//   → NGUYÊN TẮC MỚI: "Sân khấu ấm" = cái ấm là ÁNH ĐÈN RỌI, không phải sơn phủ nhà hát.
-//     Trung tính (nền/rãnh/viền) đi tông XÁM-MẬN LẠNH — sạch, tỉnh, lùi ra sau.
-//     Hơi ấm dồn hết vào NHÂN VẬT: san hô, vàng thưởng, chữ mận, Misa.
-//   Hệ chiều sâu GIỮ NGUYÊN (thẻ trắng nổi bằng bóng + hairline, không cần nền kem).
 export const C = {
-  base: "#FFFFFF",      // TRẮNG THẬT — hết ám vàng (cũ #F4E7D6 → buồn ngủ)
-  raised: "#FFFFFF",    // thẻ = trắng, nổi bằng shadow.card + hair (KHÔNG dựa vào nền kem)
-  sunken: "#F2F0F5",    // rãnh: xám ám MẬN nhạt (lạnh, hợp chữ mận) — thay kem
-  ink: "#2E2239",       // chữ mận đen — hơi ấm nằm ở ĐÂY, không ở nền
-  ink2: "#6B5F73",
-  ink3: "#9C8FA6",
-  primary: "#F2503C",   // san hô — nguồn ấm chính, giờ chói hẳn trên nền trắng
-  primarySoft: "#FDE8E3",
-  spot: "#FFC24B",      // VÀNG — chỉ dùng cho thưởng (xu/streak/XP/vé). Giữ "đắt".
-  spotSoft: "#FFF0CC",  // vàng nhạt — ok vì chỉ dùng mảng NHỎ (chip thưởng), không phủ nền
-  success: "#3FB984",   // xanh lá DUY NHẤT — chỉ cho dấu tick "bài đạt"
-  successSoft: "#DDF2E7",
-  hair: "#E6E2EC",      // hairline trung tính — tách thẻ khỏi nền trắng
-  // Khoá/vô hiệu — ĐỦ TƯƠNG PHẢN để đọc (trước bị mờ tàng hình)
-  lock: "#EDEAF1",
-  lockInk: "#857D8F",
+  base: "#FFF8F0",
+  raised: "#FFFFFF",
+  sunken: "#F6EDE2",
+  ink: "#3B2A4A",
+  ink2: "#7A6E82",
+  ink3: "#B4A8BB",   // chữ mờ nhất (khoá/phụ)
+  primary: "#FF6B5B",
+  primarySoft: "#FFF0EC", // nền san hô rất nhạt cho vùng highlight (thay các nền màu lạ)
+  spot: "#FFC24B",   // VÀNG — chỉ dùng cho thưởng (xu/streak/XP/vé). Giữ "đắt".
+  spotSoft: "#FFF3DA",
+  success: "#3FB984", // xanh lá DUY NHẤT — chỉ cho dấu tick "bài đạt"
+  successSoft: "#E7F6EE",
+  hair: "#EDE3D6",
   // Đáy 3D "phím đàn" — tối hơn thân ~18% (V2: cái gì có đáy dày là NHẤN ĐƯỢC)
-  primaryDown: "#B33724",
+  primaryDown: "#D14B3D",
   spotDown: "#E09B18",
-  hairDown: "#D6D0DE",  // đáy 3D thẻ trung tính — theo hair mới (lạnh, không tan)
+  hairDown: "#E0D4C4",
   successDown: "#2E9668",
-  goldInk: "#8a5a13",   // chữ trên nền vàng nhạt
-};
-
-// Bóng cho thẻ nổi khỏi nền (A· chiều sâu). Dùng: style={[card, shadow.card]}
-// V8.1 (feedback: "UI nên nổi lên, giờ chìm chìm"): nền đã chuyển sang TRẮNG THẬT
-// → bóng cũ (opacity .06-.08) tinh chỉnh cho nền kem giờ gần như vô hình (trắng
-// trên trắng). Tăng đô rõ rệt để thẻ thật sự tách khỏi nền, không chỉ dựa viền mảnh.
-export const shadow = {
-  card: {
-    shadowColor: "#2E2239", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.14, shadowRadius: 14, elevation: 5,
-  },
-  soft: {
-    shadowColor: "#2E2239", shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10, shadowRadius: 8, elevation: 3,
-  },
-  // Thanh nav/dock đứng đáy màn — bóng hắt NGƯỢC LÊN để tách khỏi nội dung phía trên
-  nav: {
-    shadowColor: "#2E2239", shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.10, shadowRadius: 10, elevation: 8,
-  },
+  goldInk: "#8a5a13", // chữ trên nền vàng nhạt
 };
 
 // Thang chữ V2 — "chữ to lên một nấc" (feedback: font quá nhỏ). Sàn tuyệt đối 12.

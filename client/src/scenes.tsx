@@ -3,17 +3,17 @@
 // Dùng ở đầu thẻ đề bài màn thu — cho bài học "có không khí" của tình huống thật.
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Rect } from "react-native-svg";
 
-const PLUM = "#2E2239";
-const CORAL = "#F2503C";
+const PLUM = "#3B2A4A";
+const CORAL = "#FF6B5B";
 const GOLD = "#FFC24B";
-const CREAM = "#FFEFC9";
+const CREAM = "#FFF3DA";
 const WARM = "#F2D9C4";      // be ấm trung tính (thay hồng/lam/xanh lạ)
 const CORALSOFT = "#FFD9D0"; // san hô nhạt
 
 // Sân khấu đám cưới: cổng hoa + đôi nhẫn
 const Wedding = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.42} viewBox="0 0 300 126">
-    <Rect x="0" y="98" width="300" height="28" fill="#EADCC8" />
+    <Rect x="0" y="98" width="300" height="28" fill="#F6EDE2" />
     <Path d="M60 110 V52 a90 62 0 0 1 180 0 V110" fill="none" stroke={CORALSOFT} strokeWidth="14" />
     <Circle cx="60" cy="58" r="9" fill={CORAL} /><Circle cx="240" cy="58" r="9" fill={CORAL} />
     <Circle cx="86" cy="26" r="8" fill={CORALSOFT} /><Circle cx="214" cy="26" r="8" fill={CORALSOFT} />
@@ -27,7 +27,7 @@ const Wedding = ({ w }: { w: number }) => (
 // Sân khấu sự kiện/gala: bục + đèn rọi + hoa giấy
 const Event = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.42} viewBox="0 0 300 126">
-    <Rect x="0" y="98" width="300" height="28" fill="#EADCC8" />
+    <Rect x="0" y="98" width="300" height="28" fill="#F6EDE2" />
     <Polygon points="70,0 40,98 130,98" fill={GOLD} opacity="0.28" />
     <Polygon points="230,0 170,98 260,98" fill={GOLD} opacity="0.28" />
     <Rect x="110" y="62" width="80" height="40" rx="8" fill={PLUM} />
@@ -41,7 +41,7 @@ const Event = ({ w }: { w: number }) => (
 // Livestream: điện thoại + tim bay + nút LIVE
 const Live = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.42} viewBox="0 0 300 126">
-    <Rect x="0" y="98" width="300" height="28" fill="#EADCC8" />
+    <Rect x="0" y="98" width="300" height="28" fill="#F6EDE2" />
     <Rect x="112" y="8" width="76" height="112" rx="14" fill={PLUM} />
     <Rect x="120" y="18" width="60" height="86" rx="8" fill={CREAM} />
     <Circle cx="150" cy="52" r="14" fill={CORAL} />
@@ -56,7 +56,7 @@ const Live = ({ w }: { w: number }) => (
 // Kỹ năng nói / mặc định: bục phát biểu + mic + khán giả
 const Stage = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.42} viewBox="0 0 300 126">
-    <Rect x="0" y="98" width="300" height="28" fill="#EADCC8" />
+    <Rect x="0" y="98" width="300" height="28" fill="#F6EDE2" />
     <Path d="M150 6 L96 98 h108 Z" fill={GOLD} opacity="0.25" />
     <Rect x="126" y="58" width="48" height="44" rx="7" fill={PLUM} />
     <Rect x="146" y="34" width="8" height="26" rx="4" fill={PLUM} />

@@ -156,7 +156,7 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
               >
                 {it.kind === "lesson" && it.state === "done" && <Check size={34} color="#fff" />}
                 {open && <MicSticker size={36} />}
-                {it.kind === "lesson" && it.state === "locked" && <Lock size={28} color={C.lockInk} />}
+                {it.kind === "lesson" && it.state === "locked" && <Lock size={28} color="#A99C8C" />}
                 {isReward && (it.earned ? <TicketSticker size={30} /> : <Ticket size={26} color="#C9AE77" />)}
               </TouchableOpacity>
 
@@ -196,7 +196,7 @@ export default function StageMap({ lessons, onPick, onRefresh, refreshing, energ
   );
 }
 
-const shadow = { shadowColor: "#2E2239", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4 };
+const shadow = { shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 4 };
 
 const st = StyleSheet.create({
   stage: { position: "absolute", top: 12, height: STAGE_H - 24, alignItems: "center", paddingTop: 22,
@@ -213,24 +213,22 @@ const st = StyleSheet.create({
     position: "absolute", width: 280, flexDirection: "row", alignItems: "center", gap: 12, zIndex: 4,
     backgroundColor: C.ink, borderRadius: 18, padding: 14, borderBottomWidth: 5, borderBottomColor: "#241A2E",
   },
-  chapterLock: { backgroundColor: C.lock, borderBottomColor: C.hairDown },
-  chapterPoster: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#FFEFC9", alignItems: "center", justifyContent: "center" },
+  chapterLock: { backgroundColor: "#EFE6DA", borderBottomColor: "#E0D4C4" },
+  chapterPoster: { width: 46, height: 46, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" },
   chapterKick: { fontSize: 12, fontFamily: F.semi, color: "#CFC3B0", letterSpacing: 0.5 },
   chapterName: { fontSize: 17, fontFamily: F.displayX, color: "#FFC24B", marginTop: 1 },
   chapterLv: { fontSize: 12, fontFamily: F.semi, color: "#9A8EA5", marginTop: 1 },
-  node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: C.lock, zIndex: 3, borderBottomWidth: 5, borderBottomColor: C.hairDown },
+  node: { position: "absolute", alignItems: "center", justifyContent: "center", backgroundColor: "#EAE1D3", zIndex: 3, borderBottomWidth: 5, borderBottomColor: "#D8CCBA" },
   nDone: { backgroundColor: C.success, borderBottomColor: C.successDown, ...shadow },
   nOpen: { backgroundColor: "#fff", borderWidth: 3, borderColor: C.primary, borderBottomWidth: 6, borderBottomColor: C.primaryDown, ...shadow, shadowColor: C.primary, shadowOpacity: 0.4 },
-  nLock: { backgroundColor: C.lock },
+  nLock: { backgroundColor: "#EAE1D3" },
   nReward: { backgroundColor: C.spot, borderBottomColor: C.spotDown, ...shadow, shadowColor: C.spot },
   nRewardLock: { backgroundColor: "#F4E8CE" },
 
   eBadge: { position: "absolute", zIndex: 6, backgroundColor: "#FFE9C0", borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1.5, borderColor: C.raised, flexDirection: "row", alignItems: "center", gap: 1 },
   eBadgeNo: { backgroundColor: C.primary },
   eBadgeT: { fontSize: 12.5, fontFamily: F.title, color: "#8a5a13" },
-  // V8: quầng "tới lượt bạn" = SAN HÔ, không phải vàng. Vàng là màu THƯỞNG; đây là
-  // lời GỌI HÀNH ĐỘNG → primary. (Vệt vàng nhạt 240px cũ là mảng lờ đờ to nhất màn hình.)
-  glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(242,80,60,0.16)", zIndex: 1 },
+  glow: { position: "absolute", width: 240, height: 240, borderRadius: 120, backgroundColor: "rgba(255,194,75,0.28)", zIndex: 1 },
   cta: { position: "absolute", width: 120, alignItems: "center", zIndex: 5 },
   ctaT: { backgroundColor: C.primary, color: "#fff", fontWeight: "900", fontSize: 12.5, letterSpacing: 0.4,
     paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, overflow: "hidden" },
@@ -244,5 +242,5 @@ const st = StyleSheet.create({
   ground: { position: "absolute", height: GROUND_H - 20, alignItems: "center", justifyContent: "center",
     backgroundColor: "#F1E7D8", borderRadius: 16, borderWidth: 1, borderColor: "#E7DBC8", gap: 2 },
   groundT: { fontSize: 12.5, fontWeight: "900", letterSpacing: 1, color: "#8a7a68" },
-  groundS: { fontSize: 12, fontWeight: "700", color: "#8A7A6E", textAlign: "center" },
+  groundS: { fontSize: 12, fontWeight: "700", color: "#A99C8C", textAlign: "center" },
 });

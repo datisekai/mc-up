@@ -2,7 +2,7 @@
 // Chạy native driver khi có thể; tôn trọng Giảm chuyển động.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing, View, ViewStyle } from "react-native";
-import { C, shadow } from "./theme";
+import { C } from "./theme";
 
 // ===== Skeleton: khung xám nhấp nháy đúng hình dạng nội dung (thay spinner) =====
 export function Skeleton({ w = "100%", h = 16, r = 8, style }: { w?: number | string; h?: number; r?: number; style?: ViewStyle }) {
@@ -23,7 +23,7 @@ export function SkeletonList({ rows = 5, avatar = true }: { rows?: number; avata
   return (
     <View style={{ paddingTop: 8 }}>
       {Array.from({ length: rows }).map((_, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair, ...shadow.soft }}>
+        <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.raised, borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: C.hair }}>
           {avatar && <Skeleton w={40} h={40} r={20} />}
           <View style={{ flex: 1, gap: 7 }}>
             <Skeleton w={"62%"} h={13} />

@@ -5,7 +5,7 @@ import { Animated, Easing, StyleSheet, View, useWindowDimensions } from "react-n
 import Svg, { Path } from "react-native-svg";
 import { ConfettiVariant } from "./variety";
 
-const COLORS = ["#F2503C", "#FFC24B", "#F5A623", "#FFB4A6", "#FFFFFF"];
+const COLORS = ["#FF6B5B", "#FFC24B", "#F5A623", "#FFB4A6", "#FFFFFF"];
 
 type Piece = {
   x: number; y: number; fall: number; rot: string; delay: number;

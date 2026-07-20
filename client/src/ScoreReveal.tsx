@@ -3,7 +3,7 @@
 // KHÔNG hiển thị "(giả lập)" cho học viên (§2.5). KHÔNG đỏ khi luyện.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { C, F, shadow } from "./theme";
+import { C, F } from "./theme";
 import { Mic } from "./icons";
 import Misa from "./Misa";
 import { sfx } from "./sound";
@@ -222,7 +222,7 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
 }
 
 const st = StyleSheet.create({
-  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
+  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   row: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.hair,
@@ -232,7 +232,7 @@ const st = StyleSheet.create({
   unit: { fontFamily: F.semi, fontSize: 12, color: C.ink2 },
   pill: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999 },
   pillOk: { backgroundColor: "#E6F7EF" },
-  pillMid: { backgroundColor: "#FFEFC9" },
+  pillMid: { backgroundColor: "#FFF3DA" },
   pillT: { fontWeight: "800", fontSize: 14 },
   compareOk: { backgroundColor: "#E6F7EF", borderRadius: 10, padding: 10, marginTop: 10 },
   compareOkT: { color: "#1f8f63", fontWeight: "700", fontSize: 12.5 },
@@ -246,7 +246,7 @@ const st = StyleSheet.create({
   transcriptT: { color: C.ink, fontSize: 14, lineHeight: 22, fontFamily: F.body },
   // tô VÀNG ẤM — đánh dấu để học, không phải bôi lỗi (không đỏ)
   fillerHi: { backgroundColor: "#FFE9C0", color: "#8a5a13", fontFamily: F.title, borderRadius: 4 },
-  summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
+  summaryCard: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   sumHead: { fontFamily: F.title, fontSize: 12.5, color: C.ink2, letterSpacing: 0.8, marginBottom: 6 },
   sumRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 4 },
   sumOk: { color: "#3FB984", fontFamily: F.title, fontSize: 15, width: 16, lineHeight: 21 },
@@ -263,7 +263,7 @@ const st = StyleSheet.create({
   covHint: { fontSize: 12, color: C.ink2, fontFamily: F.med, marginTop: 6 },
   unclearWrap: { alignItems: "center", paddingVertical: 18 },
   unclearIcon: { fontSize: 40 },
-  failNote: { backgroundColor: "#FFEFC9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, marginTop: 12 },
+  failNote: { backgroundColor: "#FFF3DA", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9, marginTop: 12 },
   failNoteT: { color: "#8a5a13", fontSize: 13.5, fontFamily: F.semi, textAlign: "center" },
   unclearTitle: { fontFamily: F.display, fontSize: 18, color: C.ink, marginTop: 10 },
   unclearSub: { fontFamily: F.body, fontSize: 13.5, color: C.ink2, textAlign: "center", lineHeight: 20, marginTop: 8 },

@@ -9,7 +9,7 @@ import { Baloo2_700Bold, Baloo2_800ExtraBold, useFonts } from "@expo-google-font
 import {
   BeVietnamPro_400Regular, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold,
 } from "@expo-google-fonts/be-vietnam-pro";
-import { C, F, shadow, T } from "./src/theme";
+import { C, F, T } from "./src/theme";
 import { Api, API_BASE, ApiError, submitAudio, submitMcVoice } from "./src/api";
 import StageMap from "./src/StageMap";
 import MiniChart from "./src/MiniChart";
@@ -456,10 +456,10 @@ export default function App() {
             <Tab on={authMode === "register"} label="Đăng ký" onPress={() => { setAuthMode("register"); setAuthErr(null); }} />
           </View>
           {authMode === "register" && (
-            <TextInput style={s.field} placeholder="Tên hiển thị" placeholderTextColor="#9C8FA6" value={name} onChangeText={setName} />
+            <TextInput style={s.field} placeholder="Tên hiển thị" placeholderTextColor="#BFB4C4" value={name} onChangeText={setName} />
           )}
-          <TextInput style={s.field} placeholder="Email" placeholderTextColor="#9C8FA6" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-          <TextInput style={s.field} placeholder="Mật khẩu" placeholderTextColor="#9C8FA6" secureTextEntry value={pw} onChangeText={setPw} />
+          <TextInput style={s.field} placeholder="Email" placeholderTextColor="#BFB4C4" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+          <TextInput style={s.field} placeholder="Mật khẩu" placeholderTextColor="#BFB4C4" secureTextEntry value={pw} onChangeText={setPw} />
           {authMode === "register" && (
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
               <Tab on={regRole === "hoc_vien"} label="Là học viên" onPress={() => setRegRole("hoc_vien")} />
@@ -787,7 +787,7 @@ function RankView({ token, achs, refreshControl, onOpenChallenge }: { token: str
       </View>
       <LeagueBoard token={token} />
       <TouchableOpacity onPress={onOpenChallenge} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.ink, borderRadius: 16, padding: 14, marginTop: 8, borderBottomWidth: 4, borderBottomColor: "#241A2E" }}>
-        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FFEFC9", alignItems: "center", justifyContent: "center" }}><TrophySticker size={26} /></View>
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#FFF3DA", alignItems: "center", justifyContent: "center" }}><TrophySticker size={26} /></View>
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.title, fontSize: 15.5, color: C.spot }}>Thử thách MC tuần</Text>
           <Text style={{ fontFamily: F.med, fontSize: 12.5, color: "#CFC3B0" }}>Nộp clip theo chủ đề — MC tuyên dương top</Text>
@@ -824,9 +824,9 @@ function ProfileView({ token, onReferral, prog, reviews, board, achs, scores, is
           <Text style={{ color: C.ink2, fontSize: 12.5, marginTop: 4, lineHeight: 18 }}>
             Tạo tài khoản 10 giây để giữ streak {prog.streak} ngày và {prog.xp} XP — đổi máy không mất.
           </Text>
-          <TextInput style={s.field2} placeholder="Email" placeholderTextColor="#9C8FA6" autoCapitalize="none" keyboardType="email-address" value={upEmail} onChangeText={setUpEmail} />
-          <TextInput style={s.field2} placeholder="Mật khẩu" placeholderTextColor="#9C8FA6" secureTextEntry value={upPw} onChangeText={setUpPw} />
-          <TextInput style={s.field2} placeholder="Tên hiển thị (tuỳ chọn)" placeholderTextColor="#9C8FA6" value={upName} onChangeText={setUpName} />
+          <TextInput style={s.field2} placeholder="Email" placeholderTextColor="#BFB4C4" autoCapitalize="none" keyboardType="email-address" value={upEmail} onChangeText={setUpEmail} />
+          <TextInput style={s.field2} placeholder="Mật khẩu" placeholderTextColor="#BFB4C4" secureTextEntry value={upPw} onChangeText={setUpPw} />
+          <TextInput style={s.field2} placeholder="Tên hiển thị (tuỳ chọn)" placeholderTextColor="#BFB4C4" value={upName} onChangeText={setUpName} />
           <Btn gold label="Giữ tiến độ của tôi" onPress={() => onUpgrade(upEmail, upPw, upName)} />
         </View>
       )}
@@ -850,7 +850,7 @@ function ProfileView({ token, onReferral, prog, reviews, board, achs, scores, is
         <StatCard icon={<TicketSticker size={24} />} value={prog.tickets} label="Vé Vàng" />
       </View>
       {prog.tier && <View style={s.tierBadge}><Trophy size={14} color="#5a3d00" /><Text style={{ fontWeight: "800", color: "#5a3d00", fontSize: 13 }}>Hạng {prog.tier}</Text></View>}
-      <TouchableOpacity onPress={onReferral} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFEFC9", borderRadius: 16, padding: 13, marginTop: 12, borderWidth: 1, borderColor: "#F5DFAE" }}>
+      <TouchableOpacity onPress={onReferral} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFF3DA", borderRadius: 16, padding: 13, marginTop: 12, borderWidth: 1, borderColor: "#F5DFAE" }}>
         <Coin size={26} />
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: F.title, fontSize: 14.5, color: "#8a5a13" }}>Mời bạn — nhận xu</Text>
@@ -914,7 +914,7 @@ function ProfileView({ token, onReferral, prog, reviews, board, achs, scores, is
           + "&body=" + encodeURIComponent("Mình thấy...")).catch(() => {})
       } />
       {/* Credit BẮT BUỘC theo CC-BY 4.0 (assets/CREDITS.md) — giữ khi phát hành */}
-      <Text style={{ color: "#9C8FA6", fontSize: 12, textAlign: "center", marginTop: 8 }}>
+      <Text style={{ color: "#BFB4C4", fontSize: 12, textAlign: "center", marginTop: 8 }}>
         Nhạc: "Wholesome" — Kevin MacLeod (incompetech.com) · CC BY 4.0
       </Text>
       <Btn ghost label="Đăng xuất" onPress={onLogout} />
@@ -1047,7 +1047,7 @@ const s = StyleSheet.create({
   bottomBar: {
     position: "absolute", bottom: 0, left: 0, right: 0, flexDirection: "row",
     backgroundColor: C.raised, borderTopWidth: 1, borderTopColor: C.hair,
-    paddingTop: 8, paddingBottom: 26, ...shadow.nav,
+    paddingTop: 8, paddingBottom: 26,
   },
   tabIndicator: {
     position: "absolute", top: -1, left: 0, width: WIN_W / 5, height: 3,
@@ -1059,7 +1059,7 @@ const s = StyleSheet.create({
   stateChip: { backgroundColor: C.sunken, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999 },
   stateChipT: { fontSize: 12, fontFamily: F.semi, color: C.ink2 },
   energyBg: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(59,42,74,0.55)", alignItems: "center", justifyContent: "center", zIndex: 99, padding: 30 },
-  energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340, ...shadow.card },
+  energyCard: { backgroundColor: C.raised, borderRadius: 22, padding: 22, alignItems: "center", width: "100%", maxWidth: 340 },
   energyTitle: { fontFamily: F.displayX, fontSize: 20, color: C.ink, marginTop: 8 },
   energyTrack: { height: 12, backgroundColor: C.sunken, borderRadius: 999, marginTop: 14, width: "100%", overflow: "hidden" },
   energyFill: { height: "100%", backgroundColor: "#FFC24B", borderRadius: 999 },
@@ -1070,7 +1070,7 @@ const s = StyleSheet.create({
   proTitle: { fontFamily: F.displayX, fontSize: 16, color: "#FFC24B" },
   proLine: { fontSize: 12.5, color: "#EDE4D2", fontFamily: F.body, marginTop: 3, lineHeight: 18 },
   proRestore: { color: "#CFC3B0", fontSize: 12.5, fontFamily: F.med, textDecorationLine: "underline" },
-  pullHint: { textAlign: "center", color: "#9C8FA6", fontSize: 12.5, fontFamily: F.med, marginTop: 12 },
+  pullHint: { textAlign: "center", color: "#BFB4C4", fontSize: 12.5, fontFamily: F.med, marginTop: 12 },
   field: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, backgroundColor: C.raised, color: C.ink },
   field2: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 11, marginTop: 10, fontSize: 14, backgroundColor: C.base, color: C.ink },
   marketBanner: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.primary, borderRadius: 18, padding: 14, marginHorizontal: 16, marginTop: 12, borderBottomWidth: 5, borderBottomColor: C.primaryDown },
@@ -1082,11 +1082,11 @@ const s = StyleSheet.create({
   },
   reelsFabT: { color: "#fff", fontFamily: F.title, fontSize: 13.5 },
   kicker: { fontSize: 12.5, textTransform: "uppercase", letterSpacing: 1, color: C.ink2, fontFamily: F.title, marginVertical: 10 },
-  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10, ...shadow.card },
+  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 10 },
   btn: { backgroundColor: C.primary, borderRadius: 999, padding: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 7, marginTop: 8 },
   btnGhost: { backgroundColor: C.sunken }, btnGold: { backgroundColor: C.spot },
   input: { borderWidth: 1, borderColor: C.hair, borderRadius: 12, padding: 10, marginTop: 10, minHeight: 60 },
-  rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6, ...shadow.soft },
+  rankRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.raised, borderRadius: 12, padding: 12, marginBottom: 6 },
   rankMedal: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.sunken, alignItems: "center", justifyContent: "center", marginRight: 10 },
   rankNum: { width: 22, textAlign: "center", fontWeight: "900", color: C.ink2, fontSize: 15 },
   achBadge: { width: 96, alignItems: "center", marginBottom: 6 },
@@ -1098,14 +1098,14 @@ const s = StyleSheet.create({
   emptyTitle: { fontFamily: F.display, fontSize: 16, color: C.ink, marginTop: 12 },
   emptySub: { fontFamily: F.body, fontSize: 13, color: C.ink2, textAlign: "center", marginTop: 6, lineHeight: 19 },
   emptyHint: { color: C.ink2, fontSize: 12.5, paddingHorizontal: 4, lineHeight: 18 },
-  reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFEFC9", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
+  reminder: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF3DA", marginHorizontal: 16, marginTop: 4, marginBottom: 2, padding: 12, borderRadius: 14 },
   tierBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginTop: 10 },
   pathPill: { backgroundColor: C.sunken, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
   pathTagline: { paddingHorizontal: 18, paddingBottom: 4, color: C.ink2, fontSize: 12, fontWeight: "600" },
   toast: {
-    position: "absolute", left: 20, right: 20, bottom: 86, backgroundColor: "#2E2239",
+    position: "absolute", left: 20, right: 20, bottom: 86, backgroundColor: "#3B2A4A",
     borderRadius: 14, padding: 14, alignItems: "center", zIndex: 98,
-    shadowColor: "#2E2239", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8,
+    shadowColor: "#3B2A4A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8,
   },
   toastT: { color: "#FFF8F0", fontFamily: F.semi, fontSize: 13, textAlign: "center" },
 });

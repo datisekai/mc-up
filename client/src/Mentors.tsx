@@ -1,7 +1,7 @@
 // Mentors.tsx — danh sách MC hợp tác (feedback #5). Mục tiêu: cho học viên thấy
 // "app có MC xịn" → nền cho Marketplace (đặt khoá 1:1, quảng cáo — feedback #7).
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { C, F, shadow } from "./theme";
+import { C, F } from "./theme";
 import { Mic, Star, Trophy } from "./icons";
 
 export type Mentor = {
@@ -54,7 +54,7 @@ const st = StyleSheet.create({
   kicker: { fontSize: 12.5, fontFamily: F.title, letterSpacing: 1, color: C.ink2, textTransform: "uppercase" },
   sub: { fontSize: 13, color: C.ink2, fontFamily: F.body, marginTop: 4, marginBottom: 12, lineHeight: 19 },
   empty: { color: C.ink2, fontSize: 13, textAlign: "center", padding: 20 },
-  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 12, ...shadow.card },
+  card: { backgroundColor: C.raised, borderRadius: 16, padding: 14, marginBottom: 12 },
   featured: { borderWidth: 1.5, borderColor: C.spot },
   badge: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", backgroundColor: C.spot, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, marginBottom: 10 },
   badgeT: { fontSize: 12, fontFamily: F.title, color: "#5a3d00" },
