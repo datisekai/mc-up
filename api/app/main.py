@@ -19,7 +19,8 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .db import init_db
 from .routers import admin, auth, content, engage, iap, leaderboard, lessons, market, mc, media, practice, stats, vevang
-from .seed import seed_admin, seed_curriculum, seed_genres, seed_lessons, seed_mc, seed_rubrics
+from .seed import (seed_admin, seed_apple_demo, seed_curriculum, seed_genres, seed_lessons,
+                    seed_mc, seed_rubrics)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("mcup")
@@ -34,6 +35,7 @@ async def lifespan(_: FastAPI):
     await seed_rubrics()  # ≥20 biến thể lời khen/nhắc mỗi loại (feedback #2)
     await seed_mc()
     await seed_admin()
+    await seed_apple_demo()  # tài khoản reviewer@mcup.fun cho Apple App Review
     # Chống quên đổi secret khi lên prod (Postgres = dấu hiệu prod)
     if settings.jwt_secret.startswith("doi-secret") and "postgresql" in settings.database_url:
         log.error("⚠️⚠️ JWT_SECRET đang là giá trị mặc định trên Postgres — ĐỔI NGAY trong .env!")
@@ -141,7 +143,7 @@ async def robots():
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap():
     urls = [("https://mcup.fun/", "1.0"), ("https://mcup.fun/privacy", "0.3"),
-            ("https://mcup.fun/terms", "0.3")]
+            ("https://mcup.fun/terms", "0.3"), ("https://mcup.fun/support", "0.3")]
     items = "".join(f"<url><loc>{u}</loc><priority>{p}</priority></url>" for u, p in urls)
     xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
     return Response(xml, media_type="application/xml")
@@ -157,6 +159,12 @@ async def privacy():
 async def terms():
     """Điều khoản sử dụng."""
     return FileResponse(Path(__file__).parent / "web" / "terms.html")
+
+
+@app.get("/support", include_in_schema=False)
+async def support():
+    """Support URL cho App Store Connect — email liên hệ + FAQ ngắn."""
+    return FileResponse(Path(__file__).parent / "web" / "support.html")
 
 
 @app.get("/app", include_in_schema=False)

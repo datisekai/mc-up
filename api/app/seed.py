@@ -6,6 +6,7 @@ từ rubric thể loại (rubrics.criteria_for) để luôn khớp với bộ ch
 """
 import json
 import logging
+from datetime import date, timedelta
 from pathlib import Path
 
 from sqlalchemy import select
@@ -367,4 +368,29 @@ async def seed_admin() -> None:
         s.add(admin)
         await s.flush()
         s.add(Progress(user_id=admin.id))
+        await s.commit()
+
+
+async def seed_apple_demo() -> None:
+    """Tài khoản demo cho Apple App Review (reviewer@mcup.fun / AppleReview2026!).
+    Progress dựng sẵn (XP/streak/xu/giải đấu/trang trí Misa) để reviewer thấy ngay
+    các màn Xếp hạng/Cửa hàng có nội dung — KHÔNG tạo Clip/Score giả (sẽ vỡ khi
+    reviewer bấm phát lại vì không có file ghi âm thật). Bài 1 luôn mở sẵn để
+    reviewer tự ghi âm trải nghiệm chấm điểm AI thật."""
+    async with SessionLocal() as s:
+        exists = (await s.execute(select(User).where(User.email == "reviewer@mcup.fun"))).scalar_one_or_none()
+        if exists:
+            return
+        u = User(email="reviewer@mcup.fun", password_hash=hash_password("AppleReview2026!"),
+                 display_name="Apple Reviewer", ref_code="APPLEREVIEW")
+        s.add(u)
+        await s.flush()
+        today = date.today()
+        s.add(Progress(
+            user_id=u.id, xp=420, streak=6, tickets=1, coins=850,
+            last_day=today, league_xp=180, league_tier=2,
+            week_start=today - timedelta(days=today.weekday()),
+            misa_color="gold", misa_outfit="crown",
+            owned_cosmetics={"gold": True, "crown": True, "party": True},
+        ))
         await s.commit()
