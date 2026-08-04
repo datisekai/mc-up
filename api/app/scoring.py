@@ -91,6 +91,69 @@ def _rms_volume(audio_path: str) -> str | None:
         return None
 
 
+# ===== Nhịp độ nói ĐỀU hay KHÔNG (V9-1) =====
+# WPM trung bình che mất "nói dồn rồi khựng" — lỗi kinh điển của người mới. Đo bằng
+# tốc độ CỤC BỘ theo cửa sổ trượt rồi lấy hệ số biến thiên (CV = std/mean).
+# Chỉ chạy khi có word-timestamp THẬT (Google STT / whisper-1). gpt-4o-*-transcribe
+# và Viettel không trả timestamp thật → trả None, client không hiện gì (thà im lặng
+# còn hơn phán bừa).
+_PACE_WIN = 4.0        # cửa sổ 4 giây
+_PACE_STEP = 2.0       # trượt 2 giây (chồng nửa cửa sổ)
+_PACE_MIN_WORDS = 20   # dưới ngưỡng này bài quá ngắn để nói về "nhịp"
+_PACE_MIN_SPAN = 10.0  # giây — cần đủ dài mới có ≥3 cửa sổ
+# NGƯỠNG TẠM (V9-1): chưa calibrate trên giọng Việt thật. Đang thu dữ liệu để chỉnh —
+# xem research-mo-rong-phan-tich-giong-noi.md §"Làm trước tiên".
+_PACE_CV_STEADY = 0.25
+_PACE_CV_ROUGH = 0.40
+
+
+def _pace_analysis(words: list) -> dict | None:
+    """Nhịp độ đều/không đều + mốc nói nhanh nhất & chậm nhất (giây).
+
+    Tiếng Việt tách âm tiết bằng khoảng trắng → mỗi 'word' của ASR thực chất là một
+    ÂM TIẾT, mịn hơn tiếng Anh, rất hợp để đo nhịp cục bộ.
+    """
+    pts = [w for w in words
+           if isinstance(w, dict)
+           and isinstance(w.get("start"), (int, float))
+           and isinstance(w.get("end"), (int, float))]
+    if len(pts) < _PACE_MIN_WORDS:
+        return None
+    starts = [float(w["start"]) for w in pts]
+    span = float(pts[-1]["end"]) - starts[0]
+    # Timestamp GIẢ (adapter trả 0.0 hết) → span vô nghĩa, bỏ qua
+    if span < _PACE_MIN_SPAN or all(s == 0 for s in starts):
+        return None
+
+    t0 = starts[0]
+    rates: list[tuple[float, float]] = []  # (mốc giữa cửa sổ, âm tiết/giây)
+    t = t0
+    while t + _PACE_WIN <= starts[-1] + 0.01:
+        n = sum(1 for s in starts if t <= s < t + _PACE_WIN)
+        rates.append((t + _PACE_WIN / 2, n / _PACE_WIN))
+        t += _PACE_STEP
+    if len(rates) < 3:
+        return None
+
+    vals = [r for _, r in rates]
+    mean = sum(vals) / len(vals)
+    if mean <= 0:
+        return None
+    var = sum((v - mean) ** 2 for v in vals) / len(vals)
+    cv = math.sqrt(var) / mean
+
+    label = "deu" if cv < _PACE_CV_STEADY else ("hoi_lech" if cv < _PACE_CV_ROUGH else "lech")
+    fastest = max(rates, key=lambda x: x[1])
+    slowest = min(rates, key=lambda x: x[1])
+    return {
+        "cv": round(cv, 3),
+        "label": label,
+        "fast_at": round(fastest[0] - t0, 1),  # giây tính từ lúc bắt đầu nói
+        "slow_at": round(slowest[0] - t0, 1),
+        "windows": len(rates),
+    }
+
+
 def _wpm(words: list, duration_seconds: float) -> float:
     """Tốc độ THẬT (FR-14): tính theo thời gian NÓI (span timestamp), trừ im lặng đầu/cuối."""
     if len(words) >= 2 and isinstance(words[0], dict) and "start" in words[0] and "end" in words[-1]:
@@ -142,6 +205,7 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
             "tip": "Mình chưa nghe rõ giọng bạn — thử lại gần mic hơn, nói to rõ một chút nhé? 🎙",
             "is_mock": False,
             "transcript": None,  # tuyệt đối không hiện câu Whisper bịa
+            "pace": None,        # chưa nghe rõ thì không bàn nhịp
         }
 
     wpm = _wpm(words, duration_seconds)  # FR-14: theo thời gian nói thực
@@ -165,4 +229,6 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         "is_mock": used_mock,
         # transcript CHỈ khi ASR thật — hiện text giả lập là phá niềm tin
         "transcript": ((result.text or "").strip() or None) if not used_mock else None,
+        # V9-1: nhịp đều/không đều — None khi ASR không có word-timestamp thật hoặc bài quá ngắn
+        "pace": _pace_analysis(words) if not used_mock else None,
     }

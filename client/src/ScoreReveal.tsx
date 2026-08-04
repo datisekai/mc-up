@@ -10,6 +10,8 @@ import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
 export type Coverage = { steps: string[]; covered: boolean[] };
+// Nhịp nói (V9-1): cv = hệ số biến thiên tốc độ cục bộ; fast_at/slow_at = giây kể từ lúc bắt đầu nói
+export type Pace = { cv: number; label: "deu" | "hoi_lech" | "lech"; fast_at: number; slow_at: number; windows: number };
 export type ScoreData = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
@@ -17,6 +19,7 @@ export type ScoreData = {
   passed?: boolean;            // RỚT (V4-2): im lặng/quá ngắn/lạc đề → không hiện bảng điểm
   fail_reason?: string | null; // khong_nghe_ro | qua_ngan | lac_de
   coverage?: Coverage | null;  // "đủ ý chưa" — đối chiếu dàn ý đề bài
+  pace?: Pace | null;          // nhịp nói đều/không đều (V9-1) — THAM KHẢO, chưa tính đạt/rớt
   positives?: string[];        // "Đã tốt" — tổng hợp từ server
   improvements?: string[];     // "Cần cải thiện" — tổng hợp từ server
 };
@@ -93,6 +96,15 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
   const worse = delta !== null && delta > 0;
   const [worseMsg] = useState(() => pick(COMPARE_WORSE, "worse"));
 
+  // Nhịp reveal xếp chồng: khối nào vắng thì khối sau dồn lên, không để trống nhịp
+  const hasCov = !!score.coverage && score.coverage.steps.length > 0;
+  const hasPace = !!score.pace;
+  let _d = 720;
+  const dCov = _d; if (hasCov) _d += 140;
+  const dPace = _d; if (hasPace) _d += 140;
+  const dTip = _d; _d += 140;
+  const dTranscript = _d;
+
   return (
     <View>
       {/* Nhận xét RÕ RÀNG lên đầu: đã làm được gì / chưa làm được gì (feedback #1) */}
@@ -163,12 +175,12 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
         )}
 
         {/* "Đủ ý chưa" — đối chiếu lời nói với dàn ý đề bài (✓ đạt / ○ thiếu, KHÔNG đỏ) */}
-        {score.coverage && score.coverage.steps.length > 0 ? (() => {
+        {hasCov ? (() => {
           const cov = score.coverage!;
           const done = cov.covered.filter(Boolean).length;
           const all = done === cov.steps.length;
           return (
-            <RowIn delay={720} reduced={reduced}>
+            <RowIn delay={dCov} reduced={reduced}>
               <View style={st.covBox}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <Text style={st.covLabel}>ĐỦ Ý CHƯA</Text>
@@ -186,14 +198,41 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
           );
         })() : null}
 
-        <RowIn delay={score.coverage ? 860 : 720} reduced={reduced}>
+        {/* NHỊP NÓI (V9-1) — tham khảo, KHÔNG tính vào đạt/rớt. Chỉ có khi ASR trả
+            word-timestamp thật; thiếu thì ẩn hẳn thay vì đoán bừa. */}
+        {hasPace ? (() => {
+          const p = score.pace!;
+          const steady = p.label === "deu";
+          const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+          const msg = steady
+            ? "Nhịp nói của bạn khá đều — giữ nhé!"
+            : p.label === "hoi_lech"
+              ? `Nhịp hơi lệch — nhanh nhất quanh ${mmss(p.fast_at)}, chậm nhất quanh ${mmss(p.slow_at)}.`
+              : `Có đoạn dồn dập, có đoạn khựng lại — dồn quanh ${mmss(p.fast_at)}, chậm hẳn quanh ${mmss(p.slow_at)}.`;
+          return (
+            <RowIn delay={dPace} reduced={reduced}>
+              <View style={st.covBox}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <Text style={st.covLabel}>NHỊP NÓI</Text>
+                  <Text style={[st.covCount, steady && { color: "#1f8f63" }]}>
+                    {steady ? "đều" : p.label === "hoi_lech" ? "hơi lệch" : "chưa đều"}
+                  </Text>
+                </View>
+                <Text style={st.covText}>{msg}</Text>
+                <Text style={st.covHint}>Mục này để bạn tham khảo — chưa tính vào kết quả bài.</Text>
+              </View>
+            </RowIn>
+          );
+        })() : null}
+
+        <RowIn delay={dTip} reduced={reduced}>
           <View style={st.tip}><Text style={st.tipT}>{tip}</Text></View>
         </RowIn>
 
         {/* "Xem lại lời bạn nói" — bằng chứng cho số từ đệm. Gấp mặc định (không phán xét),
             tô vàng ấm (không đỏ), chỉ có khi ASR thật (mock = null → ẩn hẳn). */}
         {score.transcript ? (
-          <RowIn delay={score.coverage ? 1000 : 860} reduced={reduced}>
+          <RowIn delay={dTranscript} reduced={reduced}>
             {showTranscript ? (
               <View style={st.transcriptBox}>
                 <Text style={st.transcriptLabel}>LỜI BẠN NÓI · từ đệm được đánh dấu</Text>

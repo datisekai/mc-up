@@ -80,6 +80,9 @@ class Score(Base):
     transcript: Mapped[str | None] = mapped_column(String, nullable=True)
     # "Đủ ý chưa": đối chiếu lời nói với dàn ý đề bài. {"steps":[...],"covered":[bool...]} — None nếu bỏ qua
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Nhịp nói đều/không đều (V9-1) — {"cv","label","fast_at","slow_at","windows"}.
+    # None khi ASR không trả word-timestamp thật. THÔNG TIN THAM KHẢO: chưa tính vào đạt/rớt.
+    pace: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     clip: Mapped["Clip"] = relationship(back_populates="score")

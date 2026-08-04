@@ -51,6 +51,7 @@ class ScoreOut(BaseModel):
     passed: bool = True            # RỚT (im lặng/quá ngắn/lạc đề) = false → bài KHÔNG tính hoàn thành (V4-2)
     fail_reason: str | None = None # khong_nghe_ro | qua_ngan | lac_de
     coverage: dict | None = None   # "đủ ý chưa": {steps, covered[]} đối chiếu dàn ý
+    pace: dict | None = None       # nhịp nói (V9-1): {cv,label,fast_at,slow_at} — tham khảo, chưa tính điểm
     positives: list[str] = []      # "Đã tốt": tổng hợp rõ ràng
     improvements: list[str] = []   # "Cần cải thiện": tổng hợp rõ ràng
 
