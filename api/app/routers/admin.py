@@ -395,3 +395,114 @@ async def audit(limit: int = 100, user: User = Depends(current_user), session: A
     """Nhật ký thao tác admin — ai sửa gì, lúc nào (append-only)."""
     _require_admin(user)
     return await admin_audit(session, min(limit, 500))
+
+
+# ===== Chẩn đoán ASR (V9-1) — "nhà cung cấp nào đang THẬT SỰ chạy?" =====
+# .env sai tên biến / key hỏng vẫn deploy êm rồi lặng lẽ rơi về nhà cung cấp khác.
+# 2 endpoint dưới đây để nhìn tận mắt, KHÔNG bao giờ trả về giá trị key.
+
+def _mask(secret: str) -> str:
+    """Chỉ đủ để nhận diện 'có phải key mình vừa dán không' — không lộ key."""
+    s = (secret or "").strip()
+    if not s:
+        return ""
+    return f"{s[:4]}…{s[-2:]} ({len(s)} ký tự)" if len(s) > 8 else f"… ({len(s)} ký tự)"
+
+
+@router.get("/asr/status")
+async def asr_status(user: User = Depends(current_user)):
+    """Nhà cung cấp ASR nào đang được chọn, và vì sao. Không cần audio."""
+    _require_admin(user)
+    from adapters.asr_factory import get_asr  # type: ignore
+
+    asr = get_asr(settings.asr_provider, openai_key=settings.openai_api_key,
+                  google_key=settings.google_stt_api_key,
+                  viettel_token=settings.viettel_stt_token, asr_model=settings.asr_model)
+    actual = type(asr).__name__
+    keys = {
+        "GOOGLE_STT_API_KEY": _mask(settings.google_stt_api_key),
+        "VIETTEL_STT_TOKEN": _mask(settings.viettel_stt_token),
+        "OPENAI_API_KEY": _mask(settings.openai_api_key),
+    }
+    # auto ưu tiên: viettel > google > whisper > mock (adapters/asr_factory.py)
+    if actual == "MockAsr":
+        why = "KHÔNG key nào được nạp → đang chấm GIẢ LẬP. Kiểm tra .env đã có biến chưa và đã restart container chưa."
+    elif actual == "GoogleAsr":
+        why = "Google Cloud STT đang chạy — có word-timestamp thật nên tín hiệu Nhịp nói hoạt động."
+    elif actual == "ViettelAsr":
+        why = "Viettel đang chạy (ưu tiên cao hơn Google). Lưu ý: Viettel KHÔNG trả word-timestamp thật → Nhịp nói sẽ luôn trống. Bỏ VIETTEL_STT_TOKEN nếu muốn dùng Google."
+    else:
+        why = f"OpenAI ({settings.asr_model}) đang chạy. Model gpt-4o-*-transcribe KHÔNG trả word-timestamp → Nhịp nói sẽ luôn trống."
+    return {
+        "provider_config": settings.asr_provider,
+        "provider_actual": actual,
+        "asr_model": settings.asr_model if actual == "WhisperAsr" else None,
+        "keys_loaded": keys,
+        "supports_word_timestamps": actual in ("GoogleAsr",) or (actual == "WhisperAsr" and settings.asr_model == "whisper-1"),
+        "why": why,
+    }
+
+
+@router.post("/asr/test")
+async def asr_test(file: UploadFile = File(...), user: User = Depends(current_user)):
+    """Chạy THẬT 1 file audio qua ASR đang cấu hình → xem tận mắt nó nghe ra gì.
+
+    Trả về đủ để trả lời 3 câu: (1) ASR có chạy không, (2) có word-timestamp THẬT không
+    (điều kiện của tín hiệu Nhịp nói), (3) có GIỮ từ vấp/lặp không — cổng quyết định cho
+    tín hiệu 'lặp từ/tự sửa lời'. Đọc kỹ transcript thô để tự đánh giá (3).
+    """
+    _require_admin(user)
+    import os
+    import tempfile
+    import time
+
+    from adapters.asr_factory import get_asr  # type: ignore
+
+    from ..scoring import _pace_analysis
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, {"error": {"code": "empty_audio", "message": "File rỗng"}})
+    suffix = "." + (file.filename or "clip.m4a").split(".")[-1]
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    try:
+        tmp.write(data)
+        tmp.close()
+        asr = get_asr(settings.asr_provider, openai_key=settings.openai_api_key,
+                      google_key=settings.google_stt_api_key,
+                      viettel_token=settings.viettel_stt_token, asr_model=settings.asr_model)
+        t0 = time.time()
+        try:
+            result = await asr.transcribe(audio_path=tmp.name, language="vi")
+        except Exception as exc:  # key sai / API chưa bật / hết quota → nói thẳng lỗi
+            return {"ok": False, "provider": type(asr).__name__,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "goi_y": "401/403 = key sai hoặc chưa Enable API; 400 = định dạng audio; "
+                             "quota = hết hạn mức. Xem log container để rõ hơn."}
+        took = round(time.time() - t0, 2)
+        words = result.words or []
+        real_ts = [w for w in words
+                   if isinstance(w, dict) and isinstance(w.get("start"), (int, float))
+                   and isinstance(w.get("end"), (int, float))]
+        # timestamp giả (toàn 0.0) không tính là thật
+        has_real_ts = bool(real_ts) and any(float(w["start"]) > 0 for w in real_ts)
+        return {
+            "ok": True,
+            "provider": type(asr).__name__,
+            "is_mock": getattr(asr, "is_mock", False),
+            "took_seconds": took,
+            "transcript": result.text,          # ĐỌC KỸ: có giữ 'ừm/à', từ lặp, chỗ vấp không?
+            "word_count": len(words),
+            "has_real_word_timestamps": has_real_ts,
+            "pace": _pace_analysis(words),      # None nếu thiếu timestamp thật / bài quá ngắn
+            "first_words": words[:8],
+            "checklist": {
+                "1_asr_chay": "OK" if result.text else "Không ra chữ nào — kiểm tra audio/nhà cung cấp",
+                "2_nhip_noi": "OK — tín hiệu Nhịp nói dùng được" if has_real_ts
+                              else "KHÔNG có word-timestamp thật → khối 'Nhịp nói' sẽ không hiện",
+                "3_giu_tu_vap": "Tự đọc transcript ở trên: nếu bạn CỐ Ý vấp/lặp mà transcript đã "
+                                "'dọn sạch' thì tín hiệu 'lặp từ' không khả thi.",
+            },
+        }
+    finally:
+        os.unlink(tmp.name)

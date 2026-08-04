@@ -11,7 +11,11 @@ adapter khác cùng interface.
 """
 from __future__ import annotations
 
+import logging
+import re
 from dataclasses import dataclass, field
+
+log = logging.getLogger("mcup.asr")
 
 # Mồi tiếng Việt: (1) neo NGÔN NGỮ + từ vựng nghề MC → giảm nhận sai & chèn từ tiếng Anh vô cớ,
 # (2) giữ tiếng đệm thay vì làm sạch (FR-12).
@@ -20,6 +24,54 @@ _FILLER_PROMPT = (
     "Bản ghi tiếng Việt, giữ nguyên tiếng đệm khi nói. Sân khấu, tiệc cưới, cô dâu chú rể, "
     "quan khách, sự kiện, gala, khán giả, tiết mục, phần thi, thí sinh."
 )
+
+
+# Câu META trong prompt — KHÔNG học viên nào nói câu này ngoài đời. Nó xuất hiện trong
+# transcript = chắc chắn model đang nhả ngược prompt.
+_META_MARK = "bản ghi tiếng việt giữ nguyên tiếng đệm khi nói"
+# Danh sách từ vựng ở ĐUÔI prompt — đọc ra một lượt gần hết = đang nhả prompt, không phải nói thật
+_TAIL_VOCAB = ("sân khấu", "tiệc cưới", "cô dâu", "chú rể", "quan khách",
+               "sự kiện", "gala", "khán giả", "tiết mục", "phần thi", "thí sinh")
+_PUNCT = re.compile(r"[.,!?;:…“”\"'`()\[\]\-–—]")
+
+
+def _toks(s: str) -> list[str]:
+    return _PUNCT.sub(" ", (s or "").lower()).split()
+
+
+def _is_prompt_echo(text: str) -> bool:
+    """Model NHẢ NGƯỢC prompt thành transcript — xảy ra khi audio khó nghe/lí nhí.
+
+    NGUY HIỂM (bug thật, phát hiện 2026-08-04): prompt chứa lời chào MC hoàn chỉnh +
+    danh sách từ vựng nghề (cô dâu, chú rể, quan khách, tiệc cưới...). Nếu để lọt,
+    lưới `_looks_unclear` không bắt (52 từ, không dính marker hallucination cũ) và bộ
+    chấm 'đủ ý' nhìn thấy toàn từ khoá đúng chủ đề → chấm ĐẠT cho bài học viên thực ra
+    nói không nghe ra gì. Đây chính là 'đọc dở mà vẫn đánh giá cao'.
+
+    Bắt được → trả text rỗng để pipeline rơi vào nhánh 'chưa nghe rõ, thử lại' (đúng UX
+    đã có sẵn), thay vì chấm bừa.
+    """
+    toks = _toks(text)
+    if len(toks) < 10:  # quá ngắn thì đã có lưới 'ít hơn 3 từ' lo
+        return False
+    joined = " ".join(toks)
+
+    # (1) Câu meta — bằng chứng chắc chắn nhất.
+    if _META_MARK in joined:
+        return True
+
+    # (2) Đọc ê a gần hết DANH SÁCH từ vựng ở đuôi prompt. Học viên kể chuyện thật có
+    # thể dùng vài từ này (bài đám cưới hay có 'cô dâu chú rể, quan khách'), nhưng
+    # không ai liệt kê một lượt gala + thí sinh + tiết mục + tiệc cưới + sân khấu...
+    if sum(1 for kw in _TAIL_VOCAB if kw in joined) >= 6:
+        return True
+
+    # (3) Bài DÀI mà gần như mọi từ đều lấy từ prompt. Ngưỡng độ dài để không bắt nhầm
+    # lời chào MC ngắn (vốn trùng đầu prompt) — đó là câu học viên nói thật rất nhiều.
+    if len(toks) < 25:
+        return False
+    pool = set(_toks(_FILLER_PROMPT))
+    return sum(1 for t in toks if t in pool) / len(toks) >= 0.9
 
 
 @dataclass
@@ -58,7 +110,7 @@ class WhisperAsr:
                     temperature=0.0,  # giảm hallucination khi audio nhỏ/im lặng
                 )
                 words = [{"word": w.word, "start": w.start, "end": w.end} for w in (resp.words or [])]
-                return AsrResult(text=resp.text, words=words)
+                return self._guard(resp.text, words)
             # gpt-4o-(mini-)transcribe: WER tiếng Việt tốt hơn hẳn whisper-1 nhưng KHÔNG
             # trả word-timestamps → words=[]; scoring tự suy words giả từ text.
             resp = await client.audio.transcriptions.create(
@@ -67,4 +119,12 @@ class WhisperAsr:
                 response_format="json",
                 temperature=0.0,
             )
-            return AsrResult(text=resp.text, words=[])
+            return self._guard(resp.text, [])
+
+    @staticmethod
+    def _guard(text: str, words: list) -> AsrResult:
+        """Chặn prompt-echo trước khi nó ra khỏi adapter (xem _is_prompt_echo)."""
+        if _is_prompt_echo(text):
+            log.warning("ASR nhả ngược prompt (audio khó nghe) → coi như chưa nghe rõ: %r", (text or "")[:80])
+            return AsrResult(text="", words=[])
+        return AsrResult(text=text, words=words)
