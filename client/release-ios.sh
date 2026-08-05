@@ -8,9 +8,13 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-if ! command -v eas >/dev/null 2>&1; then
-  echo "⚠️  Chưa có eas-cli:  npm i -g eas-cli  rồi  eas login"
-  exit 1
+# eas cài global theo TỪNG version node của nvm — đổi node là "mất" eas dù đã cài.
+# → fallback qua npx (tải/cache tự động), khỏi phụ thuộc version node đang active.
+if command -v eas >/dev/null 2>&1; then
+  EAS="eas"
+else
+  echo "ℹ️  Không thấy eas trong PATH (node hiện tại: $(node -v 2>/dev/null || echo '?')) → dùng npx eas-cli"
+  EAS="npx -y eas-cli"
 fi
 
 if [ "${1:-}" = "--ota" ]; then
@@ -20,12 +24,12 @@ if [ "${1:-}" = "--ota" ]; then
   # → phải ÉP env prod, không là bản vá đẩy xuống user trỏ nhầm về IP LAN (đã dính 1 lần).
   export EXPO_PUBLIC_API_URL="https://mcup.fun"
   echo "▶  Đẩy bản vá OTA lên channel production (API = ${EXPO_PUBLIC_API_URL})..."
-  eas update --channel production --message "$(git log -1 --pretty=%s)"
+  $EAS update --channel production --message "$(git log -1 --pretty=%s)"
   exit 0
 fi
 
 echo "▶  Build iOS production (API = https://mcup.fun, khoá trong eas.json) + submit TestFlight..."
-eas build --platform ios --profile production --auto-submit
+$EAS build --platform ios --profile production --auto-submit
 echo ""
 echo "✅  Xong phần đẩy — chờ Apple process (~15-60 phút) rồi build hiện trong TestFlight."
 echo "    Đổi native/thư viện mới → PHẢI build lại (script này)."
