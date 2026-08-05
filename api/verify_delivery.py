@@ -35,6 +35,13 @@ check("2 quãng dài → ngap_ngung", r2 and r2["label"] == "ngap_ngung" and r2[
 check("longest_at đúng vùng gap lớn nhất", r2 and 25 < (r2["longest_at"] or 0) < 28, str(r2))
 check("timestamp giả → None", _pause_analysis([{"word": "x", "start": 0.0, "end": 0.0}] * 60) is None)
 check("quá ngắn → None", _pause_analysis(words([i * 0.3 for i in range(10)])) is None)
+# Kiểu GOOGLE (phát hiện 2026-08-05): timestamp LIỀN MẠCH — end[i]=start[i+1], quãng lặng
+# bị nuốt vào duration của từ đứng trước → gap end→start luôn 0. Phải bắt bằng onset (IOI).
+g_starts = [i * 0.3 for i in range(40)] + [14.3 + i * 0.3 for i in range(40)]  # onset nhảy 2.6s tại 11.7
+g_words = [{"word": "x", "start": s, "end": (g_starts[i + 1] if i + 1 < len(g_starts) else s + 0.3)}
+           for i, s in enumerate(g_starts)]
+rg = _pause_analysis(g_words)
+check("kiểu Google (gap=0, onset nhảy) vẫn bắt được", rg and rg["long_count"] == 1 and abs(rg["longest"] - 2.3) < 0.15, str(rg))
 
 print("=== REPETITION ===")
 r = _repetition_analysis("xin chào quý vị chương trình chương trình hôm nay rất đặc biệt")

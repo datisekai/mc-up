@@ -177,10 +177,12 @@ def _pace_analysis(words: list) -> dict | None:
 
 
 # ===== Khoảng lặng bất thường (V9-2 #2) =====
-# Đo gap giữa các âm tiết liên tiếp từ word-timestamp. Pause tự nhiên (lấy hơi, hết ý)
-# ~0.2-0.6s; "đứng hình" giữa cụm từ >1.5s là dấu hiệu quên bài/mất bình tĩnh.
-# Cùng điều kiện dữ liệu với _pace_analysis: cần timestamp THẬT.
-_PAUSE_LONG = 1.5      # giây — ngưỡng "đứng hình" (TẠM, chưa calibrate giọng Việt thật)
+# ⚠️ KHÔNG đo bằng gap end→start: Google STT trả timestamp LIỀN MẠCH — âm tiết trước
+# quãng lặng bị kéo `end` tới tận âm tiết sau, quãng im lặng bị nuốt vào "thời lượng từ"
+# (phát hiện 2026-08-05 khi test audio có 2.6s im lặng thật: gap toàn 0). Đo bằng
+# KHOẢNG CÁCH ONSET (start→start) — bất biến với cách provider phân bổ end: pause dài
+# = onset kế tiếp đến muộn hơn hẳn nhịp bình thường (median IOI) của chính người nói.
+_PAUSE_LONG = 1.5      # giây vượt NHỊP NỀN — ngưỡng "đứng hình" (TẠM, chưa calibrate)
 _PAUSE_MIN_WORDS = 20
 _PAUSE_MIN_SPAN = 10.0
 
@@ -192,19 +194,22 @@ def _pause_analysis(words: list) -> dict | None:
            and isinstance(w.get("end"), (int, float))]
     if len(pts) < _PAUSE_MIN_WORDS:
         return None
-    t0 = float(pts[0]["start"])
+    starts = [float(w["start"]) for w in pts]
+    t0 = starts[0]
     span = float(pts[-1]["end"]) - t0
-    if span < _PAUSE_MIN_SPAN or all(float(w["start"]) == 0 for w in pts):
+    if span < _PAUSE_MIN_SPAN or all(s == 0 for s in starts):
         return None
 
-    longs: list[tuple[float, float]] = []  # (mốc bắt đầu pause tính từ t0, độ dài)
+    iois = [b - a for a, b in zip(starts, starts[1:])]
+    med = sorted(iois)[len(iois) // 2]  # nhịp nền của CHÍNH người nói (âm tiết/median IOI)
+    longs: list[tuple[float, float]] = []  # (mốc bắt đầu pause tính từ t0, độ dài pause)
     silence = 0.0
-    for a, b in zip(pts, pts[1:]):
-        gap = float(b["start"]) - float(a["end"])
-        if gap > 0.3:
-            silence += gap
-        if gap >= _PAUSE_LONG:
-            longs.append((round(float(a["end"]) - t0, 1), round(gap, 1)))
+    for i, ioi in enumerate(iois):
+        extra = ioi - med  # phần "đến muộn" so với nhịp nền ≈ độ dài quãng lặng
+        if extra > 0.3:
+            silence += extra
+        if extra >= _PAUSE_LONG:
+            longs.append((round(starts[i + 1] - extra - t0, 1), round(extra, 1)))
     label = "tot" if not longs else ("ngap_ngung" if len(longs) <= 2 else "dut_quang")
     worst = max(longs, key=lambda x: x[1]) if longs else None
     return {
