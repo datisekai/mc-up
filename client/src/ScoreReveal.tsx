@@ -9,9 +9,17 @@ import Misa from "./Misa";
 import { sfx } from "./sound";
 import { COMPARE_WORSE, pick, tipFor } from "./variety";
 
-export type Coverage = { steps: string[]; covered: boolean[] };
+// coverage.structure (V9-2 #3): cấu trúc mở-thân-kết + chuyển ý, chấm cùng call LLM với "đủ ý"
+export type Structure = { mo: boolean; ket: boolean; chuyen_y: "muot" | "tam_on" | "roi_rac"; nhan_xet: string };
+export type Coverage = { steps: string[]; covered: boolean[]; structure?: Structure | null };
 // Nhịp nói (V9-1): cv = hệ số biến thiên tốc độ cục bộ; fast_at/slow_at = giây kể từ lúc bắt đầu nói
 export type Pace = { cv: number; label: "deu" | "hoi_lech" | "lech"; fast_at: number; slow_at: number; windows: number };
+// V9-2: bộ "cách bạn nói" — từng mảnh null khi thiếu dữ liệu (timestamp giả, bài ngắn...)
+export type Delivery = {
+  pauses?: { label: "tot" | "ngap_ngung" | "dut_quang"; long_count: number; longest: number; longest_at: number | null; silence_ratio: number } | null;
+  repetition?: { count: number; examples: string[] } | null;
+  energy_arc?: { start_db: number; end_db: number; delta_db: number; label: "on_dinh" | "duoi_cuoi" | "len_cuoi" } | null;
+} | null;
 export type ScoreData = {
   volume_label: string; speed_wpm: number; filler_count: number; tip: string; is_mock: boolean;
   transcript?: string | null;  // lời user nói — CHỈ có khi ASR thật
@@ -20,6 +28,7 @@ export type ScoreData = {
   fail_reason?: string | null; // khong_nghe_ro | qua_ngan | lac_de
   coverage?: Coverage | null;  // "đủ ý chưa" — đối chiếu dàn ý đề bài
   pace?: Pace | null;          // nhịp nói đều/không đều (V9-1) — THAM KHẢO, chưa tính đạt/rớt
+  delivery?: Delivery;         // V9-2: khoảng lặng/lặp từ/energy arc — THAM KHẢO, chưa tính đạt/rớt
   positives?: string[];        // "Đã tốt" — tổng hợp từ server
   improvements?: string[];     // "Cần cải thiện" — tổng hợp từ server
 };
@@ -98,10 +107,12 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
 
   // Nhịp reveal xếp chồng: khối nào vắng thì khối sau dồn lên, không để trống nhịp
   const hasCov = !!score.coverage && score.coverage.steps.length > 0;
-  const hasPace = !!score.pace;
+  const del = score.delivery;
+  // Thẻ "Cách bạn nói" gộp pace + pauses + lặp từ + energy arc — hiện khi có ÍT NHẤT 1 mảnh
+  const hasDelivery = !!score.pace || !!(del && (del.pauses || (del.repetition && del.repetition.count > 0) || del.energy_arc));
   let _d = 720;
   const dCov = _d; if (hasCov) _d += 140;
-  const dPace = _d; if (hasPace) _d += 140;
+  const dPace = _d; if (hasDelivery) _d += 140;
   const dTip = _d; _d += 140;
   const dTranscript = _d;
 
@@ -192,33 +203,76 @@ export default function ScoreReveal({ score, prev }: { score: ScoreData; prev: P
                     <Text style={[st.covText, !cov.covered[i] && { color: C.ink2 }]}>{stp}</Text>
                   </View>
                 ))}
+                {/* Cấu trúc (V9-2 #3): mở-kết + chuyển ý — cùng call LLM với "đủ ý", tham khảo */}
+                {cov.structure ? (() => {
+                  const s2 = cov.structure!;
+                  const chips = [
+                    { ok: s2.mo, label: "câu mở" },
+                    { ok: s2.ket, label: "câu kết" },
+                    { ok: s2.chuyen_y === "muot", label: s2.chuyen_y === "roi_rac" ? "chuyển ý rời rạc" : s2.chuyen_y === "tam_on" ? "chuyển ý tạm ổn" : "chuyển ý mượt" },
+                  ];
+                  return (
+                    <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.hair }}>
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                        {chips.map((c2, i) => (
+                          <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: c2.ok ? "#E6F7EF" : C.sunken, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}>
+                            <Text style={{ fontSize: 11.5, fontFamily: F.semi, color: c2.ok ? "#1f8f63" : C.ink2 }}>{c2.ok ? "✓ " : "○ "}{c2.label}</Text>
+                          </View>
+                        ))}
+                      </View>
+                      {s2.nhan_xet ? <Text style={[st.covText, { marginTop: 6, color: C.ink2 }]}>{s2.nhan_xet}</Text> : null}
+                    </View>
+                  );
+                })() : null}
                 <Text style={st.covHint}>{all ? "Đủ ý rồi, xịn! 👏" : "Còn thiếu vài ý — không sao, lần sau thêm vào nhé."}</Text>
               </View>
             </RowIn>
           );
         })() : null}
 
-        {/* NHỊP NÓI (V9-1) — tham khảo, KHÔNG tính vào đạt/rớt. Chỉ có khi ASR trả
-            word-timestamp thật; thiếu thì ẩn hẳn thay vì đoán bừa. */}
-        {hasPace ? (() => {
-          const p = score.pace!;
-          const steady = p.label === "deu";
+        {/* CÁCH BẠN NÓI (V9-1/V9-2) — nhịp + khoảng lặng + lặp từ + hơi cuối bài.
+            THAM KHẢO, KHÔNG tính đạt/rớt. Từng dòng chỉ hiện khi có dữ liệu thật;
+            thiếu (timestamp giả, bài ngắn) thì ẩn thay vì đoán bừa. */}
+        {hasDelivery ? (() => {
           const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
-          const msg = steady
-            ? "Nhịp nói của bạn khá đều — giữ nhé!"
-            : p.label === "hoi_lech"
-              ? `Nhịp hơi lệch — nhanh nhất quanh ${mmss(p.fast_at)}, chậm nhất quanh ${mmss(p.slow_at)}.`
-              : `Có đoạn dồn dập, có đoạn khựng lại — dồn quanh ${mmss(p.fast_at)}, chậm hẳn quanh ${mmss(p.slow_at)}.`;
+          const lines: { good: boolean; text: string }[] = [];
+          const p = score.pace;
+          if (p) {
+            lines.push(p.label === "deu"
+              ? { good: true, text: "Nhịp nói khá đều — giữ nhé!" }
+              : p.label === "hoi_lech"
+                ? { good: false, text: `Nhịp hơi lệch — nhanh nhất quanh ${mmss(p.fast_at)}, chậm nhất quanh ${mmss(p.slow_at)}.` }
+                : { good: false, text: `Có đoạn dồn dập, có đoạn khựng — dồn quanh ${mmss(p.fast_at)}, chậm hẳn quanh ${mmss(p.slow_at)}.` });
+          }
+          const ps = del?.pauses;
+          if (ps) {
+            lines.push(ps.label === "tot"
+              ? { good: true, text: "Không có quãng dừng dài bất thường." }
+              : { good: false, text: `${ps.long_count} quãng dừng dài — lâu nhất ${ps.longest}s quanh ${mmss(ps.longest_at ?? 0)}. Dừng lấy hơi thì ngắn thôi nhé.` });
+          }
+          const rep = del?.repetition;
+          if (rep && rep.count > 0) {
+            lines.push({ good: false, text: `Lặp cụm từ ${rep.count} lần (vd "${rep.examples[0]}") — vấp nhẹ, nói chậm lại một nhịp là hết.` });
+          }
+          const arc = del?.energy_arc;
+          if (arc && arc.label === "duoi_cuoi") {
+            lines.push({ good: false, text: "Giọng nhỏ dần về cuối bài — giữ hơi đều tới câu chốt nhé." });
+          }
+          if (!lines.length) return null;
+          const allGood = lines.every((l) => l.good);
           return (
             <RowIn delay={dPace} reduced={reduced}>
               <View style={st.covBox}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <Text style={st.covLabel}>NHỊP NÓI</Text>
-                  <Text style={[st.covCount, steady && { color: "#1f8f63" }]}>
-                    {steady ? "đều" : p.label === "hoi_lech" ? "hơi lệch" : "chưa đều"}
-                  </Text>
+                  <Text style={st.covLabel}>CÁCH BẠN NÓI</Text>
+                  {allGood ? <Text style={[st.covCount, { color: "#1f8f63" }]}>ổn áp</Text> : null}
                 </View>
-                <Text style={st.covText}>{msg}</Text>
+                {lines.map((l, i) => (
+                  <View key={i} style={st.covRow}>
+                    <Text style={[st.covMark, l.good ? st.covOk : { color: "#9a6b00" }]}>{l.good ? "✓" : "→"}</Text>
+                    <Text style={st.covText}>{l.text}</Text>
+                  </View>
+                ))}
                 <Text style={st.covHint}>Mục này để bạn tham khảo — chưa tính vào kết quả bài.</Text>
               </View>
             </RowIn>

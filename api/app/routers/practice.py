@@ -120,7 +120,7 @@ async def get_clip(clip_id: str, user: User = Depends(current_user),
         score_out = ScoreOut(
             **{k: getattr(score, k) for k in
                ("volume_label", "speed_wpm", "filler_count", "tip", "is_mock", "transcript", "coverage",
-                "passed", "fail_reason", "pace")},
+                "passed", "fail_reason", "pace", "delivery")},
             unclear=unclear, positives=summ["positives"], improvements=summ["improvements"])
     return ClipOut(
         id=clip.id, lesson_id=clip.lesson_id or clip.content_lesson_id or "", status=clip.status,

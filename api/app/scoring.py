@@ -66,29 +66,51 @@ def _volume_label(seed: str) -> str:
     return ["tốt", "hơi nhỏ", "hơi to"][sum(map(ord, seed)) % 3]
 
 
-def _rms_volume(audio_path: str) -> str | None:
-    """Âm lượng THẬT (FR-13): giải mã audio qua ffmpeg → PCM → RMS → dBFS → nhãn."""
+def _dbfs(samples) -> float:
+    if not len(samples):
+        return -90.0
+    rms = math.sqrt(sum(v * v for v in samples) / len(samples))
+    return 20 * math.log10(rms / 32768) if rms > 0 else -90.0
+
+
+def _arc_from_samples(s) -> dict | None:
+    """Energy arc (V9-2 #5): so dBFS 1/3 ĐẦU vs 1/3 CUỐI bài — bắt lỗi 'MC xuống sức',
+    giọng nhỏ dần về cuối. Tính trên cùng PCM đã decode cho âm lượng, không tốn thêm ffmpeg."""
+    n = len(s)
+    if n < 16000 * 6:  # dưới ~6s chia 3 phần là vô nghĩa
+        return None
+    third = n // 3
+    start_db = _dbfs(s[:third])
+    end_db = _dbfs(s[-third:])
+    delta = round(end_db - start_db, 1)
+    label = "duoi_cuoi" if delta <= -6 else ("len_cuoi" if delta >= 6 else "on_dinh")
+    return {"start_db": round(start_db, 1), "end_db": round(end_db, 1), "delta_db": delta, "label": label}
+
+
+def _volume_and_arc(audio_path: str) -> tuple[str | None, dict | None]:
+    """Âm lượng THẬT (FR-13) + energy arc — MỘT lần decode ffmpeg cho cả hai."""
     try:
         pcm = subprocess.run(
             ["ffmpeg", "-v", "quiet", "-i", audio_path, "-ac", "1", "-ar", "16000", "-f", "s16le", "-"],
             capture_output=True, timeout=30,
         ).stdout
         if len(pcm) < 400:
-            return None
+            return None, None
         s = array.array("h")
         s.frombytes(pcm[: len(pcm) - (len(pcm) % 2)])
         if not s:
-            return None
-        rms = math.sqrt(sum(v * v for v in s) / len(s))
-        dbfs = 20 * math.log10(rms / 32768) if rms > 0 else -90
-        if dbfs < -32:
-            return "hơi nhỏ"
-        if dbfs > -12:
-            return "hơi to"
-        return "tốt"
+            return None, None
+        dbfs = _dbfs(s)
+        label = "hơi nhỏ" if dbfs < -32 else ("hơi to" if dbfs > -12 else "tốt")
+        return label, _arc_from_samples(s)
     except Exception as exc:
         log.warning("RMS âm lượng lỗi (%s) → giả lập", exc)
-        return None
+        return None, None
+
+
+def _rms_volume(audio_path: str) -> str | None:
+    """Giữ cho tương thích (verify script cũ) — dùng _volume_and_arc."""
+    return _volume_and_arc(audio_path)[0]
 
 
 # ===== Nhịp độ nói ĐỀU hay KHÔNG (V9-1) =====
@@ -154,6 +176,80 @@ def _pace_analysis(words: list) -> dict | None:
     }
 
 
+# ===== Khoảng lặng bất thường (V9-2 #2) =====
+# Đo gap giữa các âm tiết liên tiếp từ word-timestamp. Pause tự nhiên (lấy hơi, hết ý)
+# ~0.2-0.6s; "đứng hình" giữa cụm từ >1.5s là dấu hiệu quên bài/mất bình tĩnh.
+# Cùng điều kiện dữ liệu với _pace_analysis: cần timestamp THẬT.
+_PAUSE_LONG = 1.5      # giây — ngưỡng "đứng hình" (TẠM, chưa calibrate giọng Việt thật)
+_PAUSE_MIN_WORDS = 20
+_PAUSE_MIN_SPAN = 10.0
+
+
+def _pause_analysis(words: list) -> dict | None:
+    pts = [w for w in words
+           if isinstance(w, dict)
+           and isinstance(w.get("start"), (int, float))
+           and isinstance(w.get("end"), (int, float))]
+    if len(pts) < _PAUSE_MIN_WORDS:
+        return None
+    t0 = float(pts[0]["start"])
+    span = float(pts[-1]["end"]) - t0
+    if span < _PAUSE_MIN_SPAN or all(float(w["start"]) == 0 for w in pts):
+        return None
+
+    longs: list[tuple[float, float]] = []  # (mốc bắt đầu pause tính từ t0, độ dài)
+    silence = 0.0
+    for a, b in zip(pts, pts[1:]):
+        gap = float(b["start"]) - float(a["end"])
+        if gap > 0.3:
+            silence += gap
+        if gap >= _PAUSE_LONG:
+            longs.append((round(float(a["end"]) - t0, 1), round(gap, 1)))
+    label = "tot" if not longs else ("ngap_ngung" if len(longs) <= 2 else "dut_quang")
+    worst = max(longs, key=lambda x: x[1]) if longs else None
+    return {
+        "label": label,
+        "long_count": len(longs),
+        "longest": worst[1] if worst else 0.0,
+        "longest_at": worst[0] if worst else None,
+        "silence_ratio": round(silence / span, 2),
+    }
+
+
+# ===== Lặp cụm từ / tự sửa lời (V9-2 #4 — gate ĐÃ PASS trên cả OpenAI lẫn Google) =====
+# Rule n-gram trên transcript: cụm 2-4 ÂM TIẾT lặp lại NGAY liền kề ("chương trình
+# chương trình", "xin mời xin mời"). KHÔNG bắt lặp 1 âm tiết — tiếng Việt có từ láy
+# hợp lệ (nho nhỏ, xa xa, người người) sẽ thành false positive; chỉ bắt 1 âm tiết khi
+# lặp ≥3 lần liên tục ("cái cái cái") — chắc chắn là vấp.
+_REP_MIN_TOKS = 10
+
+
+def _repetition_analysis(text: str) -> dict | None:
+    toks = re.sub(r"[.,!?;:…“”\"'`()\[\]\-–—]", " ", (text or "").lower()).split()
+    if len(toks) < _REP_MIN_TOKS:
+        return None
+    hits: list[str] = []
+    i = 0
+    while i < len(toks):
+        matched = 0
+        for n in (4, 3, 2):  # cụm dài trước để "a b a b a b" không bị đếm đôi
+            if i + 2 * n <= len(toks) and toks[i:i + n] == toks[i + n:i + 2 * n]:
+                hits.append(" ".join(toks[i:i + n]))
+                matched = n
+                break
+        if not matched and i + 2 < len(toks) and toks[i] == toks[i + 1] == toks[i + 2]:
+            k = 3  # 1 âm tiết lặp ≥3 — vấp thật, không phải từ láy; nuốt trọn cả chuỗi lặp
+            while i + k < len(toks) and toks[i + k] == toks[i]:
+                k += 1
+            hits.append(toks[i])
+            i += k
+            continue
+        i += matched * 2 if matched else 1
+    if not hits:
+        return {"count": 0, "examples": []}
+    return {"count": len(hits), "examples": hits[:3]}
+
+
 def _wpm(words: list, duration_seconds: float) -> float:
     """Tốc độ THẬT (FR-14): tính theo thời gian NÓI (span timestamp), trừ im lặng đầu/cuối."""
     if len(words) >= 2 and isinstance(words[0], dict) and "start" in words[0] and "end" in words[-1]:
@@ -193,7 +289,8 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
     if not words and (result.text or "").strip():
         words = [{"word": w} for w in result.text.split()]
     # ffmpeg là subprocess CHẶN — chạy trong thread để không nghẽn event loop khi nhiều user
-    real_vol = await asyncio.to_thread(_rms_volume, path) if (path and os.path.exists(path)) else None
+    real_vol, energy_arc = (await asyncio.to_thread(_volume_and_arc, path)
+                            if (path and os.path.exists(path)) else (None, None))
 
     # ASR thật nhưng nghe không ra (im lặng/quá nhỏ → Whisper hay bịa) → KHÔNG chấm bừa
     if not used_mock and _looks_unclear(result.text, words):
@@ -206,6 +303,7 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
             "is_mock": False,
             "transcript": None,  # tuyệt đối không hiện câu Whisper bịa
             "pace": None,        # chưa nghe rõ thì không bàn nhịp
+            "delivery": None,
         }
 
     wpm = _wpm(words, duration_seconds)  # FR-14: theo thời gian nói thực
@@ -231,4 +329,11 @@ async def score_clip(clip_id: str, duration_seconds: float, audio_path: str | No
         "transcript": ((result.text or "").strip() or None) if not used_mock else None,
         # V9-1: nhịp đều/không đều — None khi ASR không có word-timestamp thật hoặc bài quá ngắn
         "pace": _pace_analysis(words) if not used_mock else None,
+        # V9-2: bộ tín hiệu "cách bạn nói" — THAM KHẢO, chưa tính đạt/rớt. Từng mảnh tự
+        # None khi thiếu dữ liệu (timestamp giả, bài ngắn, không decode được audio).
+        "delivery": ({
+            "pauses": _pause_analysis(words),
+            "repetition": _repetition_analysis(result.text),
+            "energy_arc": energy_arc,
+        } if not used_mock else None),
     }

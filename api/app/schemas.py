@@ -52,6 +52,7 @@ class ScoreOut(BaseModel):
     fail_reason: str | None = None # khong_nghe_ro | qua_ngan | lac_de
     coverage: dict | None = None   # "đủ ý chưa": {steps, covered[]} đối chiếu dàn ý
     pace: dict | None = None       # nhịp nói (V9-1): {cv,label,fast_at,slow_at} — tham khảo, chưa tính điểm
+    delivery: dict | None = None   # V9-2: {pauses,repetition,energy_arc} — tham khảo, chưa tính điểm
     positives: list[str] = []      # "Đã tốt": tổng hợp rõ ràng
     improvements: list[str] = []   # "Cần cải thiện": tổng hợp rõ ràng
 

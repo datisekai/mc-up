@@ -94,8 +94,12 @@ async def _lesson_steps(s: AsyncSession, clip: Clip) -> list[str]:
 
 
 async def judge_coverage(transcript: str, steps: list[str], openai_key: str) -> dict | None:
-    """'Đủ ý chưa': AI đối chiếu lời nói với dàn ý — người nói đã CHẠM từng ý chưa.
-    Best-effort (không key/lỗi → None, không chặn chấm). Khoan dung: chỉ cần đề cập ý."""
+    """'Đủ ý chưa' + CẤU TRÚC (V9-2 #3): một call LLM chấm cả hai.
+    - covered: đã CHẠM từng ý trong dàn ý chưa (khoan dung — chỉ cần đề cập, không cần đúng từ).
+    - structure: có câu MỞ chào khán giả không, có câu KẾT/chốt không, CHUYỂN Ý giữa các phần
+      mượt hay rời rạc — đúng năng lực lõi phân biệt MC với người đọc danh sách. THAM KHẢO,
+      chưa tính đạt/rớt; nhét chung vào JSON coverage nên không cần migration.
+    Best-effort (không key/lỗi → None; structure hỏng riêng thì chỉ bỏ structure)."""
     if not steps or not transcript or not openai_key:
         return None
     from openai import AsyncOpenAI
@@ -105,16 +109,28 @@ async def judge_coverage(transcript: str, steps: list[str], openai_key: str) -> 
         resp = await client.chat.completions.create(
             model="gpt-4o-mini", response_format={"type": "json_object"}, temperature=0,
             messages=[
-                {"role": "system", "content": "Bạn kiểm tra người nói đã CHẠM tới từng ý trong dàn ý "
-                 "chưa (khoan dung — chỉ cần đề cập/diễn đạt ý đó, KHÔNG cần đúng từ). "
-                 "Trả JSON {\"covered\":[true/false...]} đúng THỨ TỰ và ĐỦ SỐ ý của dàn ý."},
+                {"role": "system", "content":
+                 "Bạn chấm bài tập nói của học viên MC (giọng dịu, khoan dung). Trả JSON:\n"
+                 "{\"covered\":[true/false...],  // đã CHẠM từng ý của dàn ý chưa — chỉ cần đề cập/"
+                 "diễn đạt ý, KHÔNG cần đúng từ; đúng THỨ TỰ và ĐỦ SỐ ý\n"
+                 " \"structure\":{\"mo\":bool,   // có câu mở/chào khán giả trước khi vào nội dung\n"
+                 "  \"ket\":bool,               // có câu kết/chốt/cảm ơn, không đứt ngang\n"
+                 "  \"chuyen_y\":\"muot\"|\"tam_on\"|\"roi_rac\",  // giữa các ý có câu bắc cầu hay đọc rời từng mục\n"
+                 "  \"nhan_xet\":\"...\"}}      // 1 câu ngắn về cấu trúc, tiếng Việt, giọng khích lệ"},
                 {"role": "user", "content": f"Lời người nói:\n\"{transcript}\"\n\nDàn ý cần chạm:\n{numbered}"},
             ],
         )
         data = _json.loads(resp.choices[0].message.content or "{}")
         covered = data.get("covered")
-        if isinstance(covered, list) and len(covered) == len(steps):
-            return {"steps": steps, "covered": [bool(x) for x in covered]}
+        if not (isinstance(covered, list) and len(covered) == len(steps)):
+            return None
+        out = {"steps": steps, "covered": [bool(x) for x in covered]}
+        st = data.get("structure")
+        if isinstance(st, dict) and st.get("chuyen_y") in ("muot", "tam_on", "roi_rac"):
+            out["structure"] = {"mo": bool(st.get("mo")), "ket": bool(st.get("ket")),
+                                "chuyen_y": st["chuyen_y"],
+                                "nhan_xet": str(st.get("nhan_xet") or "")[:200]}
+        return out
     except Exception as exc:
         log.warning("judge_coverage lỗi (%s) → bỏ qua", exc)
     return None

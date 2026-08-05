@@ -458,7 +458,7 @@ async def asr_test(file: UploadFile = File(...), user: User = Depends(current_us
 
     from adapters.asr_factory import get_asr  # type: ignore
 
-    from ..scoring import _pace_analysis
+    from ..scoring import _pace_analysis, _pause_analysis, _repetition_analysis
 
     data = await file.read()
     if not data:
@@ -495,6 +495,8 @@ async def asr_test(file: UploadFile = File(...), user: User = Depends(current_us
             "word_count": len(words),
             "has_real_word_timestamps": has_real_ts,
             "pace": _pace_analysis(words),      # None nếu thiếu timestamp thật / bài quá ngắn
+            "pauses": _pause_analysis(words),   # V9-2: khoảng lặng bất thường
+            "repetition": _repetition_analysis(result.text),  # V9-2: lặp cụm từ
             "first_words": words[:8],
             "checklist": {
                 "1_asr_chay": "OK" if result.text else "Không ra chữ nào — kiểm tra audio/nhà cung cấp",

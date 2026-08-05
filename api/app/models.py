@@ -83,6 +83,9 @@ class Score(Base):
     # Nhịp nói đều/không đều (V9-1) — {"cv","label","fast_at","slow_at","windows"}.
     # None khi ASR không trả word-timestamp thật. THÔNG TIN THAM KHẢO: chưa tính vào đạt/rớt.
     pace: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Bộ "cách bạn nói" (V9-2) — {"pauses","repetition","energy_arc"}, từng mảnh nullable.
+    # Cùng tính chất tham khảo như pace; gộp 1 cột JSON thay vì 3 cột lẻ.
+    delivery: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     clip: Mapped["Clip"] = relationship(back_populates="score")
